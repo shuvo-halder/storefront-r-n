@@ -1,0 +1,6 @@
+{
+  "name": "TechPulse Storefront",
+  "description": "Production-grade single-vendor electronics storefront featuring interactive product catalog, quick view, cart & checkout, order tracking, and account management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

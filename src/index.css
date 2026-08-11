@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Brand & Accent Palette */
+    --color-primary: #e11d48;         /* Rose Crimson - Primary Action */
+    --color-primary-hover: #be123c;   /* Rose Crimson Dark */
+    --color-primary-light: #fff1f2;   /* Soft Rose Tint */
+
+    --color-secondary: #0f172a;       /* Slate 900 - Premium Dark Slate */
+    --color-secondary-hover: #1e293b; /* Slate 800 */
+    --color-secondary-light: #f8fafc; /* Slate 50 */
+
+    --color-accent: #0284c7;          /* Sky Blue - Tech Accent */
+    --color-accent-hover: #0369a1;
+
+    /* Surfaces & Backgrounds */
+    --color-bg-app: #f8fafc;          /* Slate 50 - Storefront Canvas */
+    --color-surface-card: #ffffff;     /* Pure White Containers */
+    --color-surface-subtle: #f1f5f9;   /* Slate 100 - Subtly Grouped Elements */
+    
+    /* Borders & Lines */
+    --color-border-default: #e2e8f0;   /* Slate 200 */
+    --color-border-subtle: #f1f5f9;    /* Slate 100 */
+    --color-border-strong: #cbd5e1;    /* Slate 300 */
+    --color-border-focus: #e11d48;     /* Rose 600 */
+
+    /* Typography */
+    --color-text-primary: #0f172a;     /* Slate 900 */
+    --color-text-secondary: #475569;   /* Slate 600 */
+    --color-text-muted: #94a3b8;       /* Slate 400 */
+    --color-text-inverse: #ffffff;
+
+    /* Semantic Status */
+    --color-success: #059669;          /* Emerald 600 */
+    --color-success-bg: #ecfdf5;       /* Emerald 50 */
+    
+    --color-warning: #d97706;          /* Amber 600 */
+    --color-warning-bg: #fffbeb;       /* Amber 50 */
+    
+    --color-error: #dc2626;            /* Red 600 */
+    --color-error-bg: #fef2f2;         /* Red 50 */
+    
+    --color-info: #0284c7;             /* Sky 600 */
+    --color-info-bg: #f0f9ff;          /* Sky 50 */
+
+    /* Radius System */
+    --radius-xs: 0.25rem;  /* 4px */
+    --radius-sm: 0.375rem; /* 6px */
+    --radius-md: 0.5rem;   /* 8px */
+    --radius-lg: 0.75rem;  /* 12px */
+    --radius-xl: 1rem;     /* 16px */
+    --radius-2xl: 1.25rem; /* 20px */
+    --radius-3xl: 1.5rem;  /* 24px */
+    --radius-full: 9999px;
+  }
+
+  body {
+    background-color: var(--color-bg-app);
+    color: var(--color-text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Skeleton Pulse Shimmer */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 37%, #f1f5f9 63%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+}
