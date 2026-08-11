@@ -1,39 +1,62 @@
 import { apiClient } from './apiClient';
-import { 
-  Product, 
-  Category, 
-  Brand, 
-  Cart, 
-  CartItem, 
-  Order, 
-  UserProfile, 
-  Coupon, 
-  PublicSettings, 
-  BlogArticle,
-  ProductFilterState 
-} from '../types/storefront';
+import { LoginFormData, RegisterFormData } from '../types/auth';
+import { BlogArticle, CMSPage, Refund, ReturnRequest, SearchFacetsResponse, SearchResponse, ProductFilterState, Banner, PublicSettings, Coupon, UserProfile, Order, CartItem, Cart, Brand, Category, Product } from '../types/storefront';
 import { 
   MOCK_PRODUCTS, 
   MOCK_CATEGORIES, 
   MOCK_BRANDS, 
   MOCK_PUBLIC_SETTINGS, 
   MOCK_BLOG_ARTICLES, 
-  MOCK_COUPONS 
+  MOCK_COUPONS,
+  MOCK_BANNERS,
+  MOCK_CMS_PAGES,
+  MOCK_FAQ
 } from '../data/mockProducts';
 
 // Helper for local persistent mock cart state
-const LOCAL_CART_KEY = 'auratech_storefront_cart_v2';
-const LOCAL_ORDERS_KEY = 'auratech_storefront_orders_v2';
-const LOCAL_USER_KEY = 'auratech_storefront_user_v2';
+const LOCAL_CART_KEY = 'vyzobd_storefront_cart_v2';
+const LOCAL_ORDERS_KEY = 'vyzobd_storefront_orders_v2';
+const LOCAL_USER_KEY = 'vyzobd_storefront_user_v2';
+
+/**
+ * Normalizes API responses to handle both:
+ * 1. Standard envelopes: { success: boolean, data: T }
+ * 2. Raw data: T
+ * 3. Empty/Null data: returns null or safe default
+ */
+const normalizeResponse = <T>(res: any, defaultValue: T): T => {
+  if (!res || !res.data) return defaultValue;
+  
+  // If response is the envelope { success, data, ... }
+  if (res.data.hasOwnProperty('data') && res.data.hasOwnProperty('success')) {
+    return res.data.data ?? defaultValue;
+  }
+  
+  // Otherwise assume res.data is the payload itself
+  return res.data ?? defaultValue;
+};
 
 export const storefrontApi = {
   // Public Settings API: GET /api/storefront/v1/settings/public
   getPublicSettings: async (): Promise<PublicSettings> => {
     try {
       const res = await apiClient.get('/settings/public');
-      return res.data?.data || res.data;
+      return normalizeResponse(res, MOCK_PUBLIC_SETTINGS);
     } catch {
       return MOCK_PUBLIC_SETTINGS;
+    }
+  },
+
+  // Banners API: GET /api/storefront/v1/banners
+  getBanners: async (type?: 'hero' | 'promo' | 'offer'): Promise<Banner[]> => {
+    try {
+      const res = await apiClient.get('/banners', { params: { type } });
+      return normalizeResponse(res, MOCK_BANNERS);
+    } catch {
+      if (type) {
+        return MOCK_BANNERS.filter(b => b.type === type);
+      }
+      return MOCK_BANNERS;
     }
   },
 
@@ -41,9 +64,20 @@ export const storefrontApi = {
   getProducts: async (filters?: Partial<ProductFilterState>): Promise<{ products: Product[]; total: number }> => {
     try {
       const res = await apiClient.get('/products', { params: filters });
-      return res.data?.data || { products: res.data, total: res.data.length };
+      const data = normalizeResponse(res, null);
+      
+      if (data && Array.isArray(data)) {
+        return { products: data, total: data.length };
+      }
+      
+      if (data && data.products) {
+        return { products: data.products, total: data.total ?? data.products.length };
+      }
+
+      return { products: [], total: 0 };
     } catch {
       let filtered = [...MOCK_PRODUCTS];
+      // ... (rest of mock logic remains same)
 
       if (filters) {
         if (filters.searchQuery) {
@@ -67,7 +101,7 @@ export const storefrontApi = {
           filtered = filtered.filter(p => {
             const brandObjs = MOCK_BRANDS.filter(b => filters.brandSlugs?.includes(b.slug));
             const brandNames = brandObjs.map(b => b.name);
-            return brandNames.includes(p.brand);
+            return brandNames.includes(p.brand) || filters.brandSlugs?.includes(p.brand.toLowerCase());
           });
         }
 
@@ -88,14 +122,196 @@ export const storefrontApi = {
         }
 
         if (filters.sortBy) {
-          if (filters.sortBy === 'price-asc') filtered.sort((a, b) => a.price - b.price);
-          else if (filters.sortBy === 'price-desc') filtered.sort((a, b) => b.price - a.price);
-          else if (filters.sortBy === 'rating') filtered.sort((a, b) => b.rating - a.rating);
-          else if (filters.sortBy === 'newest') filtered.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+          const s = filters.sortBy;
+          if (s === 'price-asc' || s === 'price_asc') {
+            filtered.sort((a, b) => a.price - b.price);
+          } else if (s === 'price-desc' || s === 'price_desc') {
+            filtered.sort((a, b) => b.price - a.price);
+          } else if (s === 'name-asc' || s === 'name_asc') {
+            filtered.sort((a, b) => a.name.localeCompare(b.name));
+          } else if (s === 'name-desc' || s === 'name_desc') {
+            filtered.sort((a, b) => b.name.localeCompare(a.name));
+          } else if (s === 'rating') {
+            filtered.sort((a, b) => b.rating - a.rating);
+          } else if (s === 'newest') {
+            filtered.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+          } else if (s === 'oldest') {
+            filtered.sort((a, b) => (a.isNew ? 1 : 0) - (b.isNew ? 1 : 0));
+          } else if (s === 'featured') {
+            filtered.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
+          }
         }
       }
 
-      return { products: filtered, total: filtered.length };
+      const total = filtered.length;
+      const page = filters?.page || 1;
+      const pageSize = filters?.pageSize || 9;
+
+      const startIndex = (page - 1) * pageSize;
+      const paginated = filtered.slice(startIndex, startIndex + pageSize);
+
+      return { products: paginated, total };
+    }
+  },
+
+  // Production Search API: GET /api/storefront/v1/search
+  search: async (params: {
+    q?: string;
+    category?: string;
+    brand?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    inStock?: boolean;
+    ratingMin?: number;
+    sort?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<SearchResponse> => {
+    try {
+      const res = await apiClient.get('/search', { params });
+      const data = res.data?.data || res.data;
+      if (data && Array.isArray(data.products)) {
+        return data;
+      }
+      throw new Error('Invalid response structure');
+    } catch {
+      let filtered = [...MOCK_PRODUCTS];
+      const query = (params.q || '').toLowerCase().trim();
+
+      if (query) {
+        filtered = filtered.filter(p =>
+          p.name.toLowerCase().includes(query) ||
+          p.description.toLowerCase().includes(query) ||
+          p.brand.toLowerCase().includes(query) ||
+          p.category.toLowerCase().includes(query) ||
+          (p.tags && p.tags.some(t => t.toLowerCase().includes(query)))
+        );
+      }
+
+      if (params.category) {
+        const catObj = MOCK_CATEGORIES.find(c => c.slug === params.category || c.name.toLowerCase() === params.category?.toLowerCase());
+        const catName = catObj ? catObj.name : params.category;
+        filtered = filtered.filter(p => p.category === catName || p.categoryId === params.category || p.category.toLowerCase() === params.category?.toLowerCase());
+      }
+
+      if (params.brand) {
+        const brandsArr = params.brand.split(',').map(b => b.trim().toLowerCase());
+        filtered = filtered.filter(p => {
+          const brandObj = MOCK_BRANDS.find(b => brandsArr.includes(b.slug));
+          return brandsArr.includes(p.brand.toLowerCase()) || (brandObj && p.brand === brandObj.name);
+        });
+      }
+
+      if (typeof params.minPrice === 'number' && !isNaN(params.minPrice)) {
+        filtered = filtered.filter(p => p.price >= params.minPrice!);
+      }
+
+      if (typeof params.maxPrice === 'number' && !isNaN(params.maxPrice)) {
+        filtered = filtered.filter(p => p.price <= params.maxPrice!);
+      }
+
+      if (params.inStock) {
+        filtered = filtered.filter(p => p.stock > 0);
+      }
+
+      if (params.ratingMin) {
+        filtered = filtered.filter(p => p.rating >= params.ratingMin!);
+      }
+
+      if (params.sort) {
+        const s = params.sort;
+        if (s === 'price_asc' || s === 'price-asc') filtered.sort((a, b) => a.price - b.price);
+        else if (s === 'price_desc' || s === 'price-desc') filtered.sort((a, b) => b.price - a.price);
+        else if (s === 'name_asc' || s === 'name-asc') filtered.sort((a, b) => a.name.localeCompare(b.name));
+        else if (s === 'name_desc' || s === 'name-desc') filtered.sort((a, b) => b.name.localeCompare(a.name));
+        else if (s === 'rating') filtered.sort((a, b) => b.rating - a.rating);
+        else if (s === 'newest') filtered.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+        else if (s === 'oldest') filtered.sort((a, b) => (a.isNew ? 1 : 0) - (b.isNew ? 1 : 0));
+        else if (s === 'featured') filtered.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
+      }
+
+      const total = filtered.length;
+      const page = params.page || 1;
+      const pageSize = params.pageSize || 12;
+      const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+      const startIndex = (page - 1) * pageSize;
+      const paginated = filtered.slice(startIndex, startIndex + pageSize);
+
+      const matchingCategories = query 
+        ? MOCK_CATEGORIES.filter(c => c.name.toLowerCase().includes(query) || c.description.toLowerCase().includes(query)) 
+        : [];
+      const matchingBrands = query 
+        ? MOCK_BRANDS.filter(b => b.name.toLowerCase().includes(query)) 
+        : [];
+
+      return {
+        products: paginated,
+        total,
+        page,
+        pageSize,
+        totalPages,
+        query: params.q || '',
+        suggestions: {
+          categories: matchingCategories,
+          brands: matchingBrands,
+        }
+      };
+    }
+  },
+
+  // Facets API: GET /api/storefront/v1/search/facets
+  getSearchFacets: async (q?: string): Promise<SearchFacetsResponse> => {
+    try {
+      const res = await apiClient.get('/search/facets', { params: { q } });
+      return res.data?.data || res.data;
+    } catch {
+      const query = (q || '').toLowerCase().trim();
+      const baseList = query 
+        ? MOCK_PRODUCTS.filter(p => 
+            p.name.toLowerCase().includes(query) || 
+            p.description.toLowerCase().includes(query) || 
+            p.brand.toLowerCase().includes(query) || 
+            p.category.toLowerCase().includes(query)
+          )
+        : MOCK_PRODUCTS;
+
+      const categoryCounts: Record<string, number> = {};
+      const brandCounts: Record<string, number> = {};
+      let min = Infinity;
+      let max = -Infinity;
+
+      baseList.forEach(p => {
+        const catSlug = MOCK_CATEGORIES.find(c => c.name === p.category)?.slug || p.category.toLowerCase();
+        categoryCounts[catSlug] = (categoryCounts[catSlug] || 0) + 1;
+
+        const brandSlug = MOCK_BRANDS.find(b => b.name === p.brand)?.slug || p.brand.toLowerCase();
+        brandCounts[brandSlug] = (brandCounts[brandSlug] || 0) + 1;
+
+        if (p.price < min) min = p.price;
+        if (p.price > max) max = p.price;
+      });
+
+      const categoriesFacet = MOCK_CATEGORIES.map(c => ({
+        slug: c.slug,
+        name: c.name,
+        count: categoryCounts[c.slug] || 0,
+      }));
+
+      const brandsFacet = MOCK_BRANDS.map(b => ({
+        slug: b.slug,
+        name: b.name,
+        count: brandCounts[b.slug] || 0,
+      }));
+
+      return {
+        categories: categoriesFacet,
+        brands: brandsFacet,
+        priceRange: {
+          min: min === Infinity ? 0 : Math.floor(min),
+          max: max === -Infinity ? 1000 : Math.ceil(max),
+        }
+      };
     }
   },
 
@@ -103,7 +319,7 @@ export const storefrontApi = {
   getProductBySlug: async (slug: string): Promise<Product | null> => {
     try {
       const res = await apiClient.get(`/products/${slug}`);
-      return res.data?.data || res.data;
+      return normalizeResponse(res, null);
     } catch {
       return MOCK_PRODUCTS.find(p => p.slug === slug || p.id === slug) || null;
     }
@@ -113,7 +329,7 @@ export const storefrontApi = {
   getCategories: async (): Promise<Category[]> => {
     try {
       const res = await apiClient.get('/categories');
-      return res.data?.data || res.data;
+      return normalizeResponse(res, MOCK_CATEGORIES);
     } catch {
       return MOCK_CATEGORIES;
     }
@@ -123,7 +339,7 @@ export const storefrontApi = {
   getBrands: async (): Promise<Brand[]> => {
     try {
       const res = await apiClient.get('/brands');
-      return res.data?.data || res.data;
+      return normalizeResponse(res, MOCK_BRANDS);
     } catch {
       return MOCK_BRANDS;
     }
@@ -131,9 +347,18 @@ export const storefrontApi = {
 
   // Cart APIs: GET /api/storefront/v1/cart
   getCart: async (): Promise<Cart> => {
+    const defaultCart: Cart = {
+      items: [],
+      subtotal: 0,
+      discount: 0,
+      shippingFee: 0,
+      estimatedTax: 0,
+      total: 0,
+    };
+
     try {
       const res = await apiClient.get('/cart');
-      return res.data?.data || res.data;
+      return normalizeResponse(res, defaultCart);
     } catch {
       const raw = localStorage.getItem(LOCAL_CART_KEY);
       if (raw) {
@@ -143,14 +368,7 @@ export const storefrontApi = {
           // ignore error
         }
       }
-      return {
-        items: [],
-        subtotal: 0,
-        discount: 0,
-        shippingFee: 0,
-        estimatedTax: 0,
-        total: 0,
-      };
+      return defaultCart;
     }
   },
 
@@ -158,7 +376,7 @@ export const storefrontApi = {
   addToCart: async (productId: string, quantity: number = 1, variantId?: string): Promise<Cart> => {
     try {
       const res = await apiClient.post('/cart/items', { productId, quantity, variantId });
-      return res.data?.data || res.data;
+      return normalizeResponse(res, await storefrontApi.getCart());
     } catch {
       const cart = await storefrontApi.getCart();
       const product = MOCK_PRODUCTS.find(p => p.id === productId);
@@ -199,7 +417,7 @@ export const storefrontApi = {
   updateCartItem: async (itemId: string, quantity: number): Promise<Cart> => {
     try {
       const res = await apiClient.put(`/cart/items/${itemId}`, { quantity });
-      return res.data?.data || res.data;
+      return normalizeResponse(res, await storefrontApi.getCart());
     } catch {
       const cart = await storefrontApi.getCart();
       let newItems = [...cart.items];
@@ -223,7 +441,7 @@ export const storefrontApi = {
   removeCartItem: async (itemId: string): Promise<Cart> => {
     try {
       const res = await apiClient.delete(`/cart/items/${itemId}`);
-      return res.data?.data || res.data;
+      return normalizeResponse(res, await storefrontApi.getCart());
     } catch {
       const cart = await storefrontApi.getCart();
       const newItems = cart.items.filter(i => i.id !== itemId);
@@ -231,11 +449,30 @@ export const storefrontApi = {
     }
   },
 
+  // Clear Entire Cart: DELETE /api/storefront/v1/cart
+  clearCart: async (): Promise<Cart> => {
+    try {
+      const res = await apiClient.delete('/cart');
+      return normalizeResponse(res, await storefrontApi.getCart());
+    } catch {
+      const emptyCart: Cart = {
+        items: [],
+        subtotal: 0,
+        discount: 0,
+        shippingFee: 0,
+        estimatedTax: 0,
+        total: 0,
+      };
+      localStorage.setItem(LOCAL_CART_KEY, JSON.stringify(emptyCart));
+      return emptyCart;
+    }
+  },
+
   // Coupon API: POST /api/storefront/v1/cart/coupons
   applyCoupon: async (code: string): Promise<Cart> => {
     try {
       const res = await apiClient.post('/cart/coupons', { code });
-      return res.data?.data || res.data;
+      return normalizeResponse(res, await storefrontApi.getCart());
     } catch {
       const cart = await storefrontApi.getCart();
       const matched = MOCK_COUPONS.find(c => c.code.toUpperCase() === code.trim().toUpperCase());
@@ -247,19 +484,19 @@ export const storefrontApi = {
   },
 
   // Auth APIs: POST /api/storefront/v1/auth/login, /register, /me
-  login: async (email: string): Promise<{ token: string; user: UserProfile }> => {
+  login: async (data: LoginFormData): Promise<{ token: string; user: UserProfile }> => {
     try {
-      const res = await apiClient.post('/auth/login', { email });
+      const res = await apiClient.post('/auth/login', data);
       return res.data?.data || res.data;
     } catch {
       const user: UserProfile = {
         id: 'usr-101',
-        fullName: email.split('@')[0].toUpperCase(),
-        email,
+        fullName: data.email.split('@')[0].toUpperCase(),
+        email: data.email,
         phone: '+1 (555) 234-5678',
         defaultAddress: {
-          fullName: email.split('@')[0].toUpperCase(),
-          email,
+          fullName: data.email.split('@')[0].toUpperCase(),
+          email: data.email,
           phone: '+1 (555) 234-5678',
           addressLine1: '742 Evergreen Terrace',
           city: 'San Francisco',
@@ -269,8 +506,46 @@ export const storefrontApi = {
         },
       };
       localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(user));
-      localStorage.setItem('auratech_auth_token', 'mock_jwt_token_8892');
+      localStorage.setItem('vyzobd_auth_token', 'mock_jwt_token_8892');
       return { token: 'mock_jwt_token_8892', user };
+    }
+  },
+
+  register: async (data: RegisterFormData): Promise<{ token: string; user: UserProfile }> => {
+    try {
+      const res = await apiClient.post('/auth/register', data);
+      return res.data?.data || res.data;
+    } catch {
+      const user: UserProfile = {
+        id: 'usr-' + Math.random().toString(36).substr(2, 5),
+        fullName: data.fullName,
+        email: data.email,
+        phone: data.phone,
+      };
+      localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(user));
+      localStorage.setItem('vyzobd_auth_token', 'mock_jwt_token_8892');
+      return { token: 'mock_jwt_token_8892', user };
+    }
+  },
+
+  forgotPassword: async (email: string): Promise<void> => {
+    try {
+      await apiClient.post('/auth/forgot-password', { email });
+    } catch {
+      // Mock success
+      return Promise.resolve();
+    }
+  },
+
+  updateProfile: async (data: Partial<UserProfile>): Promise<UserProfile> => {
+    try {
+      const res = await apiClient.patch('/auth/profile', data);
+      return res.data?.data || res.data;
+    } catch {
+      const current = await storefrontApi.getCurrentUser();
+      const updated = { ...current!, ...data };
+      localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(updated));
+      return updated;
     }
   },
 
@@ -289,7 +564,7 @@ export const storefrontApi = {
       await apiClient.post('/auth/logout');
     } catch {
       localStorage.removeItem(LOCAL_USER_KEY);
-      localStorage.removeItem('auratech_auth_token');
+      localStorage.removeItem('vyzobd_auth_token');
     }
   },
 
@@ -317,6 +592,8 @@ export const storefrontApi = {
           { status: 'Out for Delivery', label: 'Out for Delivery', description: 'Package is with local courier driver', completed: false, current: false },
           { status: 'Delivered', label: 'Delivered', description: 'Package delivered to doorstep', completed: false, current: false },
         ],
+        returnStatus: 'Not Requested',
+        refundStatus: 'None',
       };
 
       // Save order
@@ -336,6 +613,70 @@ export const storefrontApi = {
       localStorage.setItem(LOCAL_CART_KEY, JSON.stringify(emptyCart));
 
       return newOrder;
+    }
+  },
+
+  // Checkout: POST /api/storefront/v1/checkout/complete
+  checkoutComplete: async (data: any): Promise<any> => {
+    try {
+      const res = await apiClient.post('/checkout/complete', data);
+      return res.data?.data || res.data;
+    } catch {
+      // Mock production-grade response
+      const orderId = `ORD-${Math.floor(Math.random() * 900000) + 100000}`;
+      const newOrder: Order = {
+        id: orderId,
+        createdAt: new Date().toISOString(),
+        status: 'Pending',
+        ...data,
+        totalAmount: data.totalAmount || 0,
+        returnStatus: 'Not Requested',
+        refundStatus: 'None',
+      };
+
+      const orders = JSON.parse(localStorage.getItem(LOCAL_ORDERS_KEY) || '[]');
+      orders.unshift(newOrder);
+      localStorage.setItem(LOCAL_ORDERS_KEY, JSON.stringify(orders));
+
+      // Reset cart
+      const emptyCart: Cart = {
+        items: [],
+        subtotal: 0,
+        discount: 0,
+        shippingFee: 0,
+        estimatedTax: 0,
+        total: 0,
+      };
+      localStorage.setItem(LOCAL_CART_KEY, JSON.stringify(emptyCart));
+
+      // Mock payment initiation
+      let paymentUrl: string | undefined;
+      if (['bkash', 'nagad', 'sslcommerz', 'stripe'].includes(data.paymentMethod)) {
+        paymentUrl = `/checkout/gateway?orderId=${orderId}&method=${data.paymentMethod}`;
+      }
+
+      return {
+        order: newOrder,
+        paymentUrl,
+        status: paymentUrl ? 'pending' : 'success'
+      };
+    }
+  },
+
+  // Verify Payment: GET /api/storefront/v1/checkout/verify/:orderId
+  verifyPayment: async (orderId: string): Promise<any> => {
+    try {
+      const res = await apiClient.get(`/checkout/verify/${orderId}`);
+      return res.data?.data || res.data;
+    } catch {
+      const orders = JSON.parse(localStorage.getItem(LOCAL_ORDERS_KEY) || '[]');
+      const order = orders.find((o: any) => o.id === orderId);
+      if (order) {
+        order.status = 'Paid';
+        localStorage.setItem(LOCAL_ORDERS_KEY, JSON.stringify(orders));
+        return { status: 'success', order };
+      }
+      return { status: 'failed' };
     }
   },
 
@@ -386,8 +727,106 @@ export const storefrontApi = {
           totalAmount: 302.39,
           trackingNumber: 'TRK-AURA-9920182',
           estimatedDeliveryDate: 'Aug 3, 2026',
+          returnStatus: 'Not Requested',
+          refundStatus: 'Processed',
+        },
+        {
+          id: 'ORD-112233',
+          createdAt: '2026-08-05T10:00:00Z',
+          status: 'Delivered',
+          items: [
+            {
+              productId: 'prod-2',
+              productName: 'Aura Pulse Ultra Titanium Smartwatch',
+              productImage: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80',
+              variantName: 'Raw Titanium',
+              quantity: 1,
+              unitPrice: 349.00,
+              totalPrice: 349.00,
+            },
+          ],
+          shippingAddress: {
+            fullName: 'Alex Miller',
+            email: 'alex@example.com',
+            phone: '+1 555-0192',
+            addressLine1: '100 Market Street',
+            city: 'San Francisco',
+            state: 'CA',
+            postalCode: '94105',
+            country: 'United States',
+          },
+          shippingMethod: 'Express Air (2 Days)',
+          paymentMethod: 'Credit Card (**** 4242)',
+          subtotal: 349.00,
+          discount: 0,
+          shippingFee: 0,
+          tax: 27.92,
+          totalAmount: 376.92,
+          trackingNumber: 'TRK-AURA-1122334',
+          estimatedDeliveryDate: 'Aug 7, 2026',
+          returnStatus: 'Pending',
+          refundStatus: 'None',
         },
       ];
+    }
+  },
+
+  // Get Single Order: GET /api/storefront/v1/orders/:id
+  getOrderById: async (id: string): Promise<Order | null> => {
+    try {
+      const res = await apiClient.get(`/orders/${id}`);
+      return res.data?.data || res.data;
+    } catch {
+      const orders = await storefrontApi.getOrders();
+      return orders.find(o => o.id === id) || null;
+    }
+  },
+
+  // Return Request: POST /api/storefront/v1/orders/:id/returns
+  requestReturn: async (orderId: string, data: any): Promise<ReturnRequest> => {
+    try {
+      const res = await apiClient.post(`/orders/${orderId}/returns`, data);
+      return res.data?.data || res.data;
+    } catch {
+      const returnRequest: ReturnRequest = {
+        id: `RET-${Math.floor(100000 + Math.random() * 900000)}`,
+        orderId,
+        items: data.items,
+        status: 'Pending',
+        createdAt: new Date().toISOString(),
+      };
+      
+      // Update order status in mock storage
+      const orders = JSON.parse(localStorage.getItem(LOCAL_ORDERS_KEY) || '[]');
+      const orderIdx = orders.findIndex((o: any) => o.id === orderId);
+      if (orderIdx >= 0) {
+        orders[orderIdx].returnStatus = 'Pending';
+        localStorage.setItem(LOCAL_ORDERS_KEY, JSON.stringify(orders));
+      }
+      
+      return returnRequest;
+    }
+  },
+
+  // Refund API: GET /api/storefront/v1/orders/:id/refunds
+  getRefundByOrderId: async (orderId: string): Promise<Refund | null> => {
+    try {
+      const res = await apiClient.get(`/orders/${orderId}/refunds`);
+      return res.data?.data || res.data;
+    } catch {
+      const orders = await storefrontApi.getOrders();
+      const order = orders.find(o => o.id === orderId);
+      if (!order || order.refundStatus === 'None') return null;
+
+      return {
+        id: `REF-${Math.floor(100000 + Math.random() * 900000)}`,
+        orderId,
+        amount: order.totalAmount,
+        status: order.refundStatus === 'Processed' ? 'Processed' : 'Pending',
+        provider: order.paymentMethod,
+        reason: 'Customer Request / Item Return',
+        createdAt: new Date().toISOString(),
+      };
     }
   },
 
@@ -395,7 +834,7 @@ export const storefrontApi = {
   getArticles: async (): Promise<BlogArticle[]> => {
     try {
       const res = await apiClient.get('/blog');
-      return res.data?.data || res.data;
+      return normalizeResponse(res, MOCK_BLOG_ARTICLES);
     } catch {
       return MOCK_BLOG_ARTICLES;
     }
@@ -404,9 +843,29 @@ export const storefrontApi = {
   getArticleBySlug: async (slug: string): Promise<BlogArticle | null> => {
     try {
       const res = await apiClient.get(`/blog/${slug}`);
-      return res.data?.data || res.data;
+      return normalizeResponse(res, null);
     } catch {
       return MOCK_BLOG_ARTICLES.find(a => a.slug === slug || a.id === slug) || null;
+    }
+  },
+
+  // CMS Pages API
+  getCMSPageBySlug: async (slug: string): Promise<CMSPage | null> => {
+    try {
+      const res = await apiClient.get(`/pages/${slug}`);
+      return normalizeResponse(res, null);
+    } catch {
+      return MOCK_CMS_PAGES.find(p => p.slug === slug) || null;
+    }
+  },
+
+  // FAQ API
+  getFAQs: async (): Promise<any[]> => {
+    try {
+      const res = await apiClient.get('/faq');
+      return normalizeResponse(res, MOCK_FAQ);
+    } catch {
+      return MOCK_FAQ;
     }
   },
 };
@@ -427,10 +886,12 @@ function calculateCartTotals(items: CartItem[], couponCode?: string): Cart {
     }
   }
 
-  const freeThreshold = MOCK_PUBLIC_SETTINGS.freeShippingThreshold;
-  const shippingFee = subtotal > 0 && subtotal < freeThreshold ? 12.00 : 0;
+  const freeThreshold = MOCK_PUBLIC_SETTINGS.shipping.freeShippingThreshold;
+  const flatRate = MOCK_PUBLIC_SETTINGS.shipping.flatRateShippingFee;
+  const shippingFee = subtotal > 0 && subtotal < freeThreshold ? flatRate : 0;
   const taxableAmount = Math.max(0, subtotal - discount);
-  const estimatedTax = taxableAmount * 0.08; // 8% sales tax
+  const taxRate = MOCK_PUBLIC_SETTINGS.tax.taxEnabled ? MOCK_PUBLIC_SETTINGS.tax.taxRate : 0;
+  const estimatedTax = taxableAmount * taxRate;
   const total = taxableAmount + shippingFee + estimatedTax;
 
   const cart: Cart = {

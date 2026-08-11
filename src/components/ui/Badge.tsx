@@ -30,15 +30,16 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const variantClasses = {
-    primary: 'bg-rose-600 text-white shadow-xs',
-    secondary: 'bg-slate-900 text-white shadow-xs',
+    primary: 'bg-primary text-white shadow-premium font-bold',
+    secondary: 'bg-slate-900 text-white shadow-premium font-bold',
+    accent: 'bg-accent text-white shadow-accent font-bold',
     success: 'bg-emerald-50 text-emerald-700 border border-emerald-200/80 font-bold',
     warning: 'bg-amber-50 text-amber-800 border border-amber-200/80 font-bold',
     error: 'bg-red-50 text-red-700 border border-red-200/80 font-bold',
     info: 'bg-sky-50 text-sky-700 border border-sky-200/80 font-bold',
-    outline: 'bg-white text-slate-700 border border-slate-200 font-bold',
-    deal: 'bg-amber-500 text-slate-950 font-black shadow-xs',
-    new: 'bg-slate-900 text-white font-black shadow-xs',
+    outline: 'bg-white text-slate-700 border border-border-default font-bold',
+    deal: 'bg-accent-muted text-accent border border-accent/20 font-black',
+    new: 'bg-primary text-white font-black shadow-premium',
   };
 
   return (

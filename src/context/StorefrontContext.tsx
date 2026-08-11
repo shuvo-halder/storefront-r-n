@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { 
   Product, 
   Cart, 
@@ -20,17 +21,38 @@ export type AppView =
   | 'checkout' 
   | 'account' 
   | 'orders' 
+  | 'order-details'
+  | 'return-request'
+  | 'faq'
   | 'blog' 
   | 'article-detail' 
   | 'cms-page' 
   | 'deals'
-  | 'order-confirmation';
+  | 'order-confirmation'
+  | 'checkout-success'
+  | 'checkout-failed'
+  | 'checkout-pending'
+  | 'checkout-gateway'
+  | 'login'
+  | 'register'
+  | 'forgot-password'
+  | 'reset-password'
+  | 'account'
+  | 'profile'
+  | 'addresses'
+  | 'wishlist'
+  | 'notifications'
+  | 'activity'
+  | 'search';
 
 export interface ViewParams {
   productSlug?: string;
   articleSlug?: string;
   cmsPageType?: 'shipping' | 'returns' | 'privacy' | 'terms' | 'faq' | 'contact' | 'about';
   confirmedOrder?: Order;
+  searchQuery?: string;
+  orderId?: string;
+  method?: string;
 }
 
 export interface ToastMessage {
@@ -50,6 +72,8 @@ const DEFAULT_FILTERS: ProductFilterState = {
   ratingMin: 0,
   inStockOnly: false,
   sortBy: 'featured',
+  page: 1,
+  pageSize: 9,
 };
 
 interface StorefrontContextType {
@@ -63,14 +87,9 @@ interface StorefrontContextType {
   categories: Category[];
   brands: Brand[];
   
-  // Cart
-  cart: Cart;
+  // UI State
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
-  addToCart: (productId: string, quantity?: number, variantId?: string) => Promise<void>;
-  updateCartQuantity: (itemId: string, qty: number) => Promise<void>;
-  removeCartItem: (itemId: string) => Promise<void>;
-  applyCoupon: (code: string) => Promise<void>;
   
   // Wishlist & Recently Viewed
   wishlist: string[]; // product IDs
@@ -88,13 +107,14 @@ interface StorefrontContextType {
   filters: ProductFilterState;
   setFilters: React.Dispatch<React.SetStateAction<ProductFilterState>>;
   resetFilters: () => void;
-  
-  // Auth
-  user: UserProfile | null;
+  searchHistory: string[];
+  addSearchHistory: (query: string) => void;
+  clearSearchHistory: () => void;
+  removeSearchHistoryItem: (query: string) => void;
+
+  // Auth UI state
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (open: boolean) => void;
-  loginUser: (email: string) => Promise<void>;
-  logoutUser: () => Promise<void>;
   
   // Checkout & Orders
   createCheckoutOrder: (payload: Omit<Order, 'id' | 'createdAt' | 'status'>) => Promise<Order>;
@@ -112,27 +132,21 @@ interface StorefrontContextType {
 
 const StorefrontContext = createContext<StorefrontContextType | undefined>(undefined);
 
+import { useSettings } from './SettingsContext';
+
 export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { settings: publicSettings } = useSettings();
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [viewParams, setViewParams] = useState<ViewParams>({});
   
-  const [publicSettings, setPublicSettings] = useState<PublicSettings | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
 
-  const [cart, setCart] = useState<Cart>({
-    items: [],
-    subtotal: 0,
-    discount: 0,
-    shippingFee: 0,
-    estimatedTax: 0,
-    total: 0,
-  });
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const [wishlist, setWishlist] = useState<string[]>(() => {
     try {
-      const saved = localStorage.getItem('auratech_wishlist');
+      const saved = localStorage.getItem('vyzobd_wishlist');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -141,22 +155,61 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const [recentlyViewed, setRecentlyViewed] = useState<string[]>(() => {
     try {
-      const saved = localStorage.getItem('auratech_recently_viewed');
+      const saved = localStorage.getItem('vyzobd_recently_viewed');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
     }
   });
 
+  const [searchHistory, setSearchHistory] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('vyzobd_search_history');
+      return saved ? JSON.parse(saved) : ['wireless headphones', 'smartwatch', 'gaming laptop', 'anc earphone'];
+    } catch {
+      return ['wireless headphones', 'smartwatch', 'gaming laptop', 'anc earphone'];
+    }
+  });
+
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [filters, setFilters] = useState<ProductFilterState>(DEFAULT_FILTERS);
   
-  const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [userOrders, setUserOrders] = useState<Order[]>([]);
   
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
+
+  const addSearchHistory = (q: string) => {
+    const trimmed = q.trim();
+    if (!trimmed) return;
+    setSearchHistory(prev => {
+      const filtered = prev.filter(item => item.toLowerCase() !== trimmed.toLowerCase());
+      const updated = [trimmed, ...filtered].slice(0, 10);
+      try {
+        localStorage.setItem('vyzobd_search_history', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const clearSearchHistory = () => {
+    setSearchHistory([]);
+    try {
+      localStorage.removeItem('vyzobd_search_history');
+    } catch {}
+  };
+
+  const removeSearchHistoryItem = (term: string) => {
+    setSearchHistory(prev => {
+      const updated = prev.filter(item => item !== term);
+      try {
+        localStorage.setItem('vyzobd_search_history', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
 
   // Sync hash state with URL
   const navigateTo = (view: AppView, params: ViewParams = {}) => {
@@ -164,10 +217,15 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
     setViewParams(params);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
+    if (view === 'search' && params.searchQuery) {
+      addSearchHistory(params.searchQuery);
+    }
+
     let hash = `#${view}`;
     if (params.productSlug) hash += `?product=${params.productSlug}`;
     else if (params.articleSlug) hash += `?article=${params.articleSlug}`;
     else if (params.cmsPageType) hash += `?page=${params.cmsPageType}`;
+    else if (params.searchQuery) hash += `?q=${encodeURIComponent(params.searchQuery)}`;
     
     try {
       window.history.pushState(null, '', hash);
@@ -194,20 +252,14 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
     const initData = async () => {
       setIsLoading(true);
       try {
-        const [settingsData, catsData, brandsData, cartData, userData, ordersData] = await Promise.all([
-          storefrontApi.getPublicSettings(),
+        const [catsData, brandsData, ordersData] = await Promise.all([
           storefrontApi.getCategories(),
           storefrontApi.getBrands(),
-          storefrontApi.getCart(),
-          storefrontApi.getCurrentUser(),
           storefrontApi.getOrders(),
         ]);
 
-        setPublicSettings(settingsData);
         setCategories(catsData);
         setBrands(brandsData);
-        setCart(cartData);
-        setUser(userData);
         setUserOrders(ordersData);
       } catch (err) {
         console.error('Initialization error:', err);
@@ -219,91 +271,63 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
     initData();
   }, []);
 
-  // Sync Hash changes from URL bar
+  // Sync Hash/URL changes from browser
   useEffect(() => {
-    const handleHashChange = () => {
+    const handleUrlChange = () => {
       const hash = window.location.hash.replace('#', '');
+      const pathname = window.location.pathname;
+      const search = window.location.search;
+
+      if (pathname === '/search' || hash.startsWith('search')) {
+        let q = '';
+        if (search) {
+          const searchParams = new URLSearchParams(search);
+          q = searchParams.get('q') || '';
+        }
+        if (!q && hash.includes('?')) {
+          const hashParams = new URLSearchParams(hash.split('?')[1]);
+          q = hashParams.get('q') || '';
+        }
+        setCurrentView('search');
+        setViewParams({ searchQuery: q });
+        if (q) addSearchHistory(q);
+        return;
+      }
+
       if (!hash) return;
       const [viewStr, queryStr] = hash.split('?');
-      if (['home', 'shop', 'product-detail', 'cart', 'checkout', 'account', 'orders', 'blog', 'article-detail', 'cms-page', 'deals'].includes(viewStr)) {
+      if (['home', 'shop', 'product-detail', 'cart', 'checkout', 'account', 'orders', 'blog', 'article-detail', 'cms-page', 'deals', 'search', 'login', 'register', 'forgot-password', 'profile', 'addresses', 'wishlist', 'notifications', 'activity', 'order-details', 'return-request', 'faq'].includes(viewStr)) {
         const params: ViewParams = {};
         if (queryStr) {
           const searchParams = new URLSearchParams(queryStr);
           if (searchParams.get('product')) params.productSlug = searchParams.get('product')!;
           if (searchParams.get('article')) params.articleSlug = searchParams.get('article')!;
           if (searchParams.get('page')) params.cmsPageType = searchParams.get('page') as any;
+          if (searchParams.get('q')) {
+            params.searchQuery = searchParams.get('q')!;
+            addSearchHistory(params.searchQuery);
+          }
         }
         setCurrentView(viewStr as AppView);
         setViewParams(params);
       }
     };
 
-    window.addEventListener('hashchange', handleHashChange);
-    handleHashChange();
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('hashchange', handleUrlChange);
+    window.addEventListener('popstate', handleUrlChange);
+    handleUrlChange();
+    return () => {
+      window.removeEventListener('hashchange', handleUrlChange);
+      window.removeEventListener('popstate', handleUrlChange);
+    };
   }, []);
-
-  // Cart actions
-  const addToCart = async (productId: string, quantity: number = 1, variantId?: string) => {
-    try {
-      const updatedCart = await storefrontApi.addToCart(productId, quantity, variantId);
-      setCart(updatedCart);
-      
-      const item = updatedCart.items.find(i => i.productId === productId);
-      if (item) {
-        addToast({
-          title: 'Added to Cart',
-          description: `${item.product.name} (x${quantity})`,
-          type: 'success',
-          image: item.product.images[0],
-        });
-      }
-      setIsCartOpen(true);
-    } catch (err: any) {
-      addToast({
-        title: 'Error adding item',
-        description: err.message || 'Could not add product to cart',
-        type: 'error',
-      });
-    }
-  };
-
-  const updateCartQuantity = async (itemId: string, qty: number) => {
-    try {
-      const updatedCart = await storefrontApi.updateCartItem(itemId, qty);
-      setCart(updatedCart);
-    } catch (err: any) {
-      addToast({ title: 'Cart update failed', description: err.message, type: 'error' });
-    }
-  };
-
-  const removeCartItem = async (itemId: string) => {
-    try {
-      const updatedCart = await storefrontApi.removeCartItem(itemId);
-      setCart(updatedCart);
-      addToast({ title: 'Item removed from cart', type: 'info' });
-    } catch (err: any) {
-      addToast({ title: 'Error removing item', description: err.message, type: 'error' });
-    }
-  };
-
-  const applyCoupon = async (code: string) => {
-    try {
-      const updatedCart = await storefrontApi.applyCoupon(code);
-      setCart(updatedCart);
-      addToast({ title: 'Coupon Applied!', description: `Discount code ${code.toUpperCase()} is active`, type: 'success' });
-    } catch (err: any) {
-      addToast({ title: 'Invalid Coupon', description: err.message, type: 'error' });
-      throw err;
-    }
-  };
 
   // Wishlist
   const toggleWishlist = (productId: string) => {
     setWishlist(prev => {
       const exists = prev.includes(productId);
       const updated = exists ? prev.filter(id => id !== productId) : [...prev, productId];
-      localStorage.setItem('auratech_wishlist', JSON.stringify(updated));
+      localStorage.setItem('vyzobd_wishlist', JSON.stringify(updated));
       
       addToast({
         title: exists ? 'Removed from Wishlist' : 'Saved to Wishlist',
@@ -320,7 +344,7 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
     setRecentlyViewed(prev => {
       const filtered = prev.filter(id => id !== productId);
       const updated = [productId, ...filtered].slice(0, 8);
-      localStorage.setItem('auratech_recently_viewed', JSON.stringify(updated));
+      localStorage.setItem('vyzobd_recently_viewed', JSON.stringify(updated));
       return updated;
     });
   };
@@ -332,33 +356,12 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
   // Reset filters
   const resetFilters = () => setFilters(DEFAULT_FILTERS);
 
-  // Auth
-  const loginUser = async (email: string) => {
-    try {
-      const { user: userData } = await storefrontApi.login(email);
-      setUser(userData);
-      setIsAuthModalOpen(false);
-      addToast({ title: 'Welcome back!', description: `Logged in as ${userData.email}`, type: 'success' });
-      refreshOrders();
-    } catch (err: any) {
-      addToast({ title: 'Login failed', description: err.message, type: 'error' });
-    }
-  };
-
-  const logoutUser = async () => {
-    await storefrontApi.logout();
-    setUser(null);
-    addToast({ title: 'Signed out', description: 'You have been logged out.', type: 'info' });
-    navigateTo('home');
-  };
-
   // Checkout
   const createCheckoutOrder = async (payload: Omit<Order, 'id' | 'createdAt' | 'status'>) => {
     const newOrder = await storefrontApi.checkout(payload);
     
-    // Refresh cart
-    const freshCart = await storefrontApi.getCart();
-    setCart(freshCart);
+    // Invalidate cart query to clear it in UI
+    queryClient.invalidateQueries({ queryKey: ['cart'] });
     refreshOrders();
 
     // Trigger celebration confetti
@@ -380,47 +383,59 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
     setUserOrders(orders);
   };
 
+  const contextValue = useMemo(() => ({
+    currentView,
+    viewParams,
+    navigateTo,
+    publicSettings,
+    categories,
+    brands,
+    isCartOpen,
+    setIsCartOpen,
+    wishlist,
+    toggleWishlist,
+    isInWishlist,
+    recentlyViewed,
+    trackRecentlyViewed,
+    quickViewProduct,
+    openQuickView,
+    closeQuickView,
+    filters,
+    setFilters,
+    resetFilters,
+    searchHistory,
+    addSearchHistory,
+    clearSearchHistory,
+    removeSearchHistoryItem,
+    isAuthModalOpen,
+    setIsAuthModalOpen,
+    createCheckoutOrder,
+    userOrders,
+    refreshOrders,
+    toasts,
+    addToast,
+    removeToast,
+    isLoading,
+  }), [
+    currentView,
+    viewParams,
+    publicSettings,
+    categories,
+    brands,
+    isCartOpen,
+    wishlist,
+    recentlyViewed,
+    quickViewProduct,
+    filters,
+    searchHistory,
+    isAuthModalOpen,
+    userOrders,
+    toasts,
+    isLoading
+  ]);
+
   return (
-    <StorefrontContext.Provider
-      value={{
-        currentView,
-        viewParams,
-        navigateTo,
-        publicSettings,
-        categories,
-        brands,
-        cart,
-        isCartOpen,
-        setIsCartOpen,
-        addToCart,
-        updateCartQuantity,
-        removeCartItem,
-        applyCoupon,
-        wishlist,
-        toggleWishlist,
-        isInWishlist,
-        recentlyViewed,
-        trackRecentlyViewed,
-        quickViewProduct,
-        openQuickView,
-        closeQuickView,
-        filters,
-        setFilters,
-        resetFilters,
-        user,
-        isAuthModalOpen,
-        setIsAuthModalOpen,
-        loginUser,
-        logoutUser,
-        createCheckoutOrder,
-        userOrders,
-        refreshOrders,
-        toasts,
-        addToast,
-        removeToast,
-        isLoading,
-      }}
-    >
+    <StorefrontContext.Provider value={contextValue}>
       {children}
     </StorefrontContext.Provider>
   );

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://ais-dev-y3sr6cgyjnc4jmfcjlybeh-129344856109.asia-southeast1.run.app/</loc>
+    <lastmod>2026-08-10</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://ais-dev-y3sr6cgyjnc4jmfcjlybeh-129344856109.asia-southeast1.run.app/#shop</loc>
+    <lastmod>2026-08-10</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ais-dev-y3sr6cgyjnc4jmfcjlybeh-129344856109.asia-southeast1.run.app/#blog</loc>
+    <lastmod>2026-08-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ais-dev-y3sr6cgyjnc4jmfcjlybeh-129344856109.asia-southeast1.run.app/#faq</loc>
+    <lastmod>2026-08-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+</urlset>

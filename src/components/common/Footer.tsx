@@ -32,118 +32,61 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-slate-900 text-slate-300 pt-16 pb-8 border-t border-slate-800">
+    <footer className="bg-[#101A25] text-slate-400 pt-20 pb-10">
       
-      {/* Trust Features Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 mb-12 border-b border-slate-800">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center flex-shrink-0">
-              <Truck size={24} />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white">Free Express Delivery</h4>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                On all orders over ${publicSettings?.freeShippingThreshold || 99}. Dispatched within 24h.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center flex-shrink-0">
-              <RotateCcw size={24} />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white">30-Day Money Back</h4>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Hassle-free returns & instant exchange policy on all gear.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center flex-shrink-0">
-              <ShieldCheck size={24} />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white">2-Year Official Warranty</h4>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Full hardware coverage & dedicated tech support specialists.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center flex-shrink-0">
-              <Headphones size={24} />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white">24/7 Expert Support</h4>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Get live help with device compatibility, setup, or order queries.
-              </p>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
       {/* Main Footer Links & Newsletter */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-800">
+      <div className="container-vyzobd grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 pb-16 border-b border-slate-800/60">
         
         {/* Col 1: Brand Info */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-8">
           <div 
             onClick={() => navigateTo('home')} 
-            className="cursor-pointer flex items-center gap-2.5"
+            className="cursor-pointer flex items-center group"
           >
-            <div className="w-9 h-9 rounded-xl bg-rose-600 flex items-center justify-center text-white font-black text-xl tracking-tight shadow-lg shadow-rose-600/30">
-              A
-            </div>
-            <div className="font-extrabold text-xl text-white tracking-tight">
-              AURA<span className="text-rose-500">TECH</span>
-            </div>
+            <img 
+              src="/logowhite.svg" 
+              alt="Vyzobd" 
+              className="h-9 w-auto object-contain"
+            />
           </div>
 
-          <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-            Engineers of next-generation audio equipment, GaN IV fast chargers, aerospace titanium wearables, and high-performance workstation peripherals.
+          <p className="text-sm text-slate-400 leading-relaxed max-w-sm font-medium">
+            {publicSettings?.seo.metaDescription || 'Engineers of next-generation audio equipment and high-performance workstation peripherals for the modern professional.'}
           </p>
 
-          <div className="space-y-2 text-xs text-slate-400 pt-2">
-            <div className="flex items-center gap-2.5">
-              <Phone size={14} className="text-rose-500" />
-              <span>{publicSettings?.supportPhone || '+1 (800) 555-2872'}</span>
+          <div className="space-y-4 text-[13px] font-bold text-slate-300 pt-2 uppercase tracking-widest">
+            <div className="flex items-center gap-3">
+              <Phone size={16} className="text-accent" />
+              <span>{publicSettings?.general.storePhone || '+880 1700 000000'}</span>
             </div>
-            <div className="flex items-center gap-2.5">
-              <Mail size={14} className="text-rose-500" />
-              <span>{publicSettings?.supportEmail || 'support@auratech.com'}</span>
+            <div className="flex items-center gap-3">
+              <Mail size={16} className="text-accent" />
+              <span className="lowercase">{publicSettings?.general.storeEmail || 'support@vyzobd.com'}</span>
             </div>
-            <div className="flex items-center gap-2.5">
-              <MapPin size={14} className="text-rose-500" />
-              <span>San Francisco HQ • 500 Howard St, Suite 400</span>
+            <div className="flex items-center gap-3">
+              <MapPin size={16} className="text-accent" />
+              <span className="capitalize">{publicSettings?.general.storeAddress || 'Dhaka, Bangladesh'}</span>
             </div>
           </div>
         </div>
 
-        {/* Col 2: Navigation Links */}
+        {/* Col 2: Shop */}
         <div>
-          <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4 border-l-2 border-rose-500 pl-2.5">
-            Storefront
+          <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em] mb-8">
+            Shop
           </h4>
-          <ul className="space-y-2.5 text-xs">
+          <ul className="space-y-4 text-xs font-bold uppercase tracking-widest">
             {[
               { label: 'All Products', view: 'shop' },
-              { label: 'Audio & Headphones', view: 'shop' },
-              { label: 'Smart Wearables', view: 'shop' },
-              { label: 'Power & Charging', view: 'shop' },
-              { label: 'Special Deals & Offers', view: 'deals' },
-              { label: 'Tech Blog & Articles', view: 'blog' },
+              { label: 'Featured Gear', view: 'shop' },
+              { label: 'New Arrivals', view: 'shop' },
+              { label: 'Best Sellers', view: 'shop' },
+              { label: 'Flash Deals', view: 'deals' },
             ].map((link, idx) => (
               <li key={idx}>
                 <button
                   onClick={() => navigateTo(link.view as any)}
-                  className="hover:text-rose-400 transition-colors text-slate-400"
+                  className="hover:text-accent transition-colors text-slate-400"
                 >
                   {link.label}
                 </button>
@@ -152,24 +95,23 @@ export const Footer: React.FC = () => {
           </ul>
         </div>
 
-        {/* Col 3: Customer Care & Policies */}
+        {/* Col 3: Customer Service */}
         <div>
-          <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4 border-l-2 border-rose-500 pl-2.5">
-            Customer Care
+          <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em] mb-8">
+            Service
           </h4>
-          <ul className="space-y-2.5 text-xs">
+          <ul className="space-y-4 text-xs font-bold uppercase tracking-widest">
             {[
-              { label: 'Shipping & Delivery Policy', view: 'cms-page', type: 'shipping' },
-              { label: 'Returns & Exchange', view: 'cms-page', type: 'returns' },
-              { label: 'Warranty Registration', view: 'cms-page', type: 'about' },
-              { label: 'Privacy & Data Terms', view: 'cms-page', type: 'privacy' },
-              { label: 'Terms of Service', view: 'cms-page', type: 'terms' },
-              { label: 'Help & FAQ', view: 'cms-page', type: 'faq' },
+              { label: 'Track Order', view: 'orders' },
+              { label: 'Shipping Info', view: 'cms-page', type: 'shipping-policy' },
+              { label: 'Returns & Refunds', view: 'cms-page', type: 'return-policy' },
+              { label: 'Warranty Claims', view: 'faq' },
+              { label: 'Help & Support', view: 'faq' },
             ].map((link, idx) => (
               <li key={idx}>
                 <button
-                  onClick={() => navigateTo(link.view as any, { cmsPageType: link.type as any })}
-                  className="hover:text-rose-400 transition-colors text-slate-400"
+                  onClick={() => navigateTo(link.view as any, link.type ? { cmsPageType: link.type as any } : {})}
+                  className="hover:text-accent transition-colors text-slate-400 text-left"
                 >
                   {link.label}
                 </button>
@@ -178,68 +120,46 @@ export const Footer: React.FC = () => {
           </ul>
         </div>
 
-        {/* Col 4: Newsletter */}
+        {/* Col 4: Information */}
         <div>
-          <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4 border-l-2 border-rose-500 pl-2.5">
-            Insider Newsletter
+          <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em] mb-8">
+            Information
           </h4>
-          <p className="text-xs text-slate-400 mb-3 leading-relaxed">
-            Subscribe to get early access to hardware drops and an instant 10% off coupon.
-          </p>
-
-          <form onSubmit={handleNewsletterSubmit} className="space-y-2">
-            <div className="relative">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                value={newsletterEmail}
-                onChange={(e) => setNewsletterEmail(e.target.value)}
-                required
-                className="w-full py-2.5 pl-3.5 pr-10 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500"
-              />
-              <button
-                type="submit"
-                className="absolute right-1 top-1 bottom-1 px-3 bg-rose-600 hover:bg-rose-500 text-white rounded-lg flex items-center justify-center transition-colors cursor-pointer"
-              >
-                <Send size={14} />
-              </button>
-            </div>
-            {subscribed && (
-              <div className="text-[11px] text-emerald-400 flex items-center gap-1 font-medium">
-                <CheckCircle2 size={12} />
-                <span>Coupon code sent to email!</span>
-              </div>
-            )}
-          </form>
-
-          <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center gap-2 text-[11px] text-slate-500">
-            <Lock size={12} className="text-rose-500" />
-            <span>256-bit SSL Encrypted Checkout</span>
-          </div>
+          <ul className="space-y-4 text-xs font-bold uppercase tracking-widest">
+            {[
+              { label: 'About Vyzobd', view: 'cms-page', type: 'about' },
+              { label: 'Our Story', view: 'cms-page', type: 'about' },
+              { label: 'Latest News', view: 'blog' },
+              { label: 'Terms of Service', view: 'cms-page', type: 'terms-and-conditions' },
+              { label: 'Privacy Policy', view: 'cms-page', type: 'privacy-policy' },
+            ].map((link, idx) => (
+              <li key={idx}>
+                <button
+                  onClick={() => navigateTo(link.view as any, link.type ? { cmsPageType: link.type as any } : {})}
+                  className="hover:text-accent transition-colors text-slate-400 text-left"
+                >
+                  {link.label}
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
 
       </div>
 
       {/* Bottom Copyright & Payment Icons */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div className="container-vyzobd pt-10 flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
         <div>
-          © {new Date().getFullYear()} {publicSettings?.siteName || 'AuraTech Storefront'}. All rights reserved. Designed for Next-Gen E-Commerce.
+          © {new Date().getFullYear()} Vyzobd. All rights reserved.
         </div>
 
         {/* Payment Badges */}
-        <div className="flex items-center gap-3">
-          <span className="px-2.5 py-1 bg-slate-800 rounded-md border border-slate-700 text-[10px] font-bold text-slate-300">
-            VISA
-          </span>
-          <span className="px-2.5 py-1 bg-slate-800 rounded-md border border-slate-700 text-[10px] font-bold text-slate-300">
-            MasterCard
-          </span>
-          <span className="px-2.5 py-1 bg-slate-800 rounded-md border border-slate-700 text-[10px] font-bold text-slate-300">
-            Apple Pay
-          </span>
-          <span className="px-2.5 py-1 bg-slate-800 rounded-md border border-slate-700 text-[10px] font-bold text-slate-300">
-            PayPal
-          </span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 text-slate-400 opacity-30 grayscale grayscale-100">
+             <span className="font-black italic">VISA</span>
+             <span className="font-black italic">MASTERCARD</span>
+             <span className="font-black italic">PAYPAL</span>
+          </div>
         </div>
       </div>
 

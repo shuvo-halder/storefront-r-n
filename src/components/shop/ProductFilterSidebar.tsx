@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStorefront } from '../../context/StorefrontContext';
-import { X, RotateCcw, Filter, Check, Star } from 'lucide-react';
+import { X, RotateCcw, Filter, Check, Star, Search } from 'lucide-react';
 
 interface FilterSidebarProps {
   onCloseMobile?: () => void;
@@ -9,8 +9,16 @@ interface FilterSidebarProps {
 export const ProductFilterSidebar: React.FC<FilterSidebarProps> = ({ onCloseMobile }) => {
   const { categories, brands, filters, setFilters, resetFilters } = useStorefront();
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilters(prev => ({ ...prev, searchQuery: e.target.value, page: 1 }));
+  };
+
   const handleCategorySelect = (slug: string | null) => {
-    setFilters(prev => ({ ...prev, categorySlug: prev.categorySlug === slug ? null : slug }));
+    setFilters(prev => ({ 
+      ...prev, 
+      categorySlug: prev.categorySlug === slug ? null : slug,
+      page: 1 
+    }));
   };
 
   const handleBrandToggle = (brandSlug: string) => {
@@ -19,8 +27,18 @@ export const ProductFilterSidebar: React.FC<FilterSidebarProps> = ({ onCloseMobi
       const updated = exists 
         ? prev.brandSlugs.filter(s => s !== brandSlug)
         : [...prev.brandSlugs, brandSlug];
-      return { ...prev, brandSlugs: updated };
+      return { ...prev, brandSlugs: updated, page: 1 };
     });
+  };
+
+  const handleMinPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = Number(e.target.value);
+    setFilters(prev => ({ ...prev, minPrice: val, page: 1 }));
+  };
+
+  const handleMaxPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = Number(e.target.value);
+    setFilters(prev => ({ ...prev, maxPrice: val, page: 1 }));
   };
 
   return (
@@ -29,28 +47,45 @@ export const ProductFilterSidebar: React.FC<FilterSidebarProps> = ({ onCloseMobi
       {/* Title & Reset Button */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-200">
         <div className="flex items-center gap-2 font-black text-sm uppercase tracking-wider text-slate-900">
-          <Filter size={16} className="text-rose-600" />
-          <span>Filter Products</span>
+          <Filter size={16} className="text-primary" />
+          <span>Filter Catalog</span>
         </div>
         <button
           onClick={resetFilters}
-          className="text-xs font-semibold text-rose-600 hover:text-rose-700 flex items-center gap-1 transition-colors cursor-pointer"
+          className="text-xs font-semibold text-primary hover:text-primary flex items-center gap-1 transition-colors cursor-pointer"
         >
           <RotateCcw size={12} />
           <span>Reset All</span>
         </button>
       </div>
 
-      {/* Category Filter */}
-      <div className="space-y-2">
+      {/* Quick Search inside Sidebar */}
+      <div className="space-y-1.5">
         <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
-          Department
+          Search Hardware
+        </h4>
+        <div className="relative">
+          <input
+            type="text"
+            value={filters.searchQuery}
+            onChange={handleSearchChange}
+            placeholder="Search audio, watches, chargers..."
+            className="w-full py-2 pl-8 pr-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-primary focus:bg-white transition-colors"
+          />
+          <Search size={14} className="text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+        </div>
+      </div>
+
+      {/* Category Filter */}
+      <div className="space-y-2 pt-3 border-t border-slate-100">
+        <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+          Category / Department
         </h4>
         <div className="space-y-1">
           <button
             onClick={() => handleCategorySelect(null)}
             className={`w-full text-left py-1.5 px-2.5 rounded-lg text-xs font-semibold transition-colors flex items-center justify-between cursor-pointer ${
-              filters.categorySlug === null ? 'bg-rose-50 text-rose-600 font-bold' : 'hover:bg-slate-100 text-slate-700'
+              filters.categorySlug === null ? 'bg-primary/5 text-primary font-bold' : 'hover:bg-slate-100 text-slate-700'
             }`}
           >
             <span>All Departments</span>
@@ -64,7 +99,7 @@ export const ProductFilterSidebar: React.FC<FilterSidebarProps> = ({ onCloseMobi
                 key={cat.id}
                 onClick={() => handleCategorySelect(cat.slug)}
                 className={`w-full text-left py-1.5 px-2.5 rounded-lg text-xs font-medium transition-colors flex items-center justify-between cursor-pointer ${
-                  isSelected ? 'bg-rose-50 text-rose-600 font-bold' : 'hover:bg-slate-100 text-slate-700'
+                  isSelected ? 'bg-primary/5 text-primary font-bold' : 'hover:bg-slate-100 text-slate-700'
                 }`}
               >
                 <span>{cat.name}</span>
@@ -94,9 +129,9 @@ export const ProductFilterSidebar: React.FC<FilterSidebarProps> = ({ onCloseMobi
                   type="checkbox"
                   checked={isChecked}
                   onChange={() => handleBrandToggle(b.slug)}
-                  className="w-4 h-4 rounded-md text-rose-600 focus:ring-rose-500 border-slate-300"
+                  className="w-4 h-4 rounded-md text-primary focus:ring-primary border-slate-300"
                 />
-                <span className={isChecked ? 'font-bold text-rose-600' : 'font-medium'}>
+                <span className={isChecked ? 'font-bold text-primary' : 'font-medium'}>
                   {b.name}
                 </span>
               </label>
@@ -105,29 +140,49 @@ export const ProductFilterSidebar: React.FC<FilterSidebarProps> = ({ onCloseMobi
         </div>
       </div>
 
-      {/* Price Range Slider */}
+      {/* Price Range Controls */}
       <div className="space-y-3 pt-3 border-t border-slate-100">
         <div className="flex items-center justify-between text-xs font-extrabold uppercase tracking-wider text-slate-400">
-          <span>Max Price</span>
-          <span className="text-rose-600 font-mono font-bold text-sm">
-            ${filters.maxPrice}
+          <span>Price Range</span>
+          <span className="text-primary font-mono font-bold text-xs">
+            ${filters.minPrice} - ${filters.maxPrice}
           </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-[10px] font-bold text-slate-400 block mb-1">Min ($)</label>
+            <input
+              type="number"
+              min={0}
+              max={filters.maxPrice}
+              value={filters.minPrice}
+              onChange={handleMinPriceChange}
+              className="w-full py-1.5 px-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-bold focus:outline-none focus:border-primary"
+            />
+          </div>
+          <div>
+            <label className="text-[10px] font-bold text-slate-400 block mb-1">Max ($)</label>
+            <input
+              type="number"
+              min={filters.minPrice}
+              max={2000}
+              value={filters.maxPrice}
+              onChange={handleMaxPriceChange}
+              className="w-full py-1.5 px-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-bold focus:outline-none focus:border-primary"
+            />
+          </div>
         </div>
 
         <input
           type="range"
-          min={50}
+          min={0}
           max={1000}
           step={25}
           value={filters.maxPrice}
-          onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: Number(e.target.value) }))}
-          className="w-full accent-rose-600 cursor-pointer"
+          onChange={handleMaxPriceChange}
+          className="w-full accent-primary cursor-pointer"
         />
-
-        <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
-          <span>$50</span>
-          <span>$1,000+</span>
-        </div>
       </div>
 
       {/* Minimum Rating Filter */}
@@ -141,9 +196,9 @@ export const ProductFilterSidebar: React.FC<FilterSidebarProps> = ({ onCloseMobi
             return (
               <button
                 key={rate}
-                onClick={() => setFilters(prev => ({ ...prev, ratingMin: prev.ratingMin === rate ? 0 : rate }))}
+                onClick={() => setFilters(prev => ({ ...prev, ratingMin: prev.ratingMin === rate ? 0 : rate, page: 1 }))}
                 className={`w-full text-left py-1.5 px-2.5 rounded-lg text-xs font-medium transition-colors flex items-center justify-between cursor-pointer ${
-                  isSelected ? 'bg-rose-50 text-rose-600 font-bold' : 'hover:bg-slate-100 text-slate-700'
+                  isSelected ? 'bg-primary/5 text-primary font-bold' : 'hover:bg-slate-100 text-slate-700'
                 }`}
               >
                 <div className="flex items-center gap-1.5">
@@ -157,15 +212,15 @@ export const ProductFilterSidebar: React.FC<FilterSidebarProps> = ({ onCloseMobi
         </div>
       </div>
 
-      {/* In Stock Only Toggle */}
+      {/* Availability / In Stock Toggle */}
       <div className="pt-3 border-t border-slate-100">
         <label className="flex items-center justify-between text-xs font-bold text-slate-800 cursor-pointer">
-          <span>In Stock Items Only</span>
+          <span>In Stock Only</span>
           <input
             type="checkbox"
             checked={filters.inStockOnly}
-            onChange={(e) => setFilters(prev => ({ ...prev, inStockOnly: e.target.checked }))}
-            className="w-4 h-4 rounded-md text-rose-600 focus:ring-rose-500 border-slate-300"
+            onChange={(e) => setFilters(prev => ({ ...prev, inStockOnly: e.target.checked, page: 1 }))}
+            className="w-4 h-4 rounded-md text-primary focus:ring-primary border-slate-300 cursor-pointer"
           />
         </label>
       </div>

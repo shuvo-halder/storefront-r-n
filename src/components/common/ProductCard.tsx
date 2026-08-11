@@ -1,39 +1,53 @@
 import React from 'react';
 import { Product } from '../../types/storefront';
 import { useStorefront } from '../../context/StorefrontContext';
+import { useCart } from '../../hooks/useCart';
 import { RatingStars } from './RatingStars';
-import { Heart, Eye, ShoppingCart, Sparkles, Zap } from 'lucide-react';
+import { Heart, Eye, ShoppingCart, Sparkles, Zap, Loader2 } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
   viewMode?: 'grid' | 'list';
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ 
+export const ProductCard = React.memo(({ 
   product, 
   viewMode = 'grid' 
-}) => {
+}: ProductCardProps) => {
   const { 
-    addToCart, 
     toggleWishlist, 
     isInWishlist, 
     openQuickView, 
     navigateTo 
   } = useStorefront();
 
+  const { addToCart, isAddingToCart } = useCart();
+
   const inWishlist = isInWishlist(product.id);
   const secondImage = product.images[1] || product.images[0];
+
+  const [isLocalAdding, setIsLocalAdding] = React.useState(false);
 
   const handleCardClick = () => {
     navigateTo('product-detail', { productSlug: product.slug });
   };
 
+  const onAddToCart = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsLocalAdding(true);
+    try {
+      await addToCart({ productId: product.id, quantity: 1 });
+    } finally {
+      setIsLocalAdding(false);
+    }
+  };
+
   if (viewMode === 'list') {
     return (
-      <div className="group bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs hover:shadow-xl hover:border-rose-200 transition-all duration-300 flex flex-col sm:flex-row items-stretch gap-5 relative overflow-hidden">
+      <div className="group bg-white border border-border-default rounded-[2rem] p-5 shadow-premium hover:shadow-xl hover:border-accent/20 transition-all duration-300 flex flex-col sm:flex-row items-stretch gap-6 relative overflow-hidden">
         {/* Badges */}
         {product.discountPercent && (
-          <div className="absolute top-3 left-3 bg-rose-600 text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow-xs z-10">
+          <div className="absolute top-4 left-4 bg-accent text-white font-black text-[10px] px-3 py-1 rounded-full shadow-accent z-10">
             -{product.discountPercent}%
           </div>
         )}
@@ -41,20 +55,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Thumbnail */}
         <div 
           onClick={handleCardClick}
-          className="w-full sm:w-48 h-48 bg-slate-50 border border-slate-100 rounded-xl overflow-hidden relative flex-shrink-0 cursor-pointer"
+          className="w-full sm:w-56 h-56 bg-surface rounded-2xl overflow-hidden relative flex-shrink-0 cursor-pointer"
         >
           <img 
             src={product.images[0]} 
             alt={product.name} 
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
           />
         </div>
 
         {/* Info */}
-        <div className="flex-1 flex flex-col justify-between space-y-3">
+        <div className="flex-1 flex flex-col justify-between py-1">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600">
+              <span className="text-[11px] font-bold uppercase tracking-widest text-accent">
                 {product.brand}
               </span>
               <RatingStars rating={product.rating} count={product.reviewCount} />
@@ -62,23 +78,23 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
             <h3 
               onClick={handleCardClick}
-              className="font-bold text-base text-slate-900 group-hover:text-rose-600 transition-colors cursor-pointer mt-1"
+              className="font-display font-bold text-xl text-primary group-hover:text-accent transition-colors cursor-pointer mt-2"
             >
               {product.name}
             </h3>
 
-            <p className="text-xs text-slate-500 line-clamp-2 mt-1.5 leading-relaxed">
+            <p className="text-sm text-slate-500 line-clamp-2 mt-2 leading-relaxed">
               {product.description}
             </p>
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+          <div className="flex items-center justify-between pt-4 border-t border-border-default mt-4">
             <div className="flex items-baseline gap-2">
-              <span className="text-xl font-extrabold text-slate-900">
+              <span className="text-2xl font-black text-primary">
                 ${product.price.toFixed(2)}
               </span>
               {product.compareAtPrice && (
-                <span className="text-xs text-slate-400 line-through">
+                <span className="text-sm text-slate-400 line-through">
                   ${product.compareAtPrice.toFixed(2)}
                 </span>
               )}
@@ -87,26 +103,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => openQuickView(product)}
-                className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                className="p-3 bg-surface hover:bg-slate-200 text-primary rounded-xl transition-colors cursor-pointer"
                 title="Quick View"
               >
-                <Eye size={16} />
+                <Eye size={18} />
               </button>
               <button
                 onClick={() => toggleWishlist(product.id)}
-                className={`p-2.5 rounded-xl border transition-colors cursor-pointer ${
-                  inWishlist ? 'bg-rose-50 border-rose-200 text-rose-600' : 'bg-slate-100 border-transparent text-slate-600 hover:text-rose-600'
+                className={`p-3 rounded-xl border transition-all cursor-pointer ${
+                  inWishlist ? 'bg-accent-muted border-accent/20 text-accent' : 'bg-surface border-transparent text-slate-600 hover:text-accent'
                 }`}
                 title="Wishlist"
               >
-                <Heart size={16} fill={inWishlist ? '#e11d48' : 'none'} />
+                <Heart size={18} fill={inWishlist ? '#DC2B53' : 'none'} />
               </button>
               <button
-                onClick={() => addToCart(product.id, 1)}
-                className="py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+                onClick={onAddToCart}
+                disabled={isLocalAdding || isAddingToCart}
+                className="py-3 px-6 bg-primary hover:bg-accent text-white font-bold text-sm rounded-xl shadow-premium transition-all flex items-center gap-2 cursor-pointer disabled:opacity-70"
               >
-                <ShoppingCart size={15} />
-                <span>Add to Cart</span>
+                {isLocalAdding ? <Loader2 size={16} className="animate-spin" /> : <ShoppingCart size={16} />}
+                <span>{isLocalAdding ? 'Adding...' : 'Add to Cart'}</span>
               </button>
             </div>
           </div>
@@ -116,23 +133,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   }
 
   return (
-    <div className="group bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-xs hover:shadow-xl hover:border-rose-200/90 transition-all duration-300 flex flex-col justify-between relative overflow-hidden">
+    <div className="group bg-white border border-slate-100 rounded-[2rem] p-4 shadow-premium hover:shadow-2xl hover:border-accent/10 transition-all duration-500 flex flex-col justify-between relative overflow-hidden">
       
       {/* Badges Top Left */}
-      <div className="absolute top-3.5 left-3.5 z-10 flex flex-col gap-1 items-start">
+      <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5 items-start">
         {product.discountPercent && (
-          <span className="bg-rose-600 text-white font-extrabold text-[10px] px-2.5 py-0.5 rounded-full shadow-xs">
-            -{product.discountPercent}% OFF
+          <span className="bg-accent text-white font-black text-[9px] px-3 py-1 rounded-full shadow-lg shadow-accent/20 tracking-widest uppercase">
+            -{product.discountPercent}%
           </span>
         )}
         {product.isNew && (
-          <span className="bg-slate-900 text-white font-bold text-[9px] uppercase px-2 py-0.5 rounded-full shadow-xs">
+          <span className="bg-[#101A25] text-white font-black text-[9px] uppercase px-3 py-1 rounded-full shadow-lg tracking-widest">
             NEW
-          </span>
-        )}
-        {product.isDealOfDay && (
-          <span className="bg-amber-500 text-slate-950 font-extrabold text-[9px] uppercase px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
-            <Zap size={10} /> DEAL
           </span>
         )}
       </div>
@@ -140,58 +152,62 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       {/* Wishlist Button Top Right */}
       <button
         onClick={() => toggleWishlist(product.id)}
-        className={`absolute top-3.5 right-3.5 z-10 p-2 rounded-full backdrop-blur-xs transition-all shadow-xs cursor-pointer ${
+        className={`absolute top-4 right-4 z-10 p-2.5 rounded-full backdrop-blur-md transition-all shadow-premium cursor-pointer ${
           inWishlist 
-            ? 'bg-white/90 text-rose-600 shadow-md scale-110' 
-            : 'bg-white/80 text-slate-400 hover:text-rose-600 hover:bg-white'
+            ? 'bg-white/90 text-accent shadow-accent scale-110' 
+            : 'bg-white/80 text-slate-400 hover:text-accent hover:bg-white'
         }`}
         aria-label="Wishlist"
       >
-        <Heart size={16} fill={inWishlist ? '#e11d48' : 'none'} />
+        <Heart size={18} fill={inWishlist ? '#DC2B53' : 'none'} />
       </button>
 
       {/* Image Gallery Stage with Quick View Overlay */}
       <div 
         onClick={handleCardClick}
-        className="relative aspect-square bg-slate-50 rounded-xl overflow-hidden cursor-pointer group/img mb-3"
+        className="relative aspect-square bg-surface rounded-2xl overflow-hidden cursor-pointer group/img mb-4"
       >
         <img 
           src={product.images[0]} 
           alt={product.name} 
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover transition-opacity duration-300 group-hover/img:opacity-0" 
         />
         <img 
           src={secondImage} 
           alt={product.name} 
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover absolute inset-0 opacity-0 transition-opacity duration-300 group-hover/img:opacity-100 group-hover/img:scale-105" 
         />
 
         {/* Quick View Hover Trigger */}
-        <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-y-2 group-hover:translate-y-0">
+        <div className="absolute inset-x-4 bottom-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
           <button
             onClick={(e) => {
               e.stopPropagation();
               openQuickView(product);
             }}
-            className="w-full py-2 px-3 bg-white/95 hover:bg-white text-slate-900 font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-colors cursor-pointer backdrop-blur-xs"
+            className="w-full py-3 px-4 bg-white/95 hover:bg-white text-primary font-bold text-xs rounded-xl shadow-xl flex items-center justify-center gap-2 transition-colors cursor-pointer backdrop-blur-md"
           >
-            <Eye size={14} className="text-rose-600" />
+            <Eye size={16} className="text-accent" />
             <span>Quick View</span>
           </button>
         </div>
       </div>
 
       {/* Product Information */}
-      <div className="space-y-1.5 flex-1 flex flex-col justify-between">
+      <div className="space-y-2 flex-1 flex flex-col justify-between">
         <div>
           <div className="flex items-center justify-between text-[11px] font-bold text-slate-400">
-            <span className="text-rose-600 uppercase tracking-wider">{product.brand}</span>
+            <span className="text-accent uppercase tracking-widest">{product.brand}</span>
             <RatingStars rating={product.rating} count={product.reviewCount} showNumber={false} />
           </div>
 
           <h3 
             onClick={handleCardClick}
-            className="font-bold text-xs sm:text-sm text-slate-900 group-hover:text-rose-600 transition-colors cursor-pointer line-clamp-2 mt-1 leading-snug"
+            className="font-bold text-sm sm:text-base text-primary group-hover:text-accent transition-colors cursor-pointer line-clamp-2 mt-1.5 leading-snug"
           >
             {product.name}
           </h3>
@@ -199,17 +215,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
         {/* Color variants indication */}
         {product.variants && (
-          <div className="flex items-center gap-1 pt-1">
+          <div className="flex items-center gap-1.5 pt-1">
             {product.variants.slice(0, 3).map((v) => (
               <span 
                 key={v.id} 
-                className="w-2.5 h-2.5 rounded-full border border-slate-300 shadow-xs" 
+                className="w-3 h-3 rounded-full border border-border-default shadow-sm" 
                 style={{ backgroundColor: v.colorHex || '#94a3b8' }} 
                 title={v.name}
               />
             ))}
             {product.variants.length > 3 && (
-              <span className="text-[10px] text-slate-400 font-semibold pl-0.5">
+              <span className="text-[10px] text-slate-400 font-bold pl-0.5">
                 +{product.variants.length - 3}
               </span>
             )}
@@ -217,29 +233,29 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         )}
 
         {/* Price and Cart Row */}
-        <div className="pt-2 flex items-center justify-between mt-auto">
-          <div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-sm sm:text-base font-extrabold text-slate-900">
-                ${product.price.toFixed(2)}
+        <div className="pt-4 flex items-center justify-between mt-auto border-t border-slate-50">
+          <div className="flex flex-col">
+            {product.compareAtPrice && (
+              <span className="text-[10px] text-slate-400 line-through font-bold">
+                ${product.compareAtPrice.toFixed(2)}
               </span>
-              {product.compareAtPrice && (
-                <span className="text-[11px] text-slate-400 line-through">
-                  ${product.compareAtPrice.toFixed(2)}
-                </span>
-              )}
-            </div>
-            <div className="text-[10px] font-semibold text-emerald-600">
-              {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
-            </div>
+            )}
+            <span className="text-lg font-display font-black text-[#101A25]">
+              ${product.price.toFixed(2)}
+            </span>
           </div>
 
           <button
-            onClick={() => addToCart(product.id, 1)}
-            className="p-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer group/btn"
+            onClick={onAddToCart}
+            disabled={isLocalAdding || isAddingToCart}
+            className="w-10 h-10 bg-[#101A25] hover:bg-accent text-white rounded-xl shadow-xl transition-all cursor-pointer group/btn disabled:opacity-70 flex items-center justify-center"
             title="Add to Cart"
           >
-            <ShoppingCart size={16} className="group-hover/btn:scale-110 transition-transform" />
+            {isLocalAdding ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <ShoppingCart size={16} className="group-hover/btn:scale-110 transition-transform" />
+            )}
           </button>
         </div>
 
@@ -247,4 +263,4 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
     </div>
   );
-};
+});

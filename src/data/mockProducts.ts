@@ -1,14 +1,46 @@
-import { Product, Category, Brand, BlogArticle, PublicSettings } from '../types/storefront';
+import { Product, Category, Brand, BlogArticle, PublicSettings, Banner } from '../types/storefront';
 
 export const MOCK_PUBLIC_SETTINGS: PublicSettings = {
-  siteName: 'AuraTech Storefront',
-  siteTitle: 'AuraTech | Premium Next-Gen Electronics & Audio',
+  branding: {
+    logoUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&auto=format&fit=crop&q=80',
+    logoDarkUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&auto=format&fit=crop&q=80',
+    faviconUrl: '/favicon.ico',
+    primaryColor: '#e11d48',
+    secondaryColor: '#0f172a',
+  },
+  seo: {
+    metaTitle: 'Vyzobd | Premium Next-Gen Electronics & Audio',
+    metaDescription: 'Shop the future of minimalist hardware. High-fidelity spatial audio, active noise cancelling headphones, and aerospace-grade smartwatches.',
+    ogImageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1200&auto=format&fit=crop&q=80',
+    twitterHandle: '@vyzobd',
+  },
+  shipping: {
+    freeShippingThreshold: 99,
+    flatRateShippingFee: 12,
+    estimatedDeliveryDays: '2-5 Business Days',
+  },
+  tax: {
+    taxEnabled: true,
+    taxRate: 0.08,
+    pricesIncludeTax: false,
+  },
+  general: {
+    siteName: 'Vyzobd Storefront',
+    siteTitle: 'Vyzobd | Precision Engineering. Minimalist Soul.',
+    currency: 'USD',
+    currencySymbol: '$',
+    storePhone: '+1 (800) 555-2872',
+    storeEmail: 'support@vyzobd.com',
+    storeAddress: '100 Market Street, San Francisco, CA 94105',
+  },
+  siteName: 'Vyzobd Storefront',
+  siteTitle: 'Vyzobd | Premium Next-Gen Electronics & Audio',
   logoUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&auto=format&fit=crop&q=80',
   faviconUrl: '/favicon.ico',
   currency: 'USD',
   currencySymbol: '$',
   freeShippingThreshold: 99,
-  supportEmail: 'support@auratech.com',
+  supportEmail: 'support@vyzobd.com',
   supportPhone: '+1 (800) 555-2872',
   announcementBanner: {
     enabled: true,
@@ -97,8 +129,8 @@ export const MOCK_CATEGORIES: Category[] = [
 export const MOCK_BRANDS: Brand[] = [
   {
     id: 'b-1',
-    slug: 'auratech',
-    name: 'AuraTech Studio',
+    slug: 'vyzobd',
+    name: 'Vyzobd Studio',
     logo: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80',
     description: 'Engineering cutting-edge acoustics, wireless charging, and ergonomic peripherals.',
     featuredProductCount: 18,
@@ -135,7 +167,7 @@ export const MOCK_PRODUCTS: Product[] = [
     slug: 'aura-studio-pro-wireless-anc-headphones',
     name: 'Aura Studio Pro ANC Wireless Headphones',
     subtitle: 'Spatial Audio with Head Tracking & 65-Hour Battery',
-    brand: 'AuraTech Studio',
+    brand: 'Vyzobd Studio',
     brandId: 'b-1',
     category: 'Audio & Headphones',
     categoryId: 'cat-1',
@@ -204,7 +236,7 @@ export const MOCK_PRODUCTS: Product[] = [
     slug: 'aura-pulse-ultra-titanium-smartwatch',
     name: 'Aura Pulse Ultra Titanium Smartwatch',
     subtitle: '1.95" Dual-Layer AMOLED, Multi-Band GPS & ECG Tracking',
-    brand: 'AuraTech Studio',
+    brand: 'Vyzobd Studio',
     brandId: 'b-1',
     category: 'Smart Wearables',
     categoryId: 'cat-2',
@@ -341,7 +373,7 @@ export const MOCK_PRODUCTS: Product[] = [
     slug: 'aura-clarity-4k-pro-webcam-ringlight',
     name: 'Aura Clarity 4K HDR Studio Webcam',
     subtitle: 'Sony STARVIS 2 Sensor, AI Auto-Framing & Dual Studio Mics',
-    brand: 'AuraTech Studio',
+    brand: 'Vyzobd Studio',
     brandId: 'b-1',
     category: 'Gaming & Studio Gear',
     categoryId: 'cat-5',
@@ -415,7 +447,7 @@ export const MOCK_PRODUCTS: Product[] = [
     slug: 'aura-hub-12in1-thunderbolt4-dock',
     name: 'Aura Thunderbolt 4 Studio Hub 12-in-1',
     subtitle: 'Dual 4K 120Hz Output, 2.5G Ethernet, 85W Host Power',
-    brand: 'AuraTech Studio',
+    brand: 'Vyzobd Studio',
     brandId: 'b-1',
     category: 'Laptops & Workstations',
     categoryId: 'cat-3',
@@ -499,6 +531,7 @@ In this deep dive, we test how Aura Studio Pro ANC handles complex soundscapesâ€
     readTime: '5 min read',
     category: 'Acoustic Engineering',
     tags: ['Audio', 'Headphones', 'Tech Explained'],
+    relatedArticleSlugs: ['gan-charging-revolution-explained']
   },
   {
     id: 'art-2',
@@ -517,6 +550,7 @@ Here are the four pillars of a modern pro workstation:
     readTime: '7 min read',
     category: 'Workspace Inspiration',
     tags: ['Desk Setup', 'Productivity', 'Workstation'],
+    relatedArticleSlugs: ['active-noise-cancellation-30-explained']
   },
   {
     id: 'art-3',
@@ -532,7 +566,113 @@ The result? Chargers like the Aura Boost 100W can safely power a laptop, phone, 
     readTime: '4 min read',
     category: 'Power Innovations',
     tags: ['GaN', 'Charging', 'Hardware'],
+    relatedArticleSlugs: ['desk-setup-guide-productivity-2026']
   },
+];
+
+export const MOCK_CMS_PAGES: any[] = [
+  {
+    id: 'cms-1',
+    slug: 'about-us',
+    title: 'Precision Engineering. Minimalist Soul.',
+    content: `Founded in 2024, Vyzobd was born from a simple frustration: why does high-performance hardware have to be so cluttered?
+
+We believe that the tools you use every day should be as beautiful as they are functional. Our design philosophy, "Precision Engineering, Minimalist Soul," guides every product we createâ€”from the internal acoustic chambers of our headphones to the aerospace-grade titanium in our watches.
+
+Based in San Francisco, our team of engineers and designers obsess over the details that others ignore. We don't just build electronics; we build the future of your workspace.`,
+    lastUpdated: '2026-08-01',
+    metaTitle: 'About Vyzobd | The Future of Minimalist Hardware',
+    metaDescription: 'Learn about the Vyzobd story and our commitment to precision engineering and minimalist design.'
+  },
+  {
+    id: 'cms-2',
+    slug: 'privacy-policy',
+    title: 'Your Privacy Matters',
+    content: `At Vyzobd, we value your trust more than your data. This Privacy Policy outlines how we collect, use, and protect your information.
+
+1. **Data Minimization**: We only collect the information necessary to fulfill your orders and provide support.
+2. **No Third-Party Selling**: We never sell your personal information to advertisers or data brokers.
+3. **Encryption**: All transaction data is encrypted using industry-standard AES-256 protocols.
+4. **Cookie Transparency**: We use cookies only for essential site functions and basic analytics to improve your experience.`,
+    lastUpdated: '2026-07-15',
+    metaTitle: 'Privacy Policy | Vyzobd'
+  },
+  {
+    id: 'cms-3',
+    slug: 'terms-and-conditions',
+    title: 'Terms and Conditions',
+    content: `By using the Vyzobd storefront, you agree to the following terms:
+
+1. **Ordering**: Orders are subject to availability and confirmation of the order price.
+2. **Shipping**: Delivery times are estimates. We are not responsible for delays caused by customs or carrier issues.
+3. **Warranty**: Most hardware includes a 2-year AuraCare warranty against manufacturing defects.
+4. **Intellectual Property**: All site content, designs, and logos are property of Vyzobd Corp.`,
+    lastUpdated: '2026-07-15',
+    metaTitle: 'Terms of Service | Vyzobd'
+  },
+  {
+    id: 'cms-5',
+    slug: 'shipping-policy',
+    title: 'Shipping & Delivery Policy',
+    content: `We strive to get your gear to you as fast as possible.
+
+**Processing Times**: All orders placed before 2:00 PM PST are processed and dispatched on the same business day.
+
+**Shipping Methods**:
+- **Standard Express**: 2-3 Business Days. Free on orders over $99.
+- **Priority Overnight**: 1 Business Day. $18.00 flat rate.
+
+**Tracking**: Once your order ships, you will receive a tracking number via email and your account dashboard.`,
+    lastUpdated: '2026-08-01',
+  },
+  {
+    id: 'cms-6',
+    slug: 'return-policy',
+    title: 'Returns & Exchanges',
+    content: `Not satisfied with your purchase? We offer a 30-day money-back guarantee.
+
+**How to Return**:
+1. Go to your Orders page in your account.
+2. Select the order you wish to return.
+3. Click "Request Return" and follow the instructions.
+
+**Refunds**: Once we receive and inspect your item, we will process your refund within 3-5 business days. The refund will be credited to your original payment method.`,
+    lastUpdated: '2026-08-01',
+  },
+  {
+    id: 'cms-4',
+    slug: 'contact-us',
+    title: 'Get in Touch',
+    content: `We're here to help you build your perfect setup. Whether you have a question about a product or need support with an existing order, our team is ready.`,
+    lastUpdated: '2026-08-10',
+  }
+];
+
+export const MOCK_FAQ = [
+  {
+    id: 'faq-1',
+    question: 'How long is the AuraCare warranty?',
+    answer: 'Every hardware purchase includes 2 years of AuraCare Warranty, covering manufacturing defects and battery health. You can extend this to 4 years during checkout.',
+    category: 'Warranty & Support'
+  },
+  {
+    id: 'faq-2',
+    question: 'Do you ship internationally?',
+    answer: 'Yes, we ship to over 50 countries worldwide. International shipping usually takes 5-7 business days depending on customs clearance.',
+    category: 'Shipping'
+  },
+  {
+    id: 'faq-3',
+    question: 'What is your return policy?',
+    answer: 'We offer a 30-day, no-questions-asked return policy. Items must be in their original packaging and condition.',
+    category: 'Returns'
+  },
+  {
+    id: 'faq-4',
+    question: 'Are Aura Pulse watches compatible with Android?',
+    answer: 'Yes, Aura Pulse watches are fully compatible with both iOS 15+ and Android 10+ via the AuraSync App.',
+    category: 'Compatibility'
+  }
 ];
 
 export const MOCK_COUPONS = [
@@ -540,3 +680,80 @@ export const MOCK_COUPONS = [
   { code: 'WELCOME10', discountAmount: 10, minSubtotal: 50, description: '$10 OFF your first order' },
   { code: 'AURA35', discountPercent: 35, description: '35% OFF Flagship Audio Gear' },
 ];
+
+export const MOCK_BANNERS: Banner[] = [
+  {
+    id: 'hero-1',
+    type: 'hero',
+    badge: 'NEW FLAGSHIP RELEASE',
+    title: 'Aura Studio Pro ANC Headphones',
+    subtitle: 'Spatial Audio with Real-Time Head Tracking & 65-Hour Battery Life',
+    price: '$299.99',
+    comparePrice: '$379.99',
+    discount: 'SAVE 21%',
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1200&auto=format&fit=crop&q=80',
+    productSlug: 'aura-studio-pro-wireless-anc-headphones',
+    bgColor: 'from-slate-950 via-slate-900 to-rose-950',
+  },
+  {
+    id: 'hero-2',
+    type: 'hero',
+    badge: 'AEROSPACE GRADE TITANIUM',
+    title: 'Aura Pulse Ultra Smartwatch',
+    subtitle: '1.95" LTPO Sapphire AMOLED Display, Multi-Band GPS & Medical ECG',
+    price: '$349.00',
+    comparePrice: '$429.00',
+    discount: 'LIMITED EDITION',
+    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1200&auto=format&fit=crop&q=80',
+    productSlug: 'aura-pulse-ultra-titanium-smartwatch',
+    bgColor: 'from-slate-950 via-rose-950 to-slate-900',
+  },
+  {
+    id: 'hero-3',
+    type: 'hero',
+    badge: 'GAN IV FAST CHARGING',
+    title: 'Aura Boost 100W Charging Hub',
+    subtitle: '4-in-1 Official Qi2 15W Magnetic Charger with 100W USB-C PD Power',
+    price: '$89.99',
+    comparePrice: '$119.99',
+    discount: 'BEST DESK GEAR',
+    image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=1200&auto=format&fit=crop&q=80',
+    productSlug: 'aura-boost-100w-gan-magsafe-desktop-station',
+    bgColor: 'from-slate-950 via-slate-900 to-primary-hover',
+  },
+  {
+    id: 'promo-1',
+    type: 'promo',
+    badge: 'NEW ARRIVAL',
+    title: '4K Ultra Webcams',
+    subtitle: 'Dual AI Noise-Canceling Mics & Sony STARVIS Sensor',
+    price: 'From $149',
+    image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80',
+    buttonText: 'Shop Webcams',
+    productSlug: 'aura-view-4k-pro-webcam',
+    categorySlug: 'cameras-photography',
+  },
+  {
+    id: 'promo-2',
+    type: 'promo',
+    badge: 'SPECIAL OFFER',
+    title: 'Gasket Keyboards',
+    subtitle: 'Hot-Swappable RGB Mechanical Switch Station',
+    price: 'Save 25%',
+    image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80',
+    buttonText: 'Explore Keyboards',
+    productSlug: 'aura-key-pro-75-gasket-mechanical-keyboard',
+    categorySlug: 'keyboards-mice',
+  },
+  {
+    id: 'offer-1',
+    type: 'offer',
+    badge: 'LIMITED TIME DEAL',
+    title: 'Upgrade Your Desk Ergonomics with Vyzobd Gear',
+    subtitle: 'Get up to 30% off workstations, monitors, and magnetic wireless chargers. Free shipping on all orders over $99.',
+    buttonText: 'Claim Your Desk Upgrade Now',
+    image: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=1200&auto=format&fit=crop&q=80',
+    categorySlug: 'computer-monitors',
+  },
+];
+

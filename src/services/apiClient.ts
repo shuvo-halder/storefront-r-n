@@ -15,7 +15,7 @@ export const apiClient = axios.create({
 
 // Interceptor for auth token
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auratech_auth_token');
+  const token = localStorage.getItem('vyzobd_auth_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

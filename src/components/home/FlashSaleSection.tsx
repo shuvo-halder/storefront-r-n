@@ -29,7 +29,7 @@ export const FlashSaleSection: React.FC = () => {
   return (
     <section className="py-12 bg-slate-900 text-white relative overflow-hidden">
       {/* Light flares */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-rose-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
@@ -43,7 +43,7 @@ export const FlashSaleSection: React.FC = () => {
                 alt={dealProduct.name} 
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
               />
-              <div className="absolute top-4 left-4 bg-rose-600 text-white font-extrabold text-xs px-3 py-1 rounded-full shadow-md uppercase tracking-wider flex items-center gap-1">
+              <div className="absolute top-4 left-4 bg-primary text-white font-extrabold text-xs px-3 py-1 rounded-full shadow-md uppercase tracking-wider flex items-center gap-1">
                 <Zap size={14} className="fill-white" />
                 <span>SAVE 21% TODAY</span>
               </div>
@@ -114,7 +114,7 @@ export const FlashSaleSection: React.FC = () => {
                   <span className="text-rose-400 font-mono">78% Claimed</span>
                 </div>
                 <div className="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden p-0.5 border border-slate-800">
-                  <div className="h-full bg-gradient-to-r from-rose-600 to-amber-500 rounded-full w-[78%]" />
+                  <div className="h-full bg-gradient-to-r from-primary to-amber-500 rounded-full w-[78%]" />
                 </div>
               </div>
             </div>
@@ -123,7 +123,7 @@ export const FlashSaleSection: React.FC = () => {
             <div className="pt-2 flex flex-wrap items-center gap-4">
               <button
                 onClick={() => addToCart(dealProduct.id, 1)}
-                className="py-3.5 px-6 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-rose-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="py-3.5 px-6 bg-primary hover:bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <ShoppingCart size={16} />
                 <span>Claim Flash Deal Now</span>

@@ -11,10 +11,10 @@ export const PromoBanners: React.FC = () => {
         
         {/* Banner 1 */}
         <div className="relative rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-rose-950 text-white p-8 overflow-hidden shadow-lg flex flex-col justify-between group min-h-[240px]">
-          <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-rose-600/20 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700 pointer-events-none" />
+          <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-primary/20 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700 pointer-events-none" />
           
           <div className="relative z-10 space-y-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[10px] font-extrabold uppercase tracking-widest">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-rose-300 text-[10px] font-extrabold uppercase tracking-widest">
               <Flame size={12} className="text-amber-400" />
               WEEKLY AUDIO SPECIAL
             </span>
@@ -32,7 +32,7 @@ export const PromoBanners: React.FC = () => {
                 setFilters(prev => ({ ...prev, categorySlug: 'audio-headphones' }));
                 navigateTo('shop');
               }}
-              className="py-2.5 px-5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all inline-flex items-center gap-2 cursor-pointer shadow-md"
+              className="py-2.5 px-5 bg-primary hover:bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all inline-flex items-center gap-2 cursor-pointer shadow-md"
             >
               <span>Shop Audio Deals</span>
               <ArrowRight size={14} />

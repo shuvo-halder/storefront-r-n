@@ -1,100 +1,107 @@
 @import "tailwindcss";
 
 @layer base {
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap');
+
   :root {
-    /* Brand & Accent Palette */
-    --color-primary: #e11d48;         /* Rose Crimson - Primary Action */
-    --color-primary-hover: #be123c;   /* Rose Crimson Dark */
-    --color-primary-light: #fff1f2;   /* Soft Rose Tint */
-
-    --color-secondary: #0f172a;       /* Slate 900 - Premium Dark Slate */
-    --color-secondary-hover: #1e293b; /* Slate 800 */
-    --color-secondary-light: #f8fafc; /* Slate 50 */
-
-    --color-accent: #0284c7;          /* Sky Blue - Tech Accent */
-    --color-accent-hover: #0369a1;
-
-    /* Surfaces & Backgrounds */
-    --color-bg-app: #f8fafc;          /* Slate 50 - Storefront Canvas */
-    --color-surface-card: #ffffff;     /* Pure White Containers */
-    --color-surface-subtle: #f1f5f9;   /* Slate 100 - Subtly Grouped Elements */
+    /* Core Vyzobd Brand Palette */
+    --color-primary: #101A25;          /* Navy Dark */
+    --color-accent: #DC2B53;           /* Primary Accent */
+    --color-accent-hover: #C0264A;     /* Slightly darker for hover */
+    --color-accent-muted: rgba(220, 43, 83, 0.1);
     
-    /* Borders & Lines */
-    --color-border-default: #e2e8f0;   /* Slate 200 */
-    --color-border-subtle: #f1f5f9;    /* Slate 100 */
-    --color-border-strong: #cbd5e1;    /* Slate 300 */
-    --color-border-focus: #e11d48;     /* Rose 600 */
+    /* Neutrals & Surfaces */
+    --color-bg-app: #FFFFFF;
+    --color-surface: #F8FAFC;
+    --color-border: #E2E8F0;
+    --color-text-base: #1E293B;
+    --color-text-muted: #64748B;
+    --color-text-inverse: #FFFFFF;
 
-    /* Typography */
-    --color-text-primary: #0f172a;     /* Slate 900 */
-    --color-text-secondary: #475569;   /* Slate 600 */
-    --color-text-muted: #94a3b8;       /* Slate 400 */
-    --color-text-inverse: #ffffff;
+    /* Spacing & Layout Tokens */
+    --spacing-page: 1.5rem;
+    --max-width-container: 1440px;
 
-    /* Semantic Status */
-    --color-success: #059669;          /* Emerald 600 */
-    --color-success-bg: #ecfdf5;       /* Emerald 50 */
-    
-    --color-warning: #d97706;          /* Amber 600 */
-    --color-warning-bg: #fffbeb;       /* Amber 50 */
-    
-    --color-error: #dc2626;            /* Red 600 */
-    --color-error-bg: #fef2f2;         /* Red 50 */
-    
-    --color-info: #0284c7;             /* Sky 600 */
-    --color-info-bg: #f0f9ff;          /* Sky 50 */
-
-    /* Radius System */
-    --radius-xs: 0.25rem;  /* 4px */
-    --radius-sm: 0.375rem; /* 6px */
-    --radius-md: 0.5rem;   /* 8px */
-    --radius-lg: 0.75rem;  /* 12px */
-    --radius-xl: 1rem;     /* 16px */
-    --radius-2xl: 1.25rem; /* 20px */
-    --radius-3xl: 1.5rem;  /* 24px */
-    --radius-full: 9999px;
+    /* Shadow System */
+    --shadow-premium: 0 10px 30px -10px rgba(16, 26, 37, 0.08);
+    --shadow-accent: 0 10px 25px -5px rgba(220, 43, 83, 0.15);
   }
 
   body {
     background-color: var(--color-bg-app);
-    color: var(--color-text-primary);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--color-text-base);
+    font-family: 'Plus Jakarta Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+  }
+
+  /* Smooth Entry Transitions */
+  .page-transition {
+    @apply transition-all duration-500 ease-out;
+  }
+}
+
+@theme {
+  /* Brand Colors */
+  --color-primary: var(--color-primary);
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-accent-muted: var(--color-accent-muted);
+  
+  /* Backgrounds */
+  --color-bg-app: var(--color-bg-app);
+  --color-surface: var(--color-surface);
+  
+  /* Borders */
+  --color-border-default: var(--color-border);
+  
+  /* Shadows */
+  --shadow-premium: var(--shadow-premium);
+  --shadow-accent: var(--shadow-accent);
+
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-display: 'Playfair Display', serif;
+  
+  /* Custom Spacing */
+  --spacing-container: var(--spacing-page);
+}
+
+@layer components {
+  .container-vyzobd {
+    @apply w-full max-w-[var(--max-width-container)] mx-auto px-4 md:px-6 lg:px-8;
+  }
+
+  .btn-primary {
+    @apply px-8 py-3 bg-primary text-white font-bold rounded-xl hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/10;
+  }
+
+  .btn-accent {
+    @apply px-8 py-3 bg-accent text-white font-bold rounded-xl hover:bg-accent-hover transition-all active:scale-95 shadow-accent;
+  }
+
+  .card-vyzobd {
+    @apply bg-white border border-border-default rounded-3xl p-6 shadow-premium hover:shadow-xl transition-all duration-300;
+  }
+
+  .input-vyzobd {
+    @apply w-full px-5 py-3.5 bg-surface border border-border-default rounded-2xl text-sm focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all outline-none;
   }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* Skeleton Pulse Shimmer */
-@keyframes skeleton-shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.animate-shimmer {
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 37%, #f1f5f9 63%);
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.5s infinite;
+  background: var(--color-primary);
+  border-radius: 10px;
 }

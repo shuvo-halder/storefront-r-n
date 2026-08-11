@@ -47,12 +47,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             id={generatedId}
-            className={`w-full bg-white text-slate-900 text-sm rounded-xl border transition-all duration-200 placeholder:text-slate-400 focus:outline-none ${
-              leftIcon ? 'pl-10' : 'pl-3.5'
-            } ${rightElement ? 'pr-10' : 'pr-3.5'} py-2.5 ${
+            className={`w-full bg-surface text-primary text-sm rounded-2xl border transition-all duration-200 placeholder:text-slate-400 focus:outline-none ${
+              leftIcon ? 'pl-11' : 'pl-4'
+            } ${rightElement ? 'pr-11' : 'pr-4'} py-3.5 ${
               error
                 ? 'border-red-500 focus:border-red-600 focus:ring-2 focus:ring-red-100'
-                : 'border-slate-200 hover:border-slate-300 focus:border-rose-600 focus:ring-2 focus:ring-rose-100'
+                : 'border-border-default hover:border-slate-300 focus:border-accent focus:ring-2 focus:ring-accent/10'
             } ${className}`}
             {...props}
           />

@@ -25,22 +25,22 @@ export const PriceTag: React.FC<PriceTagProps> = ({
     sm: {
       current: 'text-sm font-extrabold text-slate-900',
       original: 'text-xs text-slate-400 line-through',
-      badge: 'text-[9px] px-1.5 py-0.5 bg-rose-600 text-white rounded font-bold',
+      badge: 'text-[9px] px-1.5 py-0.5 bg-primary text-white rounded font-bold',
     },
     md: {
       current: 'text-base font-extrabold text-slate-900',
       original: 'text-xs text-slate-400 line-through',
-      badge: 'text-[10px] px-2 py-0.5 bg-rose-600 text-white rounded-md font-bold',
+      badge: 'text-[10px] px-2 py-0.5 bg-primary text-white rounded-md font-bold',
     },
     lg: {
       current: 'text-xl sm:text-2xl font-black text-slate-900',
       original: 'text-sm text-slate-400 line-through',
-      badge: 'text-xs px-2.5 py-1 bg-rose-600 text-white rounded-lg font-black',
+      badge: 'text-xs px-2.5 py-1 bg-primary text-white rounded-lg font-black',
     },
     xl: {
       current: 'text-3xl sm:text-4xl font-black text-slate-900 tracking-tight',
       original: 'text-lg text-slate-400 line-through',
-      badge: 'text-xs px-3 py-1 bg-rose-600 text-white rounded-lg font-black',
+      badge: 'text-xs px-3 py-1 bg-primary text-white rounded-lg font-black',
     },
   };
 

@@ -13,7 +13,7 @@ export const BlogArticlesSection: React.FC = () => {
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
-            <div className="text-xs font-extrabold text-rose-600 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+            <div className="text-xs font-extrabold text-primary uppercase tracking-widest mb-1 flex items-center gap-1.5">
               <BookOpen size={14} />
               Aura Tech Journal
             </div>
@@ -24,7 +24,7 @@ export const BlogArticlesSection: React.FC = () => {
 
           <button
             onClick={() => navigateTo('blog')}
-            className="text-xs font-bold text-slate-700 hover:text-rose-600 flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto"
+            className="text-xs font-bold text-slate-700 hover:text-primary flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto"
           >
             <span>Read All Articles</span>
             <ArrowRight size={14} />
@@ -37,7 +37,7 @@ export const BlogArticlesSection: React.FC = () => {
             <article
               key={article.id}
               onClick={() => navigateTo('article-detail', { articleSlug: article.slug })}
-              className="group bg-slate-50/70 border border-slate-200/80 rounded-2xl overflow-hidden hover:border-rose-200 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between"
+              className="group bg-slate-50/70 border border-slate-200/80 rounded-2xl overflow-hidden hover:border-primary/20 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between"
             >
               <div className="aspect-video bg-slate-200 overflow-hidden relative">
                 <img 
@@ -62,7 +62,7 @@ export const BlogArticlesSection: React.FC = () => {
                     </span>
                   </div>
 
-                  <h3 className="font-bold text-base text-slate-900 group-hover:text-rose-600 transition-colors leading-snug">
+                  <h3 className="font-bold text-base text-slate-900 group-hover:text-primary transition-colors leading-snug">
                     {article.title}
                   </h3>
 
@@ -71,7 +71,7 @@ export const BlogArticlesSection: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs font-bold text-rose-600">
+                <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs font-bold text-primary">
                   <span>Read Article</span>
                   <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </div>

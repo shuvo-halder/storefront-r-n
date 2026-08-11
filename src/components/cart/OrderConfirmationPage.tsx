@@ -10,7 +10,7 @@ export const OrderConfirmationPage: React.FC = () => {
     return (
       <div className="py-16 text-center">
         <h2 className="text-xl font-bold">No order details found</h2>
-        <button onClick={() => navigateTo('home')} className="mt-4 px-5 py-2.5 bg-rose-600 text-white font-bold text-xs rounded-xl">
+        <button onClick={() => navigateTo('home')} className="mt-4 px-5 py-2.5 bg-primary text-white font-bold text-xs rounded-xl">
           Return Home
         </button>
       </div>
@@ -40,7 +40,7 @@ export const OrderConfirmationPage: React.FC = () => {
           </div>
 
           <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 inline-flex items-center gap-4 text-xs font-semibold text-slate-700">
-            <div>Tracking #: <span className="font-mono font-bold text-rose-600">{order.trackingNumber}</span></div>
+            <div>Tracking #: <span className="font-mono font-bold text-primary">{order.trackingNumber}</span></div>
             <div>•</div>
             <div>Estimated Delivery: <span className="font-bold text-slate-900">{order.estimatedDeliveryDate}</span></div>
           </div>
@@ -49,7 +49,7 @@ export const OrderConfirmationPage: React.FC = () => {
         {/* Tracking Timeline */}
         <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-4">
           <h3 className="font-extrabold text-sm text-slate-900 uppercase tracking-wider flex items-center gap-2">
-            <Truck size={16} className="text-rose-600" />
+            <Truck size={16} className="text-primary" />
             <span>Package Delivery Status</span>
           </h3>
 
@@ -61,7 +61,7 @@ export const OrderConfirmationPage: React.FC = () => {
                   step.completed 
                     ? 'border-emerald-200 bg-emerald-50/50 text-emerald-800' 
                     : step.current
-                    ? 'border-rose-500 bg-rose-50 text-rose-800 font-bold'
+                    ? 'border-primary bg-primary/5 text-rose-800 font-bold'
                     : 'border-slate-200 bg-slate-50 text-slate-400'
                 }`}
               >
@@ -99,7 +99,7 @@ export const OrderConfirmationPage: React.FC = () => {
             <div className="flex justify-between"><span>Tax</span><span>${order.tax.toFixed(2)}</span></div>
             <div className="flex justify-between font-black text-sm text-slate-900 pt-2 border-t border-slate-200">
               <span>Total Paid</span>
-              <span className="text-rose-600">${order.totalAmount.toFixed(2)}</span>
+              <span className="text-primary">${order.totalAmount.toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -114,7 +114,7 @@ export const OrderConfirmationPage: React.FC = () => {
           </button>
           <button
             onClick={() => navigateTo('home')}
-            className="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-md transition-colors cursor-pointer"
+            className="px-6 py-3 bg-primary hover:bg-primary text-white font-bold text-xs rounded-xl shadow-md transition-colors cursor-pointer"
           >
             Back to Storefront
           </button>

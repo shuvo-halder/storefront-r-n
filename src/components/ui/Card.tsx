@@ -32,7 +32,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
           bordered ? 'border border-slate-200/90' : ''
         } ${
           hoverEffect
-            ? 'hover:shadow-xl hover:border-rose-200/90 hover:-translate-y-0.5'
+            ? 'hover:shadow-xl hover:border-primary/20/90 hover:-translate-y-0.5'
             : ''
         } ${paddingClasses[padding]} ${className}`}
         {...props}

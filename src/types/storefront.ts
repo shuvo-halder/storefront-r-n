@@ -143,6 +143,31 @@ export interface Order {
   trackingNumber?: string;
   trackingSteps?: OrderTrackingStep[];
   estimatedDeliveryDate?: string;
+  returnStatus?: 'Not Requested' | 'Pending' | 'Approved' | 'Rejected' | 'Completed';
+  refundStatus?: 'None' | 'Pending' | 'Processed' | 'Failed';
+}
+
+export interface ReturnRequest {
+  id: string;
+  orderId: string;
+  items: {
+    productId: string;
+    quantity: number;
+    reason: string;
+    condition: string;
+  }[];
+  status: 'Pending' | 'Approved' | 'Rejected' | 'Completed';
+  createdAt: string;
+}
+
+export interface Refund {
+  id: string;
+  orderId: string;
+  amount: number;
+  status: 'Pending' | 'Processed' | 'Failed';
+  provider: string;
+  reason: string;
+  createdAt: string;
 }
 
 export interface UserProfile {
@@ -162,7 +187,50 @@ export interface Coupon {
   description: string;
 }
 
+export interface StoreBranding {
+  logoUrl: string;
+  logoDarkUrl?: string;
+  faviconUrl: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+}
+
+export interface StoreSEO {
+  metaTitle: string;
+  metaDescription: string;
+  ogImageUrl?: string;
+  twitterHandle?: string;
+}
+
+export interface StoreShipping {
+  freeShippingThreshold: number;
+  flatRateShippingFee: number;
+  estimatedDeliveryDays: string;
+}
+
+export interface StoreTax {
+  taxEnabled: boolean;
+  taxRate: number; // e.g. 0.08 for 8%
+  pricesIncludeTax: boolean;
+}
+
+export interface StoreGeneral {
+  siteName: string;
+  siteTitle: string;
+  currency: string;
+  currencySymbol: string;
+  storePhone: string;
+  storeEmail: string;
+  storeAddress?: string;
+}
+
 export interface PublicSettings {
+  branding: StoreBranding;
+  seo: StoreSEO;
+  shipping: StoreShipping;
+  tax: StoreTax;
+  general: StoreGeneral;
+  // Deprecated fields kept for backward compatibility during migration
   siteName: string;
   siteTitle: string;
   logoUrl: string;
@@ -198,6 +266,68 @@ export interface BlogArticle {
   readTime: string;
   category: string;
   tags: string[];
+  relatedArticleSlugs?: string[];
+}
+
+export interface CMSPage {
+  id: string;
+  slug: string;
+  title: string;
+  content: string;
+  lastUpdated: string;
+  metaTitle?: string;
+  metaDescription?: string;
+}
+
+export interface Banner {
+  id: string;
+  badge?: string;
+  title: string;
+  subtitle: string;
+  price?: string;
+  comparePrice?: string;
+  discount?: string;
+  image: string;
+  buttonText?: string;
+  linkUrl?: string;
+  productSlug?: string;
+  categorySlug?: string;
+  type: 'hero' | 'promo' | 'offer';
+  bgColor?: string;
+}
+
+export interface SearchFacetCategory {
+  slug: string;
+  name: string;
+  count: number;
+}
+
+export interface SearchFacetBrand {
+  slug: string;
+  name: string;
+  count: number;
+}
+
+export interface SearchFacetsResponse {
+  categories: SearchFacetCategory[];
+  brands: SearchFacetBrand[];
+  priceRange: {
+    min: number;
+    max: number;
+  };
+}
+
+export interface SearchResponse {
+  products: Product[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  query: string;
+  suggestions?: {
+    categories?: Category[];
+    brands?: Brand[];
+  };
 }
 
 export interface ProductFilterState {
@@ -208,5 +338,7 @@ export interface ProductFilterState {
   maxPrice: number;
   ratingMin: number;
   inStockOnly: boolean;
-  sortBy: 'featured' | 'price-asc' | 'price-desc' | 'rating' | 'newest';
+  sortBy: 'featured' | 'newest' | 'oldest' | 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc' | 'rating' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc';
+  page: number;
+  pageSize: number;
 }

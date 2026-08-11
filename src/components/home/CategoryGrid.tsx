@@ -12,7 +12,7 @@ export const CategoryGrid: React.FC = () => {
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
-            <div className="text-xs font-extrabold text-rose-600 uppercase tracking-widest mb-1">
+            <div className="text-xs font-extrabold text-primary uppercase tracking-widest mb-1">
               Top Categories
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
@@ -25,7 +25,7 @@ export const CategoryGrid: React.FC = () => {
               setFilters(prev => ({ ...prev, categorySlug: null }));
               navigateTo('shop');
             }}
-            className="text-xs font-bold text-slate-700 hover:text-rose-600 flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto"
+            className="text-xs font-bold text-slate-700 hover:text-primary flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto"
           >
             <span>View All Categories</span>
             <ArrowRight size={14} />
@@ -47,13 +47,15 @@ export const CategoryGrid: React.FC = () => {
                 <img 
                   src={cat.image} 
                   alt={cat.name} 
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
 
               <div>
-                <h3 className="font-bold text-xs sm:text-sm text-slate-900 group-hover:text-rose-600 transition-colors">
+                <h3 className="font-bold text-xs sm:text-sm text-slate-900 group-hover:text-primary transition-colors">
                   {cat.name}
                 </h3>
                 <p className="text-[11px] font-medium text-slate-400 mt-0.5">

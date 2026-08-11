@@ -36,10 +36,10 @@ export const AuthModal: React.FC = () => {
         </button>
 
         <div className="text-center space-y-2 mb-6">
-          <div className="w-12 h-12 bg-rose-50 border border-rose-200 text-rose-600 rounded-2xl flex items-center justify-center mx-auto">
+          <div className="w-12 h-12 bg-primary/5 border border-primary/20 text-primary rounded-2xl flex items-center justify-center mx-auto">
             <Lock size={22} />
           </div>
-          <h3 className="font-extrabold text-xl text-slate-900">Sign In to AuraTech</h3>
+          <h3 className="font-extrabold text-xl text-slate-900">Sign In to Vyzobd</h3>
           <p className="text-xs text-slate-500">
             Access saved order history, tracking status, and account address settings.
           </p>
@@ -55,7 +55,7 @@ export const AuthModal: React.FC = () => {
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
                 placeholder="name@example.com"
-                className="w-full py-2.5 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-rose-500"
+                className="w-full py-2.5 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-primary"
               />
               <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             </div>
@@ -64,7 +64,7 @@ export const AuthModal: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="w-full py-3 bg-primary hover:bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <span>{isSubmitting ? 'Signing in...' : 'Sign In / Register'}</span>
             <ArrowRight size={16} />
@@ -72,7 +72,7 @@ export const AuthModal: React.FC = () => {
         </form>
 
         <div className="mt-4 pt-4 border-t border-slate-100 text-[11px] text-slate-400 text-center">
-          By continuing you agree to AuraTech Terms & Privacy Policy.
+          By continuing you agree to Vyzobd Terms & Privacy Policy.
         </div>
 
       </div>

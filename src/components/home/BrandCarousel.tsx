@@ -10,7 +10,7 @@ export const BrandCarousel: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="text-center max-w-xl mx-auto mb-8">
-          <div className="text-xs font-extrabold text-rose-600 uppercase tracking-widest mb-1">
+          <div className="text-xs font-extrabold text-primary uppercase tracking-widest mb-1">
             Official Brand Partners
           </div>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight">
@@ -33,13 +33,13 @@ export const BrandCarousel: React.FC = () => {
               </div>
 
               <div>
-                <h3 className="font-bold text-xs sm:text-sm text-slate-900 group-hover:text-rose-600 transition-colors">
+                <h3 className="font-bold text-xs sm:text-sm text-slate-900 group-hover:text-primary transition-colors">
                   {brand.name}
                 </h3>
                 <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
                   {brand.description}
                 </p>
-                <span className="text-[10px] font-semibold text-rose-600 mt-2 inline-block">
+                <span className="text-[10px] font-semibold text-primary mt-2 inline-block">
                   {brand.featuredProductCount} Products →
                 </span>
               </div>

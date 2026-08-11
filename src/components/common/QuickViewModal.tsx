@@ -64,7 +64,7 @@ export const QuickViewModal: React.FC = () => {
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
               />
               {quickViewProduct.discountPercent && (
-                <span className="absolute top-3 left-3 bg-rose-600 text-white font-extrabold text-[11px] px-2.5 py-1 rounded-full shadow-sm">
+                <span className="absolute top-3 left-3 bg-primary text-white font-extrabold text-[11px] px-2.5 py-1 rounded-full shadow-sm">
                   -{quickViewProduct.discountPercent}% OFF
                 </span>
               )}
@@ -78,7 +78,7 @@ export const QuickViewModal: React.FC = () => {
                     key={idx}
                     onClick={() => setSelectedImage(img)}
                     className={`w-14 h-14 rounded-xl border-2 overflow-hidden flex-shrink-0 transition-all cursor-pointer ${
-                      selectedImage === img ? 'border-rose-600 ring-2 ring-rose-500/20' : 'border-slate-200 opacity-70 hover:opacity-100'
+                      selectedImage === img ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200 opacity-70 hover:opacity-100'
                     }`}
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" />
@@ -92,7 +92,7 @@ export const QuickViewModal: React.FC = () => {
           <div className="flex flex-col justify-between space-y-4">
             
             <div className="space-y-2">
-              <div className="text-xs font-bold text-rose-600 uppercase tracking-wider">
+              <div className="text-xs font-bold text-primary uppercase tracking-wider">
                 {quickViewProduct.brand}
               </div>
 
@@ -104,7 +104,7 @@ export const QuickViewModal: React.FC = () => {
 
               {/* Price Row */}
               <div className="flex items-baseline gap-3 pt-1">
-                <span className="text-2xl font-black text-rose-600">
+                <span className="text-2xl font-black text-primary">
                   ${activePrice.toFixed(2)}
                 </span>
                 {quickViewProduct.compareAtPrice && (
@@ -133,7 +133,7 @@ export const QuickViewModal: React.FC = () => {
                       }}
                       className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer ${
                         selectedVariantId === variant.id 
-                          ? 'bg-rose-50 border-rose-600 text-rose-700 ring-1 ring-rose-500/30' 
+                          ? 'bg-primary/5 border-primary text-primary ring-1 ring-primary/30' 
                           : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
                       }`}
                     >
@@ -152,7 +152,7 @@ export const QuickViewModal: React.FC = () => {
 
             {/* Stock status */}
             <div className="flex items-center gap-2 text-xs">
-              <span className={`w-2 h-2 rounded-full ${quickViewProduct.stock > 0 ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+              <span className={`w-2 h-2 rounded-full ${quickViewProduct.stock > 0 ? 'bg-emerald-500' : 'bg-primary'}`} />
               <span className="font-semibold text-slate-700">
                 {quickViewProduct.stock > 0 ? `In Stock (${quickViewProduct.stock} available)` : 'Out of Stock'}
               </span>
@@ -183,7 +183,7 @@ export const QuickViewModal: React.FC = () => {
                 {/* Add to Cart button */}
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 py-3 px-4 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="flex-1 py-3 px-4 bg-primary hover:bg-primary text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <ShoppingCart size={16} />
                   <span>Add to Cart</span>
@@ -194,8 +194,8 @@ export const QuickViewModal: React.FC = () => {
                   onClick={() => toggleWishlist(quickViewProduct.id)}
                   className={`p-3 rounded-xl border transition-colors cursor-pointer ${
                     inWishlist 
-                      ? 'bg-rose-50 border-rose-200 text-rose-600' 
-                      : 'bg-white border-slate-200 text-slate-500 hover:text-rose-600'
+                      ? 'bg-primary/5 border-primary/20 text-primary' 
+                      : 'bg-white border-slate-200 text-slate-500 hover:text-primary'
                   }`}
                   title="Wishlist"
                 >
@@ -209,7 +209,7 @@ export const QuickViewModal: React.FC = () => {
                   closeQuickView();
                   navigateTo('product-detail', { productSlug: quickViewProduct.slug });
                 }}
-                className="w-full text-center text-xs font-bold text-slate-600 hover:text-rose-600 flex items-center justify-center gap-1 transition-colors py-1 cursor-pointer"
+                className="w-full text-center text-xs font-bold text-slate-600 hover:text-primary flex items-center justify-center gap-1 transition-colors py-1 cursor-pointer"
               >
                 <span>View Full Technical Specifications</span>
                 <ArrowRight size={14} />

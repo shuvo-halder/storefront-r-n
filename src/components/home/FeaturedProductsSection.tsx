@@ -26,7 +26,7 @@ export const FeaturedProductsSection: React.FC = () => {
         {/* Header & Tabs */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 border-b border-slate-200 pb-4">
           <div>
-            <div className="text-xs font-extrabold text-rose-600 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+            <div className="text-xs font-extrabold text-primary uppercase tracking-widest mb-1 flex items-center gap-1.5">
               <Sparkles size={14} />
               Featured Collection
             </div>
@@ -43,7 +43,7 @@ export const FeaturedProductsSection: React.FC = () => {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                   activeTab === tab.id 
-                    ? 'bg-rose-600 text-white shadow-sm' 
+                    ? 'bg-primary text-white shadow-sm' 
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
                 }`}
               >

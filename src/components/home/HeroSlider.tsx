@@ -37,7 +37,7 @@ const HERO_SLIDES = [
     discount: 'BEST DESK GEAR',
     image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=1200&auto=format&fit=crop&q=80',
     productSlug: 'aura-boost-100w-gan-magsafe-desktop-station',
-    bgColor: 'from-slate-950 via-slate-900 to-rose-900',
+    bgColor: 'from-slate-950 via-slate-900 to-primary-hover',
   },
 ];
 
@@ -60,7 +60,7 @@ export const HeroSlider: React.FC = () => {
       <div className={`absolute inset-0 bg-gradient-to-r ${slide.bgColor} transition-all duration-700 opacity-90`} />
 
       {/* Decorative light flares */}
-      <div className="absolute -top-32 -right-32 w-96 h-96 bg-rose-600/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-pink-600/15 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -68,7 +68,7 @@ export const HeroSlider: React.FC = () => {
         {/* Left Column Text Info */}
         <div className="lg:col-span-7 space-y-6 text-left animate-in fade-in slide-in-from-left-4 duration-500">
           
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-extrabold uppercase tracking-widest backdrop-blur-xs">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/20 border border-primary/30 text-rose-300 text-xs font-extrabold uppercase tracking-widest backdrop-blur-xs">
             <Sparkles size={14} className="text-amber-300 animate-pulse" />
             <span>{slide.badge}</span>
           </div>
@@ -90,7 +90,7 @@ export const HeroSlider: React.FC = () => {
               <span className="text-base font-semibold text-slate-400 line-through">
                 {slide.comparePrice}
               </span>
-              <span className="px-2.5 py-1 bg-rose-600 text-white text-xs font-bold rounded-lg uppercase">
+              <span className="px-2.5 py-1 bg-primary text-white text-xs font-bold rounded-lg uppercase">
                 {slide.discount}
               </span>
             </div>
@@ -98,7 +98,7 @@ export const HeroSlider: React.FC = () => {
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <button
                 onClick={() => navigateTo('product-detail', { productSlug: slide.productSlug })}
-                className="px-6 py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-rose-600/30 hover:shadow-rose-600/50 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="px-6 py-3.5 bg-primary hover:bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>Shop Flagship Deal</span>
                 <ArrowRight size={16} />
@@ -145,7 +145,7 @@ export const HeroSlider: React.FC = () => {
             key={idx}
             onClick={() => setCurrentSlide(idx)}
             className={`h-2 rounded-full transition-all cursor-pointer ${
-              currentSlide === idx ? 'w-8 bg-rose-500' : 'w-2 bg-slate-700 hover:bg-slate-500'
+              currentSlide === idx ? 'w-8 bg-primary' : 'w-2 bg-slate-700 hover:bg-slate-500'
             }`}
             aria-label={`Go to slide ${idx + 1}`}
           />
