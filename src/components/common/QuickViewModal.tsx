@@ -1,5 +1,9 @@
+'use client';
+
 import React, { useState } from 'react';
+import { SmartImage } from './SmartImage';
 import { useStorefront } from '../../context/StorefrontContext';
+import { useCart } from '../../hooks/useCart';
 import { RatingStars } from './RatingStars';
 import { 
   X, 
@@ -13,7 +17,8 @@ import {
 } from 'lucide-react';
 
 export const QuickViewModal: React.FC = () => {
-  const { quickViewProduct, closeQuickView, addToCart, toggleWishlist, isInWishlist, navigateTo } = useStorefront();
+  const { quickViewProduct, closeQuickView, toggleWishlist, isInWishlist, navigateTo } = useStorefront();
+  const { addToCart } = useCart();
 
   if (!quickViewProduct) return null;
 
@@ -58,9 +63,12 @@ export const QuickViewModal: React.FC = () => {
           {/* Gallery Side */}
           <div className="space-y-3">
             <div className="relative aspect-square bg-slate-50 border border-slate-200/80 rounded-2xl overflow-hidden group">
-              <img 
+              <SmartImage 
                 src={selectedImage} 
                 alt={quickViewProduct.name} 
+                fill
+                fallbackType="product"
+                fallbackLabel={quickViewProduct.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
               />
               {quickViewProduct.discountPercent && (
@@ -81,7 +89,14 @@ export const QuickViewModal: React.FC = () => {
                       selectedImage === img ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200 opacity-70 hover:opacity-100'
                     }`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <SmartImage 
+                      src={img} 
+                      alt={`Thumbnail ${idx + 1}`} 
+                      fill
+                      fallbackType="product"
+                      fallbackLabel={quickViewProduct.name}
+                      className="w-full h-full object-cover" 
+                    />
                   </button>
                 ))}
               </div>

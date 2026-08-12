@@ -1,4 +1,5 @@
 import React from 'react';
+import { SmartImage } from '../common/SmartImage';
 import { Trash2 } from 'lucide-react';
 import { CartItem as CartItemType } from '../../types/storefront';
 import { QuantitySelector } from './QuantitySelector';
@@ -25,13 +26,14 @@ export const CartItem = React.memo<CartItemProps>(({
       {/* Product Image */}
       <div 
         onClick={() => onNavigateToProduct(item.product.slug)}
-        className="w-20 h-20 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden flex-shrink-0 cursor-pointer group"
+        className="w-20 h-20 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden flex-shrink-0 cursor-pointer group relative"
       >
-        <img 
-          src={item.product.images[0]} 
+        <SmartImage 
+          src={item.selectedVariant?.image || item.product.images[0]} 
           alt={item.product.name} 
-          loading="lazy"
-          decoding="async"
+          fill
+          fallbackType="product"
+          fallbackLabel={item.product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
         />
       </div>

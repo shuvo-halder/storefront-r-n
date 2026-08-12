@@ -1,10 +1,13 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { Banner } from '../../types/storefront';
 import { storefrontApi } from '../../services/storefrontApi';
 import { useStorefront } from '../../context/StorefrontContext';
 import { PromoCard } from './PromoCard';
 import { Sparkles, ArrowRight, ShieldCheck, Zap, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import { Skeleton } from '../ui/Skeleton';
+import { Skeleton, HeroSkeleton } from '../ui/Skeleton';
+import { SmartImage } from '../common/SmartImage';
 
 export const HeroSection: React.FC = () => {
   const { navigateTo } = useStorefront();
@@ -47,29 +50,42 @@ export const HeroSection: React.FC = () => {
   }, [heroBanners.length]);
 
   if (loading) {
-    return (
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8 rounded-3xl overflow-hidden bg-slate-900 p-8 min-h-[460px] flex flex-col justify-between">
-          <div className="space-y-4 max-w-lg">
-            <Skeleton className="h-6 w-36 rounded-full bg-slate-800" />
-            <Skeleton className="h-12 w-full rounded-2xl bg-slate-800" />
-            <Skeleton className="h-12 w-3/4 rounded-2xl bg-slate-800" />
-            <Skeleton className="h-16 w-full rounded-2xl bg-slate-800" />
-          </div>
-          <div className="flex gap-4">
-            <Skeleton className="h-12 w-40 rounded-xl bg-slate-800" />
-            <Skeleton className="h-12 w-36 rounded-xl bg-slate-800" />
-          </div>
-        </div>
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          <Skeleton className="h-[220px] w-full rounded-3xl bg-slate-900" />
-          <Skeleton className="h-[220px] w-full rounded-3xl bg-slate-900" />
-        </div>
-      </section>
-    );
+    return <HeroSkeleton />;
   }
 
-  const activeHero = heroBanners[currentSlide] || heroBanners[0];
+  const fallbackHero: Banner = {
+    id: 'fallback-hero',
+    title: 'High-Performance Workstation Gear',
+    subtitle: 'Explore our latest flagship collection of precision hardware, ergonomic audio gear, and professional desk upgrades.',
+    image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1600&q=80',
+    badge: 'FLAGSHIP STORE',
+    buttonText: 'Explore Catalog',
+    type: 'hero',
+  };
+
+  const fallbackPromos: Banner[] = [
+    {
+      id: 'fallback-promo-1',
+      title: 'Pro Desk Setup Gear',
+      subtitle: 'Ergonomic monitors & mechanical keyboards.',
+      image: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=800&q=80',
+      badge: 'POPULAR',
+      buttonText: 'Shop Setup',
+      type: 'promo',
+    },
+    {
+      id: 'fallback-promo-2',
+      title: 'Studio Grade Audio',
+      subtitle: 'Noise canceling headsets & USB mics.',
+      image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+      badge: 'SPECIAL SALE',
+      buttonText: 'Explore Audio',
+      type: 'promo',
+    }
+  ];
+
+  const activeHero = heroBanners[currentSlide] || heroBanners[0] || fallbackHero;
+  const displayedPromos = promoBanners.length > 0 ? promoBanners.slice(0, 2) : fallbackPromos;
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -81,11 +97,13 @@ export const HeroSection: React.FC = () => {
           {/* Dynamic Background Image & Gradients */}
           {activeHero && (
             <div className="absolute inset-0 z-0">
-              <img 
+              <SmartImage 
                 src={activeHero.image} 
                 alt={activeHero.title} 
-                fetchPriority="high"
-                decoding="async"
+                priority
+                fill
+                fallbackType="banner"
+                fallbackLabel={activeHero.title}
                 className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-all duration-1000 ease-out" 
               />
               <div className={`absolute inset-0 bg-gradient-to-r ${activeHero.bgColor || 'from-[#101A25] via-[#101A25]/80 to-transparent'}`} />
@@ -187,7 +205,7 @@ export const HeroSection: React.FC = () => {
                     key={idx}
                     onClick={() => setCurrentSlide(idx)}
                     className={`h-2 rounded-full transition-all cursor-pointer ${
-                      currentSlide === idx ? 'w-8 bg-primary' : 'w-2 bg-slate-700 hover:bg-slate-500'
+                      currentSlide === idx ? 'w-8 bg-accent' : 'w-2 bg-slate-700 hover:bg-slate-500'
                     }`}
                     aria-label={`Go to slide ${idx + 1}`}
                   />
@@ -212,15 +230,9 @@ export const HeroSection: React.FC = () => {
 
         {/* Promo Cards Alongside Hero (Desktop: 4 cols, Mobile: 12 cols) */}
         <div className="lg:col-span-4 flex flex-col gap-6">
-          {promoBanners.slice(0, 2).map((promo) => (
+          {displayedPromos.map((promo) => (
             <PromoCard key={promo.id} banner={promo} />
           ))}
-          {promoBanners.length === 0 && (
-            <div className="bg-slate-50 rounded-[32px] border border-slate-100 p-8 text-center text-slate-400 text-xs flex flex-col items-center justify-center min-h-[260px] shadow-premium">
-              <Sparkles className="w-10 h-10 text-accent/20 mb-4" />
-              <span className="font-bold uppercase tracking-widest">Special drops coming soon</span>
-            </div>
-          )}
         </div>
 
       </div>

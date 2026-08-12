@@ -1,4 +1,7 @@
+'use client';
+
 import React, { useState } from 'react';
+import { SmartImage } from '../common/SmartImage';
 import { AccountLayout } from './AccountLayout';
 import { useAuth } from '../../context/AuthContext';
 import { useForm } from 'react-hook-form';
@@ -54,7 +57,13 @@ export const ProfilePage: React.FC = () => {
             <div className="relative group">
               <div className="w-28 h-28 rounded-3xl bg-slate-100 flex items-center justify-center overflow-hidden border-4 border-white shadow-xl">
                 {user?.avatar ? (
-                  <img src={user.avatar} alt="" className="w-full h-full object-cover" />
+                  <SmartImage 
+                    src={user.avatar} 
+                    alt={user.fullName || "User avatar"} 
+                    fill
+                    fallbackType="avatar"
+                    className="w-full h-full object-cover" 
+                  />
                 ) : (
                   <User size={48} className="text-slate-300" />
                 )}

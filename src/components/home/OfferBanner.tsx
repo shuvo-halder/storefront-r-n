@@ -1,4 +1,7 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
+import { SmartImage } from '../common/SmartImage';
 import { Banner } from '../../types/storefront';
 import { storefrontApi } from '../../services/storefrontApi';
 import { useStorefront } from '../../context/StorefrontContext';
@@ -55,9 +58,12 @@ export const OfferBanner: React.FC = () => {
       >
         {/* Background Image & Gradient */}
         <div className="absolute inset-0 z-0">
-          <img 
+          <SmartImage 
             src={offerBanner.image} 
             alt={offerBanner.title} 
+            fill
+            fallbackType="banner"
+            fallbackLabel={offerBanner.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-30" 
           />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-transparent" />

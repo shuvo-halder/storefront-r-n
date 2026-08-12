@@ -1,4 +1,7 @@
+'use client';
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams, usePathname } from 'next/navigation';
 import { useStorefront } from '../../context/StorefrontContext';
 import { storefrontApi } from '../../services/storefrontApi';
 import { Product, ProductFilterState } from '../../types/storefront';
@@ -21,6 +24,8 @@ import {
 import { Skeleton } from '../ui/Skeleton';
 
 export const ShopCatalogView: React.FC = () => {
+  const routeParams = useParams();
+  const pathname = usePathname();
   const { filters, setFilters, resetFilters, categories, brands } = useStorefront();
   const [products, setProducts] = useState<Product[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -30,15 +35,21 @@ export const ShopCatalogView: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState<boolean>(false);
 
+  // Sync route params like /categories/[slug] and /brands/[slug] into filter state
+  useEffect(() => {
+    if (pathname.startsWith('/categories/') && routeParams?.slug) {
+      const slugStr = Array.isArray(routeParams.slug) ? routeParams.slug[0] : routeParams.slug;
+      setFilters(prev => ({ ...prev, categorySlug: slugStr, page: 1 }));
+    } else if (pathname.startsWith('/brands/') && routeParams?.slug) {
+      const slugStr = Array.isArray(routeParams.slug) ? routeParams.slug[0] : routeParams.slug;
+      setFilters(prev => ({ ...prev, brandSlugs: [slugStr], page: 1 }));
+    }
+  }, [pathname, routeParams, setFilters]);
+
   // Helper to parse URL search params into ProductFilterState
   const getFiltersFromURL = useCallback((): Partial<ProductFilterState> => {
     try {
-      let searchStr = window.location.search;
-      // Also check hash query string if hash routing is used e.g. #shop?category=audio
-      if (!searchStr && window.location.hash.includes('?')) {
-        searchStr = window.location.hash.substring(window.location.hash.indexOf('?'));
-      }
-
+      const searchStr = window.location.search;
       if (!searchStr) return {};
 
       const params = new URLSearchParams(searchStr);
@@ -62,15 +73,19 @@ export const ShopCatalogView: React.FC = () => {
         if (!isNaN(min)) urlFilters.minPrice = min;
       }
       if (params.has('maxPrice')) {
-        const max = parseFloat(params.get('maxPrice') || '1000');
+        const max = parseFloat(parseFloat(params.get('maxPrice') || '1000').toFixed(2));
         if (!isNaN(max)) urlFilters.maxPrice = max;
       }
       if (params.has('inStock') || params.has('inStockOnly')) {
         urlFilters.inStockOnly = params.get('inStock') === 'true' || params.get('inStockOnly') === 'true';
       }
-      if (params.has('sort') || params.has('sortBy')) {
-        const sortVal = (params.get('sort') || params.get('sortBy')) as any;
-        urlFilters.sortBy = sortVal;
+      if (params.has('sort') || params.has('sortBy') || params.has('deals')) {
+        if (params.get('deals') === 'true') {
+          urlFilters.sortBy = 'featured';
+        } else {
+          const sortVal = (params.get('sort') || params.get('sortBy')) as any;
+          urlFilters.sortBy = sortVal;
+        }
       }
       if (params.has('q') || params.has('search') || params.has('searchQuery')) {
         urlFilters.searchQuery = params.get('q') || params.get('search') || params.get('searchQuery') || '';
@@ -88,8 +103,8 @@ export const ShopCatalogView: React.FC = () => {
       const params = new URLSearchParams();
 
       if (f.page > 1) params.set('page', f.page.toString());
-      if (f.categorySlug) params.set('category', f.categorySlug);
-      if (f.brandSlugs.length > 0) params.set('brand', f.brandSlugs.join(','));
+      if (f.categorySlug && !window.location.pathname.startsWith('/categories/')) params.set('category', f.categorySlug);
+      if (f.brandSlugs.length > 0 && !window.location.pathname.startsWith('/brands/')) params.set('brand', f.brandSlugs.join(','));
       if (f.minPrice > 0) params.set('minPrice', f.minPrice.toString());
       if (f.maxPrice < 1000) params.set('maxPrice', f.maxPrice.toString());
       if (f.inStockOnly) params.set('inStock', 'true');
@@ -97,10 +112,10 @@ export const ShopCatalogView: React.FC = () => {
       if (f.searchQuery) params.set('q', f.searchQuery);
 
       const queryString = params.toString();
-      const currentHashView = window.location.hash.split('?')[0] || '#shop';
-      const newUrl = queryString ? `${currentHashView}?${queryString}` : currentHashView;
+      const currentPath = window.location.pathname;
+      const newUrl = queryString ? `${currentPath}?${queryString}` : currentPath;
 
-      if (window.location.hash !== newUrl) {
+      if (`${window.location.pathname}${window.location.search}` !== newUrl) {
         window.history.replaceState(null, '', newUrl);
       }
     } catch {}

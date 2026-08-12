@@ -1,4 +1,8 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
+import { SmartImage } from '../common/SmartImage';
+import { useParams } from 'next/navigation';
 import { useStorefront } from '../../context/StorefrontContext';
 import { storefrontApi } from '../../services/storefrontApi';
 import { BlogArticle } from '../../types/storefront';
@@ -8,22 +12,24 @@ import { SEO } from '../common/SEO';
 import { getArticleSchema, getBreadcrumbSchema } from '../../utils/seo';
 
 export const ArticleDetailPage: React.FC = () => {
+  const routeParams = useParams();
   const { viewParams, navigateTo } = useStorefront();
   const [article, setArticle] = useState<BlogArticle | null>(null);
   const [relatedArticles, setRelatedArticles] = useState<BlogArticle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!viewParams.articleSlug) return;
+    const slug = (routeParams?.slug as string) || viewParams.articleSlug;
+    if (!slug) return;
     setIsLoading(true);
     
     const fetchData = async () => {
-      const art = await storefrontApi.getArticleBySlug(viewParams.articleSlug!);
+      const art = await storefrontApi.getArticleBySlug(slug);
       setArticle(art);
       
       if (art?.relatedArticleSlugs) {
         const related = await Promise.all(
-          art.relatedArticleSlugs.map(slug => storefrontApi.getArticleBySlug(slug))
+          art.relatedArticleSlugs.map(s => storefrontApi.getArticleBySlug(s))
         );
         setRelatedArticles(related.filter((r): r is BlogArticle => r !== null));
       }
@@ -31,7 +37,7 @@ export const ArticleDetailPage: React.FC = () => {
     };
 
     fetchData();
-  }, [viewParams.articleSlug]);
+  }, [routeParams?.slug, viewParams.articleSlug]);
 
   if (isLoading) {
     return (
@@ -64,7 +70,14 @@ export const ArticleDetailPage: React.FC = () => {
         <article className="bg-white border border-slate-100 rounded-[48px] overflow-hidden shadow-2xl shadow-slate-200/50">
           
           <div className="relative aspect-video sm:aspect-[21/9] overflow-hidden">
-            <img src={article.coverImage} alt="" className="w-full h-full object-cover" />
+            <SmartImage 
+              src={article.coverImage} 
+              alt={article.title} 
+              fill
+              fallbackType="blog"
+              fallbackLabel={article.title}
+              className="w-full h-full object-cover" 
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent"></div>
             <div className="absolute top-8 left-8">
               <button
@@ -143,8 +156,15 @@ export const ArticleDetailPage: React.FC = () => {
                   onClick={() => navigateTo('article-detail', { articleSlug: art.slug })}
                   className="group bg-white border border-slate-100 rounded-[32px] overflow-hidden hover:shadow-xl transition-all cursor-pointer flex flex-col"
                 >
-                  <div className="aspect-[16/10] bg-slate-100 overflow-hidden">
-                    <img src={art.coverImage} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <div className="aspect-[16/10] bg-slate-100 overflow-hidden relative">
+                    <SmartImage 
+                      src={art.coverImage} 
+                      alt={art.title} 
+                      fill
+                      fallbackType="blog"
+                      fallbackLabel={art.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                    />
                   </div>
                   <div className="p-6 space-y-3">
                     <h4 className="font-black text-slate-900 group-hover:text-primary transition-colors line-clamp-2">

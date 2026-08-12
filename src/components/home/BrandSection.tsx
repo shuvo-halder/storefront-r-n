@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { useStorefront } from '../../context/StorefrontContext';
 import { Award, ArrowRight } from 'lucide-react';

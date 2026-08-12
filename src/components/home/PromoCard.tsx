@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+import { SmartImage } from '../common/SmartImage';
 import { Banner } from '../../types/storefront';
 import { useStorefront } from '../../context/StorefrontContext';
 import { ArrowRight, Sparkles, Tag, Zap } from 'lucide-react';
@@ -49,11 +52,12 @@ export const PromoCard: React.FC<PromoCardProps> = ({ banner, variant = 'vertica
         </div>
 
         <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-slate-800 flex-shrink-0 border border-slate-700/60 relative">
-          <img 
+          <SmartImage 
             src={banner.image} 
             alt={banner.title} 
-            loading="lazy"
-            decoding="async"
+            fill
+            fallbackType="banner"
+            fallbackLabel={banner.title}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
           />
         </div>
@@ -68,11 +72,12 @@ export const PromoCard: React.FC<PromoCardProps> = ({ banner, variant = 'vertica
     >
       {/* Background Image with Dark Gradient overlay */}
       <div className="absolute inset-0 z-0">
-        <img 
+        <SmartImage 
           src={banner.image} 
           alt={banner.title} 
-          loading="lazy"
-          decoding="async"
+          fill
+          fallbackType="banner"
+          fallbackLabel={banner.title}
           className="w-full h-full object-cover object-center opacity-30 group-hover:opacity-40 group-hover:scale-110 transition-all duration-1000 ease-out" 
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#101A25] via-[#101A25]/60 to-transparent" />

@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+import { SmartImage } from './SmartImage';
 import { useStorefront } from '../../context/StorefrontContext';
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 
@@ -15,11 +18,16 @@ export const ToastContainer: React.FC = () => {
           className="pointer-events-auto flex items-start gap-3 p-3.5 bg-white border border-slate-200/90 shadow-xl rounded-xl transition-all duration-300 animate-in fade-in slide-in-from-bottom-3"
         >
           {toast.image ? (
-            <img 
-              src={toast.image} 
-              alt="" 
-              className="w-10 h-10 object-cover rounded-lg border border-slate-100 flex-shrink-0" 
-            />
+            <div className="w-10 h-10 rounded-lg border border-slate-100 flex-shrink-0 relative overflow-hidden">
+              <SmartImage 
+                src={toast.image} 
+                alt={toast.title} 
+                fill
+                fallbackType="product"
+                fallbackLabel={toast.title}
+                className="w-full h-full object-cover" 
+              />
+            </div>
           ) : (
             <div className="mt-0.5 flex-shrink-0">
               {toast.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}

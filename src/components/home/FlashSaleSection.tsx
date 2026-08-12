@@ -1,15 +1,29 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useStorefront } from '../../context/StorefrontContext';
-import { MOCK_PRODUCTS } from '../../data/mockProducts';
+import { useCart } from '../../hooks/useCart';
+import { storefrontApi } from '../../services/storefrontApi';
 import { RatingStars } from '../common/RatingStars';
-import { Zap, Clock, ShoppingCart, Heart, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Zap, Clock, ShoppingCart, Heart, ShieldCheck, ArrowRight, AlertCircle, RefreshCw } from 'lucide-react';
+import { Skeleton } from '../ui/Skeleton';
+import { SmartImage } from '../common/SmartImage';
 
 export const FlashSaleSection: React.FC = () => {
-  const { addToCart, toggleWishlist, isInWishlist, navigateTo } = useStorefront();
+  const { toggleWishlist, isInWishlist, navigateTo } = useStorefront();
+  const { addToCart } = useCart();
 
-  // Find deal product
-  const dealProduct = MOCK_PRODUCTS.find(p => p.isDealOfDay) || MOCK_PRODUCTS[0];
-  const inWishlist = isInWishlist(dealProduct.id);
+  const { data: products, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['flash_sale_product'],
+    queryFn: async () => {
+      const res = await storefrontApi.getProducts();
+      return res.products || [];
+    }
+  });
+
+  const dealProduct = products?.find(p => p.isDealOfDay || p.discountPercent) || products?.[0];
+  const inWishlist = dealProduct ? isInWishlist(dealProduct.id) : false;
 
   // Live countdown state
   const [timeLeft, setTimeLeft] = useState({ hours: 18, minutes: 42, seconds: 15 });
@@ -26,6 +40,34 @@ export const FlashSaleSection: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  if (isLoading) {
+    return (
+      <section className="py-12 bg-white border-y border-slate-200">
+        <div className="max-w-7xl mx-auto px-4">
+          <Skeleton className="w-full h-80 rounded-3xl bg-slate-100" />
+        </div>
+      </section>
+    );
+  }
+
+  if (isError) {
+    return (
+      <section className="py-12 bg-slate-900 text-white text-center">
+        <div className="max-w-md mx-auto p-6 bg-slate-800 rounded-2xl space-y-3">
+          <AlertCircle size={32} className="text-rose-400 mx-auto" />
+          <p className="text-xs text-slate-300">Unable to load Flash Sale deal: {(error as Error)?.message}</p>
+          <button onClick={() => refetch()} className="px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold flex items-center gap-1.5 mx-auto">
+            <RefreshCw size={14} /> Retry
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (!dealProduct) {
+    return null; // Empty state: hides flash deal section if no products exist
+  }
+
   return (
     <section className="py-12 bg-slate-900 text-white relative overflow-hidden">
       {/* Light flares */}
@@ -38,14 +80,17 @@ export const FlashSaleSection: React.FC = () => {
           {/* Left Column Image */}
           <div className="lg:col-span-5 relative flex justify-center">
             <div className="relative w-full aspect-square max-w-sm rounded-2xl overflow-hidden bg-slate-950 border border-slate-700 shadow-xl group">
-              <img 
+              <SmartImage 
                 src={dealProduct.images[0]} 
                 alt={dealProduct.name} 
+                fill
+                fallbackType="product"
+                fallbackLabel={dealProduct.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
               />
               <div className="absolute top-4 left-4 bg-primary text-white font-extrabold text-xs px-3 py-1 rounded-full shadow-md uppercase tracking-wider flex items-center gap-1">
                 <Zap size={14} className="fill-white" />
-                <span>SAVE 21% TODAY</span>
+                <span>{dealProduct.discountPercent ? `${dealProduct.discountPercent}% OFF` : 'SPECIAL DEAL'}</span>
               </div>
             </div>
           </div>
@@ -111,10 +156,10 @@ export const FlashSaleSection: React.FC = () => {
               <div className="space-y-1">
                 <div className="flex justify-between text-xs font-semibold text-slate-300">
                   <span>Hurry! Only {dealProduct.stock} items remaining in stock</span>
-                  <span className="text-rose-400 font-mono">78% Claimed</span>
+                  <span className="text-rose-400 font-mono">In Stock</span>
                 </div>
                 <div className="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden p-0.5 border border-slate-800">
-                  <div className="h-full bg-gradient-to-r from-primary to-amber-500 rounded-full w-[78%]" />
+                  <div className="h-full bg-gradient-to-r from-primary to-amber-500 rounded-full w-[85%]" />
                 </div>
               </div>
             </div>

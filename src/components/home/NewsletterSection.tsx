@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { useStorefront } from '../../context/StorefrontContext';
 import { Send, Mail, Sparkles, CheckCircle2 } from 'lucide-react';

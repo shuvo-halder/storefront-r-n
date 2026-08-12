@@ -1,28 +1,22 @@
+'use client';
+
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useStorefront } from '../../context/StorefrontContext';
 import { 
-  Send, 
-  ShieldCheck, 
-  Truck, 
-  RotateCcw, 
-  Headphones, 
-  Lock, 
   Mail, 
   Phone, 
   MapPin,
-  CheckCircle2
 } from 'lucide-react';
 
 export const Footer: React.FC = () => {
-  const { publicSettings, navigateTo, addToast } = useStorefront();
+  const { publicSettings, addToast } = useStorefront();
   const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newsletterEmail || !newsletterEmail.includes('@')) return;
 
-    setSubscribed(true);
     addToast({
       title: 'Subscribed Successfully!',
       description: 'Check your inbox for a 10% discount promo code.',
@@ -39,16 +33,16 @@ export const Footer: React.FC = () => {
         
         {/* Col 1: Brand Info */}
         <div className="lg:col-span-2 space-y-8">
-          <div 
-            onClick={() => navigateTo('home')} 
-            className="cursor-pointer flex items-center group"
+          <Link 
+            href="/" 
+            className="cursor-pointer flex items-center group inline-block"
           >
             <img 
               src="/logowhite.svg" 
               alt="Vyzobd" 
               className="h-9 w-auto object-contain"
             />
-          </div>
+          </Link>
 
           <p className="text-sm text-slate-400 leading-relaxed max-w-sm font-medium">
             {publicSettings?.seo.metaDescription || 'Engineers of next-generation audio equipment and high-performance workstation peripherals for the modern professional.'}
@@ -77,19 +71,19 @@ export const Footer: React.FC = () => {
           </h4>
           <ul className="space-y-4 text-xs font-bold uppercase tracking-widest">
             {[
-              { label: 'All Products', view: 'shop' },
-              { label: 'Featured Gear', view: 'shop' },
-              { label: 'New Arrivals', view: 'shop' },
-              { label: 'Best Sellers', view: 'shop' },
-              { label: 'Flash Deals', view: 'deals' },
+              { label: 'All Products', href: '/products' },
+              { label: 'Featured Gear', href: '/products' },
+              { label: 'New Arrivals', href: '/products?sort=newest' },
+              { label: 'Best Sellers', href: '/products?sort=bestsellers' },
+              { label: 'Flash Deals', href: '/products?deals=true' },
             ].map((link, idx) => (
               <li key={idx}>
-                <button
-                  onClick={() => navigateTo(link.view as any)}
-                  className="hover:text-accent transition-colors text-slate-400"
+                <Link
+                  href={link.href}
+                  className="hover:text-accent transition-colors text-slate-400 block"
                 >
                   {link.label}
-                </button>
+                </Link>
               </li>
             ))}
           </ul>
@@ -102,19 +96,19 @@ export const Footer: React.FC = () => {
           </h4>
           <ul className="space-y-4 text-xs font-bold uppercase tracking-widest">
             {[
-              { label: 'Track Order', view: 'orders' },
-              { label: 'Shipping Info', view: 'cms-page', type: 'shipping-policy' },
-              { label: 'Returns & Refunds', view: 'cms-page', type: 'return-policy' },
-              { label: 'Warranty Claims', view: 'faq' },
-              { label: 'Help & Support', view: 'faq' },
+              { label: 'Track Order', href: '/account/orders' },
+              { label: 'Shipping Info', href: '/pages/shipping' },
+              { label: 'Returns & Refunds', href: '/account/returns' },
+              { label: 'Warranty Claims', href: '/faq' },
+              { label: 'Help & Support', href: '/faq' },
             ].map((link, idx) => (
               <li key={idx}>
-                <button
-                  onClick={() => navigateTo(link.view as any, link.type ? { cmsPageType: link.type as any } : {})}
-                  className="hover:text-accent transition-colors text-slate-400 text-left"
+                <Link
+                  href={link.href}
+                  className="hover:text-accent transition-colors text-slate-400 block"
                 >
                   {link.label}
-                </button>
+                </Link>
               </li>
             ))}
           </ul>
@@ -127,19 +121,19 @@ export const Footer: React.FC = () => {
           </h4>
           <ul className="space-y-4 text-xs font-bold uppercase tracking-widest">
             {[
-              { label: 'About Vyzobd', view: 'cms-page', type: 'about' },
-              { label: 'Our Story', view: 'cms-page', type: 'about' },
-              { label: 'Latest News', view: 'blog' },
-              { label: 'Terms of Service', view: 'cms-page', type: 'terms-and-conditions' },
-              { label: 'Privacy Policy', view: 'cms-page', type: 'privacy-policy' },
+              { label: 'About Vyzobd', href: '/pages/about' },
+              { label: 'Our Story', href: '/pages/about' },
+              { label: 'Latest News', href: '/blog' },
+              { label: 'Terms of Service', href: '/pages/terms' },
+              { label: 'Privacy Policy', href: '/pages/privacy' },
             ].map((link, idx) => (
               <li key={idx}>
-                <button
-                  onClick={() => navigateTo(link.view as any, link.type ? { cmsPageType: link.type as any } : {})}
-                  className="hover:text-accent transition-colors text-slate-400 text-left"
+                <Link
+                  href={link.href}
+                  className="hover:text-accent transition-colors text-slate-400 block"
                 >
                   {link.label}
-                </button>
+                </Link>
               </li>
             ))}
           </ul>
@@ -155,7 +149,7 @@ export const Footer: React.FC = () => {
 
         {/* Payment Badges */}
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-slate-400 opacity-30 grayscale grayscale-100">
+          <div className="flex items-center gap-2 text-slate-400 opacity-30 grayscale">
              <span className="font-black italic">VISA</span>
              <span className="font-black italic">MASTERCARD</span>
              <span className="font-black italic">PAYPAL</span>
@@ -166,3 +160,4 @@ export const Footer: React.FC = () => {
     </footer>
   );
 };
+

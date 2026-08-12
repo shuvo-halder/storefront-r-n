@@ -15,8 +15,11 @@ export const PaymentSuccess: React.FC = () => {
       if (!orderId) return;
       try {
         const result = await storefrontApi.verifyPayment(orderId);
-        setOrder(result.order);
-        if (result.status === 'success') {
+        if (result?.orderId) {
+          const fetchedOrder = await storefrontApi.getOrderById(result.orderId);
+          setOrder(fetchedOrder);
+        }
+        if (result?.verified) {
           confetti({
             particleCount: 150,
             spread: 70,

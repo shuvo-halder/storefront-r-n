@@ -1,3 +1,5 @@
+'use client';
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { storefrontApi } from '../services/storefrontApi';
 import { Cart } from '../types/storefront';
@@ -94,8 +96,8 @@ export function useCart() {
       const updated = await storefrontApi.applyCoupon(code);
       return updated;
     },
-    onSuccess: (updated) => {
-      queryClient.setQueryData<Cart>(CART_QUERY_KEY, updated);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
     },
   });
 
@@ -115,11 +117,15 @@ export function useCart() {
     totalItemCount,
     
     // Mutations
-    addToCart: addToCartMutation.mutateAsync,
+    addToCart: (productId: string, quantity: number = 1, variantId?: string) =>
+      addToCartMutation.mutateAsync({ productId, quantity, variantId }),
     isAddingToCart: addToCartMutation.isPending,
     addToCartError: addToCartMutation.error,
 
-    updateCartQuantity: updateQuantityMutation.mutateAsync,
+    updateCartQuantity: (itemId: string, quantity: number) =>
+      updateQuantityMutation.mutateAsync({ itemId, quantity }),
+    updateQuantity: (itemId: string, quantity: number) =>
+      updateQuantityMutation.mutateAsync({ itemId, quantity }),
     isUpdatingQuantity: updateQuantityMutation.isPending,
 
     removeCartItem: removeItemMutation.mutateAsync,

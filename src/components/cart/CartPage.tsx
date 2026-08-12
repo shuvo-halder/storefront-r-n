@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect } from 'react';
 import { useStorefront } from '../../context/StorefrontContext';
 import { useCart } from '../../hooks/useCart';

@@ -1,4 +1,7 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { useStorefront } from '../../context/StorefrontContext';
 import { storefrontApi } from '../../services/storefrontApi';
 import { CMSPage as CMSPageType } from '../../types/storefront';
@@ -7,8 +10,9 @@ import { Mail, Send, Calendar, ArrowLeft } from 'lucide-react';
 import { SEO } from '../common/SEO';
 
 export const CMSPage: React.FC = () => {
+  const routeParams = useParams();
   const { viewParams, navigateTo, addToast } = useStorefront();
-  const slug = viewParams.cmsPageType || 'about-us';
+  const slug = (routeParams?.slug as string) || viewParams.cmsPageType || 'about-us';
   
   const [page, setPage] = useState<CMSPageType | null>(null);
   const [isLoading, setIsLoading] = useState(true);

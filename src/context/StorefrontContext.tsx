@@ -1,3 +1,5 @@
+'use client';
+
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { 
@@ -46,9 +48,12 @@ export type AppView =
   | 'search';
 
 export interface ViewParams {
+  id?: string;
   productSlug?: string;
+  categorySlug?: string;
+  brandSlug?: string;
   articleSlug?: string;
-  cmsPageType?: 'shipping' | 'returns' | 'privacy' | 'terms' | 'faq' | 'contact' | 'about';
+  cmsPageType?: 'shipping' | 'returns' | 'privacy' | 'terms' | 'faq' | 'contact' | 'about' | 'about-us' | 'contact-us';
   confirmedOrder?: Order;
   searchQuery?: string;
   orderId?: string;
@@ -132,9 +137,11 @@ interface StorefrontContextType {
 
 const StorefrontContext = createContext<StorefrontContextType | undefined>(undefined);
 
+import { useRouter } from 'next/navigation';
 import { useSettings } from './SettingsContext';
 
 export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const router = useRouter();
   const { settings: publicSettings } = useSettings();
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [viewParams, setViewParams] = useState<ViewParams>({});
@@ -145,6 +152,7 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const [wishlist, setWishlist] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
     try {
       const saved = localStorage.getItem('vyzobd_wishlist');
       return saved ? JSON.parse(saved) : [];
@@ -154,6 +162,7 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
   });
 
   const [recentlyViewed, setRecentlyViewed] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
     try {
       const saved = localStorage.getItem('vyzobd_recently_viewed');
       return saved ? JSON.parse(saved) : [];
@@ -163,6 +172,7 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
   });
 
   const [searchHistory, setSearchHistory] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return ['wireless headphones', 'smartwatch', 'gaming laptop', 'anc earphone'];
     try {
       const saved = localStorage.getItem('vyzobd_search_history');
       return saved ? JSON.parse(saved) : ['wireless headphones', 'smartwatch', 'gaming laptop', 'anc earphone'];
@@ -211,24 +221,107 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
     });
   };
 
-  // Sync hash state with URL
+  // Sync state & perform Next.js App Router navigation
   const navigateTo = (view: AppView, params: ViewParams = {}) => {
     setCurrentView(view);
     setViewParams(params);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     if (view === 'search' && params.searchQuery) {
       addSearchHistory(params.searchQuery);
     }
 
-    let hash = `#${view}`;
-    if (params.productSlug) hash += `?product=${params.productSlug}`;
-    else if (params.articleSlug) hash += `?article=${params.articleSlug}`;
-    else if (params.cmsPageType) hash += `?page=${params.cmsPageType}`;
-    else if (params.searchQuery) hash += `?q=${encodeURIComponent(params.searchQuery)}`;
-    
+    let routePath = '/';
+    switch (view) {
+      case 'home':
+        routePath = '/';
+        break;
+      case 'shop':
+      case 'deals':
+        routePath = params.categorySlug
+          ? `/categories/${params.categorySlug}`
+          : `/products${view === 'deals' ? '?deals=true' : ''}`;
+        break;
+      case 'product-detail':
+        routePath = params.productSlug
+          ? `/products/${params.productSlug}`
+          : params.id
+          ? `/products/${params.id}`
+          : '/products';
+        break;
+      case 'cart':
+        routePath = '/cart';
+        break;
+      case 'checkout':
+      case 'checkout-gateway':
+      case 'checkout-pending':
+        routePath = '/checkout';
+        break;
+      case 'checkout-success':
+      case 'order-confirmation':
+        routePath = params.orderId || params.id ? `/account/orders/${params.orderId || params.id}` : '/account/orders';
+        break;
+      case 'checkout-failed':
+        routePath = '/checkout';
+        break;
+      case 'login':
+        routePath = '/login';
+        break;
+      case 'register':
+        routePath = '/register';
+        break;
+      case 'forgot-password':
+        routePath = '/forgot-password';
+        break;
+      case 'reset-password':
+        routePath = '/reset-password';
+        break;
+      case 'account':
+      case 'profile':
+        routePath = '/account/profile';
+        break;
+      case 'addresses':
+        routePath = '/account/addresses';
+        break;
+      case 'wishlist':
+        routePath = '/account/wishlist';
+        break;
+      case 'notifications':
+        routePath = '/account/notifications';
+        break;
+      case 'activity':
+        routePath = '/account/activity';
+        break;
+      case 'orders':
+        routePath = '/account/orders';
+        break;
+      case 'order-details':
+        routePath = params.orderId || params.id ? `/account/orders/${params.orderId || params.id}` : '/account/orders';
+        break;
+      case 'return-request':
+        routePath = '/account/returns';
+        break;
+      case 'blog':
+        routePath = '/blog';
+        break;
+      case 'article-detail':
+        routePath = params.articleSlug || params.id ? `/blog/${params.articleSlug || params.id}` : '/blog';
+        break;
+      case 'cms-page':
+      case 'faq':
+        routePath = view === 'faq' ? '/faq' : params.cmsPageType ? `/pages/${params.cmsPageType}` : '/pages/about';
+        break;
+      case 'search':
+        routePath = `/search${params.searchQuery ? `?q=${encodeURIComponent(params.searchQuery)}` : ''}`;
+        break;
+      default:
+        routePath = '/';
+    }
+
     try {
-      window.history.pushState(null, '', hash);
+      router.push(routePath);
     } catch {}
   };
 
@@ -357,7 +450,7 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
   const resetFilters = () => setFilters(DEFAULT_FILTERS);
 
   // Checkout
-  const createCheckoutOrder = async (payload: Omit<Order, 'id' | 'createdAt' | 'status'>) => {
+  const createCheckoutOrder = async (payload: any) => {
     const newOrder = await storefrontApi.checkout(payload);
     
     // Invalidate cart query to clear it in UI

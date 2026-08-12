@@ -1,4 +1,8 @@
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
+import { SmartImage } from '../common/SmartImage';
+import { useParams } from 'next/navigation';
 import { useStorefront } from '../../context/StorefrontContext';
 import { useCart } from '../../hooks/useCart';
 import { storefrontApi } from '../../services/storefrontApi';
@@ -38,6 +42,7 @@ import { SEO } from '../common/SEO';
 import { getProductSchema, getBreadcrumbSchema } from '../../utils/seo';
 
 export const ProductDetailPage: React.FC = () => {
+  const routeParams = useParams();
   const { 
     viewParams, 
     toggleWishlist, 
@@ -73,7 +78,7 @@ export const ProductDetailPage: React.FC = () => {
     let isMounted = true;
 
     const loadProductAndRelated = async () => {
-      const slug = viewParams.productSlug;
+      const slug = (routeParams?.slug as string) || viewParams.productSlug;
       if (!slug) {
         setError('No product slug specified.');
         setIsLoading(false);
@@ -212,12 +217,12 @@ export const ProductDetailPage: React.FC = () => {
 
   const handleAddToCart = () => {
     if (activeStock === 0) return;
-    addToCartFn({ productId: product.id, quantity, variantId: selectedVariantId });
+    addToCartFn(product.id, quantity, selectedVariantId);
   };
 
   const handleBuyNow = async () => {
     if (activeStock === 0) return;
-    await addToCartFn({ productId: product.id, quantity, variantId: selectedVariantId });
+    await addToCartFn(product.id, quantity, selectedVariantId);
     navigateTo('checkout');
   };
 
@@ -313,11 +318,13 @@ export const ProductDetailPage: React.FC = () => {
             
             {/* Main Image Stage */}
             <div className="relative aspect-square bg-slate-50 rounded-2xl border border-slate-200/80 overflow-hidden group">
-              <img 
+              <SmartImage 
                 src={selectedImage || product.images[0]} 
                 alt={product.name} 
-                fetchPriority="high"
-                decoding="async"
+                priority
+                fill
+                fallbackType="product"
+                fallbackLabel={product.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
               />
 
@@ -375,11 +382,12 @@ export const ProductDetailPage: React.FC = () => {
                       selectedImage === img ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200 opacity-70 hover:opacity-100'
                     }`}
                   >
-                    <img 
+                    <SmartImage 
                       src={img} 
                       alt={`Thumbnail ${idx + 1}`} 
-                      loading="lazy"
-                      decoding="async"
+                      fill
+                      fallbackType="product"
+                      fallbackLabel={product.name}
                       className="w-full h-full object-cover" 
                     />
                   </button>
@@ -808,11 +816,15 @@ export const ProductDetailPage: React.FC = () => {
             <X size={24} />
           </button>
 
-          <div className="relative max-w-4xl max-h-[85vh] w-full flex items-center justify-center">
-            <img 
+          <div className="relative max-w-4xl w-full h-[80vh] flex items-center justify-center">
+            <SmartImage 
               src={product.images[zoomImageIndex] || selectedImage} 
               alt="High resolution inspect" 
-              className="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl"
+              fill
+              fallbackType="product"
+              fallbackLabel={product.name}
+              objectFit="contain"
+              className="rounded-2xl shadow-2xl"
             />
 
             {product.images.length > 1 && (

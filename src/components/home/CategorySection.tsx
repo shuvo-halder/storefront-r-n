@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+import { SmartImage } from '../common/SmartImage';
 import { useStorefront } from '../../context/StorefrontContext';
 import { ArrowRight, Layers, Sparkles } from 'lucide-react';
 import { Skeleton } from '../ui/Skeleton';
@@ -77,9 +80,12 @@ export const CategorySection: React.FC = () => {
             }`}
           >
             {/* Image Layer */}
-            <img 
+            <SmartImage 
               src={cat.image} 
               alt={cat.name} 
+              fill
+              fallbackType="category"
+              fallbackLabel={cat.name}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
             />
             

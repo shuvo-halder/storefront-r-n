@@ -1,6 +1,10 @@
+'use client';
+
 import React from 'react';
+import { SmartImage } from '../common/SmartImage';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
-import { useStorefront } from '../../context/StorefrontContext';
 import { 
   User, 
   ShoppingBag, 
@@ -11,7 +15,9 @@ import {
   LogOut, 
   ChevronRight,
   Settings,
-  ShieldCheck
+  ShieldCheck,
+  RotateCcw,
+  Receipt
 } from 'lucide-react';
 
 interface AccountLayoutProps {
@@ -20,22 +26,24 @@ interface AccountLayoutProps {
 }
 
 export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTab }) => {
+  const router = useRouter();
   const { user, logout } = useAuth();
-  const { navigateTo } = useStorefront();
 
   const menuItems = [
-    { id: 'account', label: 'Dashboard', icon: Activity },
-    { id: 'profile', label: 'My Profile', icon: User },
-    { id: 'orders', label: 'Order History', icon: ShoppingBag },
-    { id: 'wishlist', label: 'Wishlist', icon: Heart },
-    { id: 'addresses', label: 'Addresses', icon: MapPin },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'activity', label: 'Recent Activity', icon: Activity },
+    { id: 'account', href: '/account', label: 'Dashboard', icon: Activity },
+    { id: 'profile', href: '/account/profile', label: 'My Profile', icon: User },
+    { id: 'orders', href: '/account/orders', label: 'Order History', icon: ShoppingBag },
+    { id: 'wishlist', href: '/account/wishlist', label: 'Wishlist', icon: Heart },
+    { id: 'addresses', href: '/account/addresses', label: 'Addresses', icon: MapPin },
+    { id: 'notifications', href: '/account/notifications', label: 'Notifications', icon: Bell },
+    { id: 'activity', href: '/account/activity', label: 'Recent Activity', icon: Activity },
+    { id: 'returns', href: '/account/returns', label: 'Returns Request', icon: RotateCcw },
+    { id: 'refunds', href: '/account/refunds', label: 'Refund Claims', icon: Receipt },
   ];
 
   const handleLogout = async () => {
     await logout();
-    navigateTo('home');
+    router.push('/');
   };
 
   return (
@@ -54,20 +62,26 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
                   <div className="flex items-center gap-4 mb-4">
                     <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 relative overflow-hidden">
                       {user?.avatar ? (
-                        <img src={user.avatar} alt="" className="w-full h-full object-cover" />
+                        <SmartImage 
+                          src={user.avatar} 
+                          alt={user.fullName || "User avatar"} 
+                          fill
+                          fallbackType="avatar"
+                          className="w-full h-full object-cover" 
+                        />
                       ) : (
                         <User size={32} className="text-white/40" />
                       )}
                     </div>
                     <div>
-                      <h3 className="font-black text-lg leading-tight truncate max-w-[140px]">{user?.fullName}</h3>
+                      <h3 className="font-black text-lg leading-tight truncate max-w-[140px]">{user?.fullName || 'Account User'}</h3>
                       <div className="flex items-center gap-1.5 text-rose-400">
                         <ShieldCheck size={12} />
                         <span className="text-[9px] font-black uppercase tracking-widest">Verified Member</span>
                       </div>
                     </div>
                   </div>
-                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest">{user?.email}</div>
+                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest">{user?.email || 'user@example.com'}</div>
                 </div>
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
               </div>
@@ -80,12 +94,12 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
                     const isActive = activeTab === item.id;
 
                     return (
-                      <button
+                      <Link
                         key={item.id}
-                        onClick={() => navigateTo(item.id as any)}
+                        href={item.href}
                         className={`
                           w-full flex items-center justify-between p-3.5 rounded-2xl transition-all duration-300 group
-                          ${isActive ? 'bg-primary/5 text-primary shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}
+                          ${isActive ? 'bg-primary/5 text-primary shadow-sm font-bold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}
                         `}
                       >
                         <div className="flex items-center gap-3">
@@ -98,7 +112,7 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
                           <span className="text-sm font-bold">{item.label}</span>
                         </div>
                         <ChevronRight size={14} className={`transition-transform duration-300 ${isActive ? 'translate-x-1 opacity-100' : 'opacity-0 -translate-x-2'}`} />
-                      </button>
+                      </Link>
                     );
                   })}
                 </div>
@@ -106,7 +120,7 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
                 <div className="mt-8 pt-4 border-t border-slate-100">
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 p-3.5 text-primary hover:bg-primary/5 rounded-2xl transition-all font-bold text-sm"
+                    className="w-full flex items-center gap-3 p-3.5 text-primary hover:bg-primary/5 rounded-2xl transition-all font-bold text-sm cursor-pointer"
                   >
                     <div className="p-2 bg-primary/10 rounded-xl">
                       <LogOut size={18} />
@@ -135,3 +149,4 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
     </div>
   );
 };
+

@@ -72,6 +72,7 @@ export interface Brand {
   logo: string;
   description?: string;
   featuredProductCount?: number;
+  itemCount?: number;
 }
 
 export interface CartItem {
@@ -174,6 +175,7 @@ export interface UserProfile {
   id: string;
   fullName: string;
   email: string;
+  avatar?: string;
   avatarUrl?: string;
   phone?: string;
   defaultAddress?: ShippingAddress;

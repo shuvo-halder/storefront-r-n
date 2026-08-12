@@ -1,7 +1,11 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
+import { SmartImage } from '../common/SmartImage';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useStorefront } from '../../context/StorefrontContext';
+import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../hooks/useCart';
 import { storefrontApi } from '../../services/storefrontApi';
 import { checkoutSchema, CheckoutFormData } from '../../types/checkout';
@@ -24,7 +28,8 @@ import {
   Truck,
   CreditCard,
   ClipboardCheck,
-  Tag
+  Tag,
+  Lock
 } from 'lucide-react';
 
 const STEPS = [
@@ -36,7 +41,8 @@ const STEPS = [
 ];
 
 export const CheckoutPage: React.FC = () => {
-  const { user, navigateTo } = useStorefront();
+  const { navigateTo } = useStorefront();
+  const { user } = useAuth();
   const { cart, isLoading: isCartLoading, totalItemCount } = useCart();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -153,16 +159,10 @@ export const CheckoutPage: React.FC = () => {
         status: 'Pending',
       };
 
-      const result = await storefrontApi.checkoutComplete(orderPayload);
+      const createdOrder = await storefrontApi.checkoutComplete(orderPayload);
       
-      trackGA4Purchase(result.order);
-
-      if (result.paymentUrl) {
-        // Production redirect
-        window.location.href = result.paymentUrl;
-      } else {
-        navigateTo('order-confirmation', { orderId: result.order.id });
-      }
+      trackGA4Purchase(createdOrder);
+      navigateTo('order-confirmation', { orderId: createdOrder.id });
     } catch (err: any) {
       setServerError(err.message || 'An error occurred while placing your order. Please try again.');
     } finally {
@@ -439,7 +439,16 @@ export const CheckoutPage: React.FC = () => {
               <div className="space-y-4 mb-6">
                 {cart.items.slice(0, 3).map((item) => (
                   <div key={item.id} className="flex gap-3">
-                    <img src={item.product.images[0]} alt="" className="w-10 h-10 rounded-lg object-cover bg-slate-50 border border-slate-100" />
+                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-50 border border-slate-100 relative flex-shrink-0">
+                      <SmartImage 
+                        src={item.selectedVariant?.image || item.product.images[0]} 
+                        alt={item.product.name} 
+                        fill
+                        fallbackType="product"
+                        fallbackLabel={item.product.name}
+                        className="w-full h-full object-cover" 
+                      />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-[10px] font-bold text-slate-900 line-clamp-1">{item.product.name}</div>
                       <div className="text-[9px] text-slate-400 font-medium">Qty: {item.quantity} • ${item.unitPrice.toFixed(2)}</div>

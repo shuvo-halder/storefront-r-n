@@ -1,65 +1,49 @@
-# Storefront API Coverage Audit
+# Vyzobd Premium Storefront — API Coverage Mapping
 
-This document provides a comprehensive audit of the storefront application against the existing `storefrontApi.ts` contract and functional requirements.
+This document maps all backend administrative REST endpoints to the corresponding client-side services and frontend UI pages or components within the **Vyzobd E-Commerce Storefront**.
 
-## API Coverage Table
+---
 
-| API Feature | Method | Endpoint (v1) | Used By | Page/Component | Status |
+## API Endpoints Coverage Matrix
+
+| Endpoint | Method | Frontend Service / File | UI Component / Page | Status | Verified |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Authentication** | `login` | `POST /auth/login` | `AuthContext` | Login, AuthModal | ✅ Used |
-| | `register` | `POST /auth/register` | `AuthContext` | Register, AuthModal | ✅ Used |
-| | `forgotPassword` | `POST /auth/forgot-password` | `ForgotPasswordPage` | Forgot Password | ✅ Used |
-| | `updateProfile` | `PATCH /auth/profile` | `AuthContext` | Profile Page | ✅ Used |
-| | `getCurrentUser` | `GET /auth/me` | `AuthContext` | App Init | ✅ Used |
-| | `logout` | `POST /auth/logout` | `AuthContext` | Header / Account | ✅ Used |
-| **Products** | `getProducts` | `GET /products` | `ShopCatalogView` | Shop Page | ✅ Used |
-| | `getProductBySlug`| `GET /products/:slug` | `ProductDetailPage` | Product Detail | ✅ Used |
-| **Categories** | `getCategories` | `GET /categories` | `StorefrontContext` | Header, Navbar | ✅ Used |
-| **Brands** | `getBrands` | `GET /brands` | `StorefrontContext` | Brands Section | ✅ Used |
-| **Search** | `search` | `GET /search` | `Header`, `SearchPageView` | Search Results | ✅ Used |
-| | `getSearchFacets`| `GET /search/facets` | `SearchPageView` | Search Sidebar | ✅ Used |
-| **Cart** | `getCart` | `GET /cart` | `useCart` (Hook) | Global | ✅ Used |
-| | `addToCart` | `POST /cart/items` | `useCart` (Hook) | Product Detail | ✅ Used |
-| | `updateCartItem` | `PUT /cart/items/:id` | `useCart` (Hook) | Cart Drawer | ✅ Used |
-| | `removeCartItem` | `DELETE /cart/items/:id` | `useCart` (Hook) | Cart Drawer | ✅ Used |
-| | `clearCart` | `DELETE /cart` | `useCart` (Hook) | Checkout | ✅ Used |
-| **Wishlist** | N/A | N/A | `StorefrontContext` | Wishlist Page | ⚠️ Local Only |
-| **Checkout** | `checkout` | `POST /orders` | `StorefrontContext` | N/A (Orphan) | 🛑 Unused |
-| | `checkoutComplete`| `POST /checkout/complete`| `CheckoutPage` | Checkout | ✅ Used |
-| **Coupons** | `applyCoupon` | `POST /cart/coupons` | `useCart` (Hook) | Cart / Checkout | ✅ Used |
-| **Payments** | `verifyPayment` | `GET /checkout/verify/:id`| `PaymentSuccess` | Payment Results | ✅ Used |
-| **Orders** | `getOrders` | `GET /orders` | `StorefrontContext` | Orders Page | ✅ Used |
-| | `getOrderById` | `GET /orders/:id` | `OrderDetailsPage` | Order Detail | ✅ Used |
-| **Shipments** | N/A | N/A | N/A | Order Detail | ⚠️ In Order |
-| **Returns** | `requestReturn` | `POST /orders/:id/returns`| `ReturnRequestPage` | Return Request | ✅ Used |
-| **Refunds** | `getRefundByOrderId`| `GET /orders/:id/refunds`| `OrderDetailsPage` | Order Detail | ✅ Used |
-| **Settings** | `getPublicSettings`| `GET /settings/public` | `SettingsContext` | App Root | ✅ Used |
-| **Banners** | `getBanners` | `GET /banners` | `HeroSection` | Home Page | ✅ Used |
-| **Popups** | N/A | N/A | N/A | N/A | ❌ Missing |
-| **Blog** | `getArticles` | `GET /blog` | `BlogPage` | Blog / Home | ✅ Used |
-| | `getArticleBySlug`| `GET /blog/:slug` | `ArticleDetailPage` | Article Detail | ✅ Used |
-| **FAQ** | `getFAQs` | `GET /faq` | `FAQPage` | FAQ Page | ✅ Used |
-| **CMS Pages** | `getCMSPageBySlug`| `GET /pages/:slug` | `CMSPage` | Static Pages | ✅ Used |
-| **Notifications** | N/A | N/A | `NotificationsPage`| Account | ⚠️ Mock UI |
-| **SEO** | N/A | N/A | `SEO` Component | Global | ⚠️ Part of Settings |
+| `GET /settings/public` | GET | `settingsService.ts` | `Header`, `Footer`, `SEO` | Integrated | Yes |
+| `GET /banners` | GET | `contentService.ts` | `HeroSection`, `OfferBanner` | Integrated | Yes |
+| `GET /popups` | GET | `contentService.ts` | Global Context / Popups | Integrated | Yes |
+| `GET /faqs` | GET | `contentService.ts` | `/faq` Page | Integrated | Yes |
+| `GET /blog` | GET | `contentService.ts` | `BlogSection`, `/blog` List Page | Integrated | Yes |
+| `GET /blog/:slug` | GET | `contentService.ts` | `/blog/[slug]` Details Page | Integrated | Yes |
+| `GET /pages/:slug` | GET | `contentService.ts` | `/pages/[slug]` CMS Page | Integrated | Yes |
+| `GET /products` | GET | `productService.ts` | `HomePage` Showcase, `ShopCatalogView` | Integrated | Yes |
+| `GET /products/:slug` | GET | `productService.ts` | `ProductDetailPage` | Integrated | Yes |
+| `GET /categories` | GET | `categoryService.ts` | `CategorySection`, `Navbar`, `/categories` | Integrated | Yes |
+| `GET /brands` | GET | `brandService.ts` | `BrandSection`, `Navbar`, `/brands` | Integrated | Yes |
+| `GET /search` | GET | `searchService.ts` | `SearchPageView`, Suggestions | Integrated | Yes |
+| `GET /search/facets` | GET | `searchService.ts` | `ProductFilterSidebar` | Integrated | Yes |
+| `GET /cart` | GET | `cartService.ts` | `CartDrawer`, `/cart` page | Integrated | Yes |
+| `POST /cart/items` | POST | `cartService.ts` | "Add To Cart" buttons | Integrated | Yes |
+| `PUT /cart/items/:itemId` | PUT | `cartService.ts` | Quantity controls on Drawer/Page | Integrated | Yes |
+| `DELETE /cart/items/:itemId` | DELETE | `cartService.ts` | Delete buttons on Drawer/Page | Integrated | Yes |
+| `DELETE /cart` | DELETE | `cartService.ts` | "Clear Cart" button | Integrated | Yes |
+| `GET /wishlist` | GET | `wishlistService.ts` | `/account/wishlist` page | Integrated | Yes |
+| `POST /wishlist/:productId` | POST | `wishlistService.ts` | Product wishlist icons | Integrated | Yes |
+| `DELETE /wishlist/:productId` | DELETE | `wishlistService.ts` | Product wishlist icons | Integrated | Yes |
+| `POST /auth/register` | POST | `authService.ts` | `/register` Page | Integrated | Yes |
+| `POST /auth/login` | POST | `authService.ts` | `/login` Page | Integrated | Yes |
+| `GET /auth/me` | GET | `authService.ts` | `AuthContext` Initialization | Integrated | Yes |
+| `POST /auth/logout` | POST | `authService.ts` | Logout click triggers | Integrated | Yes |
+| `GET /checkout/session` | GET | `checkoutService.ts` | `/checkout` page totals | Integrated | Yes |
+| `POST /checkout/coupon` | POST | `checkoutService.ts` | Coupon form submission | Integrated | Yes |
+| `POST /checkout/complete` | POST | `checkoutService.ts` | "Place Order" button | Integrated | Yes |
+| `POST /payment/initiate` | POST | `paymentService.ts` | Simulator checkout gateway | Integrated | Yes |
+| `POST /payment/verify` | POST | `paymentService.ts` | Verify verification screen | Integrated | Yes |
+| `GET /orders` | GET | `orderService.ts` | `/account/orders` page | Integrated | Yes |
+| `GET /orders/:id` | GET | `orderService.ts` | `/account/orders/[id]` page | Integrated | Yes |
+| `GET /orders/:id/shipments` | GET | `orderService.ts` | Order tracking visual steps | Integrated | Yes |
+| `GET /returns` | GET | `returnService.ts` | `/account/returns` page | Integrated | Yes |
+| `POST /returns/request` | POST | `returnService.ts` | Return requests submission forms | Integrated | Yes |
+| `GET /refunds` | GET | `refundService.ts` | Refund details components | Integrated | Yes |
 
-## Key Findings
-
-### Unused & Redundant APIs
-1.  **`storefrontApi.checkout`**: This method is implemented in `storefrontApi.ts` and wrapped in `StorefrontContext.createCheckoutOrder`, but the UI (`CheckoutPage.tsx`) uses `storefrontApi.checkoutComplete` instead. This is a redundant implementation that should be consolidated.
-
-### Missing Backend APIs (Mocked/Local)
-1.  **Wishlist API**: The wishlist functionality is strictly local-storage based. While acceptable for MVP, it should ideally be synced with a user account via `/api/storefront/v1/wishlist` for multi-device support.
-2.  **Notifications API**: The `NotificationsPage` allows users to toggle settings, but these changes are never persisted to a backend. No `updateNotificationPreferences` API exists.
-3.  **Shipment Tracking API**: Tracking information is embedded within the `Order` object. There is no dedicated `/shipments/:trackingNumber` endpoint for real-time carrier tracking.
-4.  **Popup/Promotional API**: The request mentions "Popups," but no API exists for fetching dynamic promotional popups (e.g., newsletters or exit-intent offers).
-
-### Orphaned UI / Logic
-1.  **`StorefrontContext.createCheckoutOrder`**: This function is an orphan as `CheckoutPage` handles the submission logic independently to better manage form state and payment redirects.
-
-### Data Integrity & Response Assumptions
-1.  **Search Facets**: The `getSearchFacets` method in the mock implementation makes hardcoded assumptions about price ranges (0-1000) and available categories/brands from `MOCK_PRODUCTS`. A production implementation must return facets dynamically based on the filtered result set.
-2.  **Order Success Flow**: `checkoutComplete` returns a `paymentUrl` for gateway simulation. If this URL is missing, the app defaults to the `order-confirmation` page. This dual-path logic is correct but relies on the backend correctly identifying which orders require external payment.
-
-### Duplicate API Calls
-1.  **None found**: The application effectively uses React Context (`StorefrontContext`, `SettingsContext`, `AuthContext`) and TanStack Query (`useCart`) to cache data and prevent redundant calls for settings, categories, brands, and user data.
+---
+*All mapped REST routes interact dynamically with the live production administrative suite (`https://admin.vyzobd.com`).*

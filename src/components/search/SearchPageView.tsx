@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useCallback, useTransition } from 'react';
 import { useStorefront } from '../../context/StorefrontContext';
 import { storefrontApi } from '../../services/storefrontApi';
@@ -124,10 +126,10 @@ export const SearchPageView: React.FC = () => {
     });
 
     const newQueryStr = searchParams.toString();
-    const newHash = `#search${newQueryStr ? `?${newQueryStr}` : ''}`;
+    const newPath = `/search${newQueryStr ? `?${newQueryStr}` : ''}`;
 
     try {
-      window.history.pushState(null, '', newHash);
+      window.history.pushState(null, '', newPath);
     } catch {}
   };
 

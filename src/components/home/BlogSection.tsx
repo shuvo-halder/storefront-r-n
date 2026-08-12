@@ -1,4 +1,7 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
+import { SmartImage } from '../common/SmartImage';
 import { BlogArticle } from '../../types/storefront';
 import { storefrontApi } from '../../services/storefrontApi';
 import { useStorefront } from '../../context/StorefrontContext';
@@ -83,9 +86,12 @@ export const BlogSection: React.FC = () => {
           >
             <div>
               <div className="h-48 overflow-hidden bg-slate-100 relative">
-                <img 
+                <SmartImage 
                   src={article.coverImage} 
                   alt={article.title} 
+                  fill
+                  fallbackType="blog"
+                  fallbackLabel={article.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                 />
                 <div className="absolute top-3 left-3">

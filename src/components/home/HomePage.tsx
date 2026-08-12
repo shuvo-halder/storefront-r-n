@@ -1,23 +1,44 @@
-import React, { useState } from 'react';
+'use client';
+
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useStorefront } from '../../context/StorefrontContext';
+import { storefrontApi } from '../../services/storefrontApi';
 import { HeroSection } from './HeroSection';
 import { TrustFeatures } from './TrustFeatures';
 import { CategorySection } from './CategorySection';
 import { ProductSection } from './ProductSection';
-import { SpecialOfferSection } from './SpecialOfferSection';
 import { OfferBanner } from './OfferBanner';
 import { BrandSection } from './BrandSection';
 import { BlogSection } from './BlogSection';
 import { NewsletterSection } from './NewsletterSection';
-import { Sparkles, Flame, Zap, Award } from 'lucide-react';
+import { Sparkles, Flame, Zap, AlertCircle, RefreshCw } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
-  const { products, isLoading, navigateTo, setFilters } = useStorefront();
+  const { navigateTo, setFilters } = useStorefront();
 
-  // Filter products for different sections
-  const featuredProducts = products.filter(p => p.isFeatured).slice(0, 8);
-  const bestSellers = products.filter(p => p.isBestSeller || p.reviewCount >= 10).slice(0, 4);
-  const newArrivals = products.filter(p => p.isNew).slice(0, 4);
+  const { data: productsData, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['home_products'],
+    queryFn: async () => {
+      const res = await storefrontApi.getProducts();
+      return res.products || [];
+    },
+  });
+
+  const products = productsData || [];
+
+  // Filter products for different sections; if API returns products, slice them, otherwise fall back to all API products
+  const featuredProducts = products.filter(p => p.isFeatured).length > 0
+    ? products.filter(p => p.isFeatured)
+    : products;
+    
+  const bestSellers = products.filter(p => p.isBestSeller || p.reviewCount > 0).length > 0
+    ? products.filter(p => p.isBestSeller || p.reviewCount > 0)
+    : products;
+
+  const newArrivals = products.filter(p => p.isNew).length > 0
+    ? products.filter(p => p.isNew)
+    : products;
 
   return (
     <div className="bg-white pb-20">
@@ -30,6 +51,24 @@ export const HomePage: React.FC = () => {
 
       {/* 3. FEATURED CATEGORIES */}
       <CategorySection />
+
+      {/* API Error Alert */}
+      {isError && (
+        <div className="max-w-7xl mx-auto px-4 my-6">
+          <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2">
+              <AlertCircle size={18} className="text-rose-600 flex-shrink-0" />
+              <span>Unable to load products from server: {(error as Error)?.message || 'Network error'}</span>
+            </div>
+            <button
+              onClick={() => refetch()}
+              className="px-3 py-1.5 bg-rose-600 text-white rounded-lg text-xs font-bold hover:bg-rose-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <RefreshCw size={14} /> Retry
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 4. FEATURED PRODUCTS */}
       <ProductSection

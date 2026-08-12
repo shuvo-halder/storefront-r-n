@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Product } from '../../types/storefront';
 import { ProductCard } from '../common/ProductCard';
@@ -86,7 +88,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
           {viewAllAction && (
             <button
               onClick={viewAllAction}
-              className="text-xs font-bold text-primary hover:text-primary flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="text-xs font-bold text-primary hover:text-accent flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <span>{viewAllText}</span>
               <ArrowRight size={14} />

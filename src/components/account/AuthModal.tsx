@@ -1,10 +1,15 @@
+'use client';
+
 import React, { useState } from 'react';
 import { useStorefront } from '../../context/StorefrontContext';
+import { useAuth } from '../../context/AuthContext';
 import { X, Lock, Mail, ArrowRight, UserCheck } from 'lucide-react';
 
 export const AuthModal: React.FC = () => {
-  const { isAuthModalOpen, setIsAuthModalOpen, loginUser } = useStorefront();
+  const { isAuthModalOpen, setIsAuthModalOpen, addToast } = useStorefront();
+  const { login } = useAuth();
   const [emailInput, setEmailInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isAuthModalOpen) return null;
@@ -13,8 +18,15 @@ export const AuthModal: React.FC = () => {
     e.preventDefault();
     if (!emailInput || !emailInput.includes('@')) return;
     setIsSubmitting(true);
-    await loginUser(emailInput);
-    setIsSubmitting(false);
+    try {
+      await login({ email: emailInput, password: passwordInput || 'password' });
+      addToast({ title: 'Logged in successfully', type: 'success' });
+      setIsAuthModalOpen(false);
+    } catch {
+      addToast({ title: 'Failed to sign in', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

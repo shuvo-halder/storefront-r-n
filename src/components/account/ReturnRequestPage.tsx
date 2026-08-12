@@ -1,4 +1,7 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
+import { SmartImage } from '../common/SmartImage';
 import { AccountLayout } from './AccountLayout';
 import { useStorefront } from '../../context/StorefrontContext';
 import { storefrontApi } from '../../services/storefrontApi';
@@ -184,8 +187,15 @@ export const ReturnRequestPage: React.FC = () => {
                     </div>
                     <div className="flex-1 space-y-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 flex-shrink-0">
-                          <img src={order.items[index].productImage} alt="" className="w-full h-full object-cover" />
+                        <div className="w-16 h-16 bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 flex-shrink-0 relative">
+                          <SmartImage 
+                            src={order.items[index].productImage} 
+                            alt={field.productName} 
+                            fill
+                            fallbackType="product"
+                            fallbackLabel={field.productName}
+                            className="w-full h-full object-cover" 
+                          />
                         </div>
                         <div>
                           <h4 className="text-sm font-black text-slate-900">{field.productName}</h4>

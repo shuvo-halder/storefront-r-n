@@ -1,5 +1,9 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
+import { SmartImage } from '../common/SmartImage';
 import { useStorefront } from '../../context/StorefrontContext';
+import { useCart } from '../../hooks/useCart';
 import { Sparkles, ArrowRight, ShieldCheck, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const HERO_SLIDES = [
@@ -42,7 +46,8 @@ const HERO_SLIDES = [
 ];
 
 export const HeroSlider: React.FC = () => {
-  const { navigateTo, addToCart } = useStorefront();
+  const { navigateTo } = useStorefront();
+  const { addToCart } = useCart();
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -127,9 +132,12 @@ export const HeroSlider: React.FC = () => {
         {/* Right Column Image Stage */}
         <div className="lg:col-span-5 relative flex justify-center items-center">
           <div className="relative w-72 h-72 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-3xl overflow-hidden border border-slate-700/60 shadow-2xl bg-slate-900 group">
-            <img 
+            <SmartImage 
               src={slide.image} 
               alt={slide.title} 
+              fill
+              fallbackType="banner"
+              fallbackLabel={slide.title}
               className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" 
             />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />

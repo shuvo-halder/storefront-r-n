@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+import { SmartImage } from './SmartImage';
 import { Product } from '../../types/storefront';
 import { useStorefront } from '../../context/StorefrontContext';
 import { useCart } from '../../hooks/useCart';
@@ -36,7 +39,7 @@ export const ProductCard = React.memo(({
     e.stopPropagation();
     setIsLocalAdding(true);
     try {
-      await addToCart({ productId: product.id, quantity: 1 });
+      await addToCart(product.id, 1);
     } finally {
       setIsLocalAdding(false);
     }
@@ -57,11 +60,12 @@ export const ProductCard = React.memo(({
           onClick={handleCardClick}
           className="w-full sm:w-56 h-56 bg-surface rounded-2xl overflow-hidden relative flex-shrink-0 cursor-pointer"
         >
-          <img 
+          <SmartImage 
             src={product.images[0]} 
             alt={product.name} 
-            loading="lazy"
-            decoding="async"
+            fill
+            fallbackType="product"
+            fallbackLabel={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
           />
         </div>
@@ -167,20 +171,24 @@ export const ProductCard = React.memo(({
         onClick={handleCardClick}
         className="relative aspect-square bg-surface rounded-2xl overflow-hidden cursor-pointer group/img mb-4"
       >
-        <img 
+        <SmartImage 
           src={product.images[0]} 
           alt={product.name} 
-          loading="lazy"
-          decoding="async"
+          fill
+          fallbackType="product"
+          fallbackLabel={product.name}
           className="w-full h-full object-cover transition-opacity duration-300 group-hover/img:opacity-0" 
         />
-        <img 
-          src={secondImage} 
-          alt={product.name} 
-          loading="lazy"
-          decoding="async"
-          className="w-full h-full object-cover absolute inset-0 opacity-0 transition-opacity duration-300 group-hover/img:opacity-100 group-hover/img:scale-105" 
-        />
+        {secondImage && (
+          <SmartImage 
+            src={secondImage} 
+            alt={product.name} 
+            fill
+            fallbackType="product"
+            fallbackLabel={product.name}
+            className="w-full h-full object-cover absolute inset-0 opacity-0 transition-opacity duration-300 group-hover/img:opacity-100 group-hover/img:scale-105" 
+          />
+        )}
 
         {/* Quick View Hover Trigger */}
         <div className="absolute inset-x-4 bottom-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">

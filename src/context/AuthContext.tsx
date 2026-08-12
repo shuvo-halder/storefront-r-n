@@ -1,3 +1,5 @@
+'use client';
+
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { UserProfile } from '../types/storefront';
 import { LoginFormData, RegisterFormData, AuthResponse } from '../types/auth';

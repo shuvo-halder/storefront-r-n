@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { AccountLayout } from './AccountLayout';
 import { Bell, Mail, Phone, Smartphone, MessageSquare } from 'lucide-react';

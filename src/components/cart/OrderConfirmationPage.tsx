@@ -1,4 +1,5 @@
 import React from 'react';
+import { SmartImage } from '../common/SmartImage';
 import { useStorefront } from '../../context/StorefrontContext';
 import { CheckCircle2, Truck, Package, ArrowRight, Printer, Share2 } from 'lucide-react';
 
@@ -82,7 +83,16 @@ export const OrderConfirmationPage: React.FC = () => {
             {order.items.map((item, idx) => (
               <div key={idx} className="py-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <img src={item.productImage} alt="" className="w-12 h-12 object-cover rounded-xl border border-slate-200" />
+                  <div className="w-12 h-12 rounded-xl border border-slate-200 overflow-hidden relative flex-shrink-0">
+                    <SmartImage 
+                      src={item.productImage} 
+                      alt={item.productName} 
+                      fill
+                      fallbackType="product"
+                      fallbackLabel={item.productName}
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
                   <div>
                     <div className="font-bold text-slate-900">{item.productName}</div>
                     <div className="text-[11px] text-slate-400">Qty: {item.quantity}</div>

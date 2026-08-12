@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { AccountLayout } from './AccountLayout';
 import { Clock, Shield, LogIn, ShoppingBag, Heart, User } from 'lucide-react';

@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+import { SmartImage } from '../common/SmartImage';
 import { useStorefront } from '../../context/StorefrontContext';
 import { storefrontApi } from '../../services/storefrontApi';
 import { BlogArticle } from '../../types/storefront';
@@ -53,9 +56,12 @@ export const BlogPage: React.FC = () => {
           >
             <div className="grid grid-cols-1 lg:grid-cols-2">
               <div className="aspect-[16/10] lg:aspect-auto relative overflow-hidden">
-                <img 
+                <SmartImage 
                   src={featuredArticle.coverImage} 
                   alt={featuredArticle.title} 
+                  fill
+                  fallbackType="blog"
+                  fallbackLabel={featuredArticle.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -104,7 +110,14 @@ export const BlogPage: React.FC = () => {
               className="group bg-white border border-slate-100 rounded-[40px] overflow-hidden hover:shadow-2xl transition-all duration-500 cursor-pointer flex flex-col"
             >
               <div className="aspect-[4/3] bg-slate-100 overflow-hidden relative">
-                <img src={art.coverImage} alt={art.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                <SmartImage 
+                  src={art.coverImage} 
+                  alt={art.title} 
+                  fill
+                  fallbackType="blog"
+                  fallbackLabel={art.title}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                />
                 <div className="absolute top-4 left-4">
                   <span className="px-4 py-1.5 bg-white/90 backdrop-blur-md text-slate-900 font-black text-[9px] uppercase tracking-widest rounded-full shadow-sm border border-white/20">
                     {art.category}

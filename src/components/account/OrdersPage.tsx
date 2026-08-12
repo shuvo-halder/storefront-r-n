@@ -1,4 +1,7 @@
+'use client';
+
 import React, { useState } from 'react';
+import { SmartImage } from '../common/SmartImage';
 import { useStorefront } from '../../context/StorefrontContext';
 import { useAuth } from '../../context/AuthContext';
 import { Order } from '../../types/storefront';
@@ -82,7 +85,16 @@ export const OrdersPage: React.FC = () => {
                   <div className="lg:col-span-8 space-y-4">
                     {ord.items.map((item, i) => (
                       <div key={i} className="flex items-center gap-4">
-                        <img src={item.productImage} alt="" className="w-16 h-16 object-cover rounded-2xl border border-slate-100 shadow-sm" />
+                        <div className="w-16 h-16 rounded-2xl border border-slate-100 shadow-sm overflow-hidden relative flex-shrink-0">
+                          <SmartImage 
+                            src={item.productImage} 
+                            alt={item.productName} 
+                            fill
+                            fallbackType="product"
+                            fallbackLabel={item.productName}
+                            className="w-full h-full object-cover" 
+                          />
+                        </div>
                         <div>
                           <div className="text-sm font-black text-slate-900 line-clamp-1">{item.productName}</div>
                           <div className="text-[11px] text-slate-400 font-bold uppercase mt-1">Qty: {item.quantity} • ${item.unitPrice.toFixed(2)}</div>

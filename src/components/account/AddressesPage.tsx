@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { AccountLayout } from './AccountLayout';
 import { MapPin, Plus, Edit2, Trash2, Home, Briefcase } from 'lucide-react';

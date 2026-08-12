@@ -1,3 +1,5 @@
+'use client';
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { PublicSettings, StoreBranding, StoreGeneral, StoreSEO, StoreShipping, StoreTax } from '../types/storefront';
 import { storefrontApi } from '../services/storefrontApi';

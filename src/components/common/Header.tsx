@@ -1,4 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+'use client';
+
+import React, { useState, useRef, useEffect, Suspense } from 'react';
+import { SmartImage } from './SmartImage';
+import Link from 'next/link';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useStorefront } from '../../context/StorefrontContext';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../hooks/useCart';
@@ -14,43 +19,35 @@ import {
   Sparkles,
   Zap,
   PhoneCall,
-  ShieldCheck,
-  Truck,
+  Mail,
   ArrowRight,
   LogOut,
   Package,
-  Layers,
-  Tag,
   Loader2,
-  Flame,
-  HelpCircle,
-  Clock,
-  Trash2,
-  History,
   LayoutGrid,
-  Info,
-  Mail,
-  Box,
-  Star
+  Star,
+  ShieldCheck,
+  Truck,
+  HelpCircle,
+  Box
 } from 'lucide-react';
 import { storefrontApi } from '../../services/storefrontApi';
 import { Product } from '../../types/storefront';
 import { Badge } from '../ui/Badge';
 import { Drawer } from '../ui/Drawer';
 import { MegaMenu } from './MegaMenu';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence } from 'motion/react';
 
-export const Header: React.FC = () => {
+function HeaderContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const { 
     publicSettings, 
     categories, 
-    brands,
     setIsCartOpen, 
     wishlist, 
-    setIsAuthModalOpen, 
-    navigateTo,
-    filters,
-    setFilters,
     searchHistory,
     addSearchHistory,
     clearSearchHistory,
@@ -58,8 +55,7 @@ export const Header: React.FC = () => {
   } = useStorefront();
 
   const { user, logout } = useAuth();
-
-  const { cart, totalItemCount } = useCart();
+  const { cart } = useCart();
 
   const [selectedCategory, setSelectedCategory] = useState<string>('All Categories');
   const [searchInput, setSearchInput] = useState<string>('');
@@ -67,8 +63,7 @@ export const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState<boolean>(false);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState<boolean>(false);
-  const [activeNavTab, setActiveNavTab] = useState<string>('Home');
-  
+
   // Search suggestion state
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [categorySuggestions, setCategorySuggestions] = useState<{ id?: string; name: string; slug: string }[]>([]);
@@ -79,7 +74,15 @@ export const Header: React.FC = () => {
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const navContainerRef = useRef<HTMLDivElement>(null);
 
-  // Debounced search fetching from storefrontApi using GET /api/storefront/v1/search
+  // Sync initial query input from searchParams
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q) {
+      setSearchInput(q);
+    }
+  }, [searchParams]);
+
+  // Debounced search fetching
   useEffect(() => {
     const trimmed = searchInput.trim();
     if (trimmed.length < 2) {
@@ -106,7 +109,6 @@ export const Header: React.FC = () => {
         if (res.suggestions?.categories && res.suggestions.categories.length > 0) {
           setCategorySuggestions(res.suggestions.categories);
         } else {
-          // Fallback matching categories
           const matchedCats = categories.filter(c => c.name.toLowerCase().includes(trimmed.toLowerCase()));
           setCategorySuggestions(matchedCats);
         }
@@ -150,7 +152,7 @@ export const Header: React.FC = () => {
       if (selectedIndex >= 0 && searchResults[selectedIndex]) {
         e.preventDefault();
         const selected = searchResults[selectedIndex];
-        navigateTo('product-detail', { productSlug: selected.slug });
+        router.push(`/products/${selected.slug}`);
         setIsSearchFocused(false);
       } else {
         handleSearchSubmit(e);
@@ -172,22 +174,36 @@ export const Header: React.FC = () => {
   const handleSearchSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const query = searchInput.trim();
-    if (!query) {
-      navigateTo('search', { searchQuery: '' });
-      setIsSearchFocused(false);
-      return;
+    let url = `/search${query ? `?q=${encodeURIComponent(query)}` : ''}`;
+    
+    if (selectedCategory !== 'All Categories') {
+      const cat = categories.find(c => c.name === selectedCategory);
+      if (cat?.slug) {
+        url += `${query ? '&' : '?'}category=${encodeURIComponent(cat.slug)}`;
+      }
     }
-    addSearchHistory(query);
-    navigateTo('search', { searchQuery: query });
+
+    if (query) {
+      addSearchHistory(query);
+    }
+    
+    router.push(url);
     setIsSearchFocused(false);
   };
 
-  const totalCartCount = (cart.items || []).reduce((sum, item) => sum + item.quantity, 0);
+  const totalCartCount = (cart?.items || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
 
-  // Category chips matching search query
-  const matchingCategoryChips = searchInput.trim().length >= 2
-    ? categories.filter(c => c.name.toLowerCase().includes(searchInput.toLowerCase())).slice(0, 3)
-    : [];
+  // Primary navigation link active state helpers
+  const isNavActive = (path: string, exact: boolean = false) => {
+    if (exact) return pathname === path;
+    if (path === '/products?deals=true') {
+      return pathname === '/products' && searchParams.get('deals') === 'true';
+    }
+    if (path === '/products?sort=newest') {
+      return pathname === '/products' && searchParams.get('sort') === 'newest';
+    }
+    return pathname.startsWith(path);
+  };
 
   return (
     <AnimatePresence>
@@ -196,14 +212,14 @@ export const Header: React.FC = () => {
         <div className="bg-white border-b border-border-default py-2.5 hidden lg:block">
           <div className="container-vyzobd flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-widest">
             <div className="flex items-center gap-8">
-              <div className="flex items-center gap-2 group cursor-pointer hover:text-primary transition-colors">
+              <a href="tel:+8801700000000" className="flex items-center gap-2 group cursor-pointer hover:text-primary transition-colors">
                 <PhoneCall size={13} className="text-accent" />
                 <span>Customer Support</span>
-              </div>
-              <div className="flex items-center gap-2 group cursor-pointer hover:text-primary transition-colors">
+              </a>
+              <a href={`mailto:${publicSettings?.general?.storeEmail || 'support@vyzobd.com'}`} className="flex items-center gap-2 group cursor-pointer hover:text-primary transition-colors">
                 <Mail size={13} className="text-accent" />
-                <span>{publicSettings?.general.storeEmail || 'support@vyzobd.com'}</span>
-              </div>
+                <span>{publicSettings?.general?.storeEmail || 'support@vyzobd.com'}</span>
+              </a>
             </div>
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
@@ -211,16 +227,16 @@ export const Header: React.FC = () => {
                 <ChevronDown size={12} />
               </div>
               <div className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
-                <span>{publicSettings?.general.currency || 'BDT'}</span>
+                <span>{publicSettings?.general?.currency || 'BDT'}</span>
                 <ChevronDown size={12} />
               </div>
-              <div 
-                onClick={() => navigateTo(user ? 'account' : 'login')}
+              <Link 
+                href={user ? '/account/profile' : '/login'}
                 className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer border-l border-slate-200 pl-6 ml-2"
               >
                 <User size={13} className="text-accent" />
-                <span>{user ? 'My Profile' : 'Sign In'}</span>
-              </div>
+                <span>{user ? user.fullName : 'Sign In'}</span>
+              </Link>
             </div>
           </div>
         </div>
@@ -230,518 +246,478 @@ export const Header: React.FC = () => {
           <div className="bg-primary text-white text-[10px] sm:text-xs py-2 px-4 text-center font-bold tracking-widest uppercase flex items-center justify-center gap-2">
             <Sparkles className="w-3.5 h-3.5 animate-pulse text-accent" />
             <span>{publicSettings.announcementBanner.text}</span>
-            <button 
-              onClick={() => navigateTo('deals')}
+            <Link 
+              href="/products?deals=true"
               className="underline underline-offset-2 font-black hover:text-accent transition-colors ml-1 cursor-pointer"
             >
               {publicSettings.announcementBanner.linkText || 'Explore Now'}
-            </button>
+            </Link>
           </div>
         )}
 
-        {/* Top Main Header */}
+        {/* 2. MAIN HEADER */}
         <div className="container-vyzobd py-4 flex items-center justify-between gap-4 lg:gap-10">
-        
-        {/* Mobile: Hamburger and Logo (Logo moved for mobile design) */}
-        <div className="flex items-center gap-3 lg:hidden">
-          <button
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="p-2 text-primary hover:text-accent rounded-xl hover:bg-surface transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
-            aria-label="Open Menu"
-          >
-            <Menu size={24} />
-          </button>
           
-          <div 
-            onClick={() => navigateTo('home')} 
-            className="cursor-pointer flex items-center group select-none flex-shrink-0"
-          >
+          {/* Mobile: Hamburger and Logo */}
+          <div className="flex items-center gap-3 lg:hidden">
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2 text-primary hover:text-accent rounded-xl hover:bg-surface transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Open Menu"
+            >
+              <Menu size={24} />
+            </button>
+            
+            <Link href="/" className="flex items-center group select-none flex-shrink-0">
+              <img 
+                src="/logo.svg" 
+                alt="Vyzobd Store" 
+                className="h-8 w-auto object-contain"
+              />
+            </Link>
+          </div>
+
+          {/* Desktop Brand Logo */}
+          <Link href="/" className="hidden lg:flex items-center group select-none flex-shrink-0">
             <img 
               src="/logo.svg" 
-              alt="Vyzobd" 
-              className="h-8 w-auto object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-                (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-              }}
+              alt="Vyzobd Flagship Store" 
+              className="h-9 w-auto object-contain"
             />
-            <div className="hidden font-display font-black text-xl text-primary tracking-tighter leading-none group-hover:text-accent transition-colors">
-              VYZOBD
-            </div>
-          </div>
-        </div>
+          </Link>
 
-        {/* Desktop Brand Logo */}
-        <div 
-          onClick={() => navigateTo('home')} 
-          className="hidden lg:flex cursor-pointer items-center group select-none flex-shrink-0"
-        >
-          <img 
-            src="/logo.svg" 
-            alt="Vyzobd" 
-            className="h-9 w-auto object-contain"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-              (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-            }}
-          />
-          <div className="hidden font-display font-black text-2xl text-primary tracking-tighter leading-none group-hover:text-accent transition-colors ml-2">
-            VYZOBD
-          </div>
-        </div>
-
-        {/* Large Search Bar (Desktop) */}
-        <div className="hidden lg:flex flex-1 max-w-2xl relative" ref={searchContainerRef}>
-          <form 
-            onSubmit={handleSearchSubmit}
-            className="flex items-center w-full bg-surface border border-border-default rounded-2xl focus-within:border-accent focus-within:ring-4 focus-within:ring-accent/10 focus-within:bg-white transition-all overflow-hidden"
-          >
-            {/* Category Selector */}
-            <div className="relative border-r border-border-default bg-slate-100/50 flex-shrink-0">
-              <select
-                value={selectedCategory}
-                onChange={(e) => {
-                  setSelectedCategory(e.target.value);
-                  const matchedCat = categories.find(c => c.name === e.target.value);
-                  setFilters(prev => ({ ...prev, categorySlug: matchedCat ? matchedCat.slug : null }));
-                }}
-                className="appearance-none py-3 pl-4 pr-9 text-xs font-bold text-primary bg-transparent cursor-pointer focus:outline-none"
-              >
-                <option value="All Categories">Catalog</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.name}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-
-            {/* Input field */}
-            <div className="relative flex-1 flex items-center">
-              <input
-                type="text"
-                placeholder="Search webcams, headphones, chargers..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onFocus={() => setIsSearchFocused(true)}
-                onKeyDown={handleKeyDown}
-                className="w-full py-3 px-4 text-sm font-medium text-primary placeholder-slate-400 bg-transparent focus:outline-none"
-              />
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="px-6 bg-primary hover:bg-accent text-white transition-colors cursor-pointer min-h-[48px]"
+          {/* Large Search Bar (Desktop) */}
+          <div className="hidden lg:flex flex-1 max-w-2xl relative" ref={searchContainerRef}>
+            <form 
+              onSubmit={handleSearchSubmit}
+              className="flex items-center w-full bg-surface border border-border-default rounded-2xl focus-within:border-accent focus-within:ring-4 focus-within:ring-accent/10 focus-within:bg-white transition-all overflow-hidden"
             >
-              {isSearching ? <Loader2 size={18} className="animate-spin" /> : <Search size={20} />}
-            </button>
-          </form>
+              {/* Category Selector */}
+              <div className="relative border-r border-border-default bg-slate-100/50 flex-shrink-0">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="appearance-none py-3 pl-4 pr-9 text-xs font-bold text-primary bg-transparent cursor-pointer focus:outline-none"
+                >
+                  <option value="All Categories">All Categories</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.name}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
 
-          {/* Search Autocomplete Dropdown (Existing logic) */}
-          {isSearchFocused && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden animate-in fade-in-50 duration-150">
-              
-              {/* STATE 1: Empty Query - Show Recent Searches & Categories */}
-              {searchInput.trim().length < 2 && (
-                <div className="p-4 space-y-4">
-                  {/* Search History */}
-                  {searchHistory.length > 0 && (
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
-                          <History size={14} className="text-primary" />
+              {/* Input field */}
+              <div className="relative flex-1 flex items-center">
+                <input
+                  type="text"
+                  placeholder="Search webcams, headphones, chargers, accessories..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onFocus={() => setIsSearchFocused(true)}
+                  onKeyDown={handleKeyDown}
+                  className="w-full py-3 px-4 text-sm font-medium text-primary placeholder-slate-400 bg-transparent focus:outline-none"
+                />
+                {searchInput && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchInput('')}
+                    className="p-1 mr-2 text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="px-6 bg-primary hover:bg-accent text-white transition-colors cursor-pointer min-h-[48px] flex items-center justify-center"
+                aria-label="Search"
+              >
+                {isSearching ? <Loader2 size={18} className="animate-spin" /> : <Search size={20} />}
+              </button>
+            </form>
+
+            {/* Search Autocomplete Dropdown */}
+            {isSearchFocused && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden animate-in fade-in-50 duration-150">
+                {searchInput.trim().length < 2 && (
+                  <div className="p-4 space-y-4">
+                    {searchHistory.length > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                           <span>Recent Searches</span>
+                          <button onClick={clearSearchHistory} className="text-[10px] text-accent hover:underline">Clear All</button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => clearSearchHistory()}
-                          className="text-[11px] font-semibold text-slate-400 hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
-                        >
-                          <Trash2 size={12} />
-                          <span>Clear history</span>
-                        </button>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {searchHistory.map((term, i) => (
-                          <div
-                            key={i}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-primary-light text-slate-700 hover:text-primary rounded-xl text-xs font-medium border border-slate-200/80 hover:border-primary/20 transition-colors group cursor-pointer"
-                          >
+                        <div className="flex flex-wrap gap-2">
+                          {searchHistory.map((q) => (
                             <span 
+                              key={q}
                               onClick={() => {
-                                setSearchInput(term);
-                                addSearchHistory(term);
-                                navigateTo('search', { searchQuery: term });
+                                setSearchInput(q);
+                                router.push(`/search?q=${encodeURIComponent(q)}`);
                                 setIsSearchFocused(false);
                               }}
-                              className="flex items-center gap-1.5"
+                              className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:border-accent hover:text-accent cursor-pointer transition-colors"
                             >
-                              <Clock size={12} className="text-slate-400 group-hover:text-primary" />
-                              <span>{term}</span>
+                              <span>{q}</span>
+                              <X 
+                                size={12} 
+                                className="hover:text-red-500" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeSearchHistoryItem(q);
+                                }} 
+                              />
                             </span>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeSearchHistoryItem(term);
-                              }}
-                              className="text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-200 transition-colors"
-                            >
-                              <X size={12} />
-                            </button>
-                          </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Popular Categories</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        {categories.slice(0, 6).map((cat) => (
+                          <Link
+                            key={cat.id}
+                            href={`/categories/${cat.slug}`}
+                            onClick={() => setIsSearchFocused(false)}
+                            className="p-2 rounded-xl bg-surface hover:bg-primary-light hover:text-primary transition-colors text-xs font-semibold text-slate-700 flex items-center justify-between"
+                          >
+                            <span>{cat.name}</span>
+                            <ChevronRight size={14} className="text-slate-400" />
+                          </Link>
                         ))}
                       </div>
                     </div>
-                  )}
-
-                  {/* Popular Category Shortcuts */}
-                  <div>
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      Popular Categories
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                      {categories.slice(0, 6).map((cat) => (
-                        <button
-                          key={cat.id}
-                          type="button"
-                          onClick={() => {
-                            setFilters(prev => ({ ...prev, categorySlug: cat.slug }));
-                            navigateTo('shop');
-                            setIsSearchFocused(false);
-                          }}
-                          className="text-left px-3 py-2 rounded-xl bg-slate-50 hover:bg-primary-light text-slate-700 hover:text-primary border border-slate-200/60 font-semibold text-xs transition-colors cursor-pointer flex items-center justify-between"
-                        >
-                          <span>{cat.name}</span>
-                          <ChevronRight size={12} className="text-slate-400" />
-                        </button>
-                      ))}
-                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* STATE 2: Active Query - Suggestions */}
-              {searchInput.trim().length >= 2 && (
-                <>
-                  {/* Category Suggestions Chips */}
-                  {categorySuggestions.length > 0 && (
-                    <div className="p-3 bg-slate-50/80 border-b border-slate-100 flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">In Categories:</span>
-                      {categorySuggestions.map((cat) => (
-                        <button
-                          key={cat.slug}
-                          type="button"
-                          onClick={() => {
-                            navigateTo('search', { searchQuery: `${searchInput}` });
-                            setIsSearchFocused(false);
-                          }}
-                          className="text-xs px-2.5 py-1 rounded-full bg-white hover:bg-primary-light text-slate-700 hover:text-primary border border-slate-200 hover:border-primary/20 font-semibold transition-colors cursor-pointer"
-                        >
-                          {cat.name}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Searching Spinner */}
-                  {isSearching && (
-                    <div className="p-6 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
-                      <Loader2 size={16} className="animate-spin text-primary" />
-                      <span>Searching storefront catalog...</span>
-                    </div>
-                  )}
-
-                  {/* Product Results */}
-                  {!isSearching && searchResults.length > 0 && (
-                    <div>
-                      <div className="px-3.5 py-2 bg-slate-100/50 border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex justify-between items-center">
-                        <span>Matching Products</span>
-                        <span>Use ↑↓ to navigate • Enter to select</span>
+                {searchInput.trim().length >= 2 && (
+                  <div>
+                    {categorySuggestions.length > 0 && (
+                      <div className="p-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2 flex-wrap">
+                        <span className="text-[11px] font-bold text-slate-400 uppercase">Categories:</span>
+                        {categorySuggestions.map(cat => (
+                          <Link
+                            key={cat.slug}
+                            href={`/categories/${cat.slug}`}
+                            onClick={() => setIsSearchFocused(false)}
+                            className="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-primary hover:border-accent hover:text-accent transition-colors"
+                          >
+                            {cat.name}
+                          </Link>
+                        ))}
                       </div>
-                      <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
-                        {searchResults.map((prod, index) => {
-                          const isSelected = index === selectedIndex;
-
-                          return (
-                            <div
-                              key={prod.id}
-                              onClick={() => {
-                                addSearchHistory(searchInput);
-                                navigateTo('product-detail', { productSlug: prod.slug });
-                                setIsSearchFocused(false);
-                              }}
-                              onMouseEnter={() => setSelectedIndex(index)}
-                              className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${
-                                isSelected ? 'bg-primary/5/80' : 'hover:bg-slate-50'
-                              }`}
-                            >
-                              <img 
-                                src={prod.images[0]} 
-                                alt={prod.name} 
-                                className="w-12 h-12 object-cover rounded-xl border border-slate-200 bg-white flex-shrink-0" 
-                              />
-                              <div className="flex-1 min-w-0">
-                                <div className="text-xs font-bold text-slate-900 truncate">
-                                  {prod.name}
-                                </div>
-                                <div className="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
-                                  <span className="font-semibold text-slate-600">{prod.brand}</span>
-                                  <span>•</span>
-                                  <span className="font-bold text-primary">${prod.price.toFixed(2)}</span>
-                                  {prod.compareAtPrice && (
-                                    <span className="text-slate-400 line-through text-[10px]">
-                                      ${prod.compareAtPrice.toFixed(2)}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              <Badge variant={prod.stock > 0 ? 'success' : 'error'} size="sm">
-                                {prod.stock > 0 ? 'In Stock' : 'Out of Stock'}
-                              </Badge>
-                              <ArrowRight size={14} className="text-slate-300" />
-                            </div>
-                          );
-                        })}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleSearchSubmit()}
-                        className="w-full p-3 bg-slate-50 hover:bg-primary/5 text-center text-xs font-bold text-primary border-t border-slate-100 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                      >
-                        <span>View all search results for "{searchInput}"</span>
-                        <ArrowRight size={14} />
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Empty state */}
-                  {!isSearching && searchResults.length === 0 && (
-                    <div className="p-6 text-center">
-                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mx-auto mb-2">
-                        <Search size={20} />
-                      </div>
-                      <div className="text-xs font-bold text-slate-800">
-                        No products found matching "{searchInput}"
-                      </div>
-                      <div className="text-[11px] text-slate-500 mt-1">
-                        Try searching for keywords like "Headphones", "Wireless", "Smartwatch", or "Charger".
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleSearchSubmit()}
-                        className="mt-3 px-4 py-1.5 bg-primary hover:bg-primary text-white rounded-xl text-xs font-bold cursor-pointer transition-colors"
-                      >
-                        Search all catalog for "{searchInput}"
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Action Controls: User Account, Wishlist, Cart */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
-          
-          {/* User Account Button & Dropdown */}
-          <div className="relative" ref={accountMenuRef}>
-            <button
-              onClick={() => {
-                if (user) {
-                  setIsAccountMenuOpen(!isAccountMenuOpen);
-                } else {
-                  navigateTo('login');
-                }
-              }}
-              className="flex items-center gap-2 p-2 sm:px-3 sm:py-2 text-primary hover:text-accent hover:bg-surface rounded-2xl transition-all cursor-pointer min-h-[44px]"
-            >
-              <div className="w-8 h-8 rounded-full bg-white border border-border-default flex items-center justify-center text-primary font-bold text-xs shadow-premium">
-                {user ? user.fullName.charAt(0).toUpperCase() : <User size={18} />}
-              </div>
-              <div className="hidden xl:block text-left">
-                <div className="text-[10px] text-slate-400 uppercase font-black leading-tight tracking-wider">
-                  {user ? 'Welcome' : 'Account'}
-                </div>
-                <div className="text-xs font-bold text-primary leading-tight truncate max-w-[110px]">
-                  {user ? user.fullName.split(' ')[0] : 'Sign In'}
-                </div>
-              </div>
-              {user && <ChevronDown size={14} className="text-slate-400 hidden xl:block" />}
-            </button>
-
-            {/* Account Dropdown Menu */}
-            {user && isAccountMenuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 z-50 animate-in fade-in-50 duration-150">
-                <div className="p-3 bg-slate-50 rounded-xl mb-1 border border-slate-100">
-                  <div className="text-xs font-bold text-slate-900">{user.fullName}</div>
-                  <div className="text-[11px] text-slate-500 truncate">{user.email}</div>
-                </div>
-
-                <div className="space-y-0.5">
-                  <button
-                    onClick={() => {
-                      navigateTo('account');
-                      setIsAccountMenuOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:text-primary hover:bg-primary-light rounded-xl transition-colors flex items-center gap-2 cursor-pointer"
-                  >
-                    <User size={15} />
-                    <span>My Profile</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      navigateTo('orders');
-                      setIsAccountMenuOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:text-primary hover:bg-primary-light rounded-xl transition-colors flex items-center gap-2 cursor-pointer"
-                  >
-                    <Package size={15} />
-                    <span>Order History</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      navigateTo('wishlist');
-                      setIsAccountMenuOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:text-primary hover:bg-primary-light rounded-xl transition-colors flex items-center justify-between cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Heart size={15} />
-                      <span>Wishlist</span>
-                    </div>
-                    {wishlist.length > 0 && (
-                      <span className="text-[10px] bg-primary text-white font-bold px-1.5 py-0.5 rounded-full">
-                        {wishlist.length}
-                      </span>
                     )}
-                  </button>
-                </div>
 
-                <div className="pt-1 mt-1 border-t border-slate-100">
-                  <button
-                    onClick={async () => {
-                      await logout();
-                      setIsAccountMenuOpen(false);
-                      navigateTo('home');
-                    }}
-                    className="w-full text-left px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-2 cursor-pointer"
-                  >
-                    <LogOut size={15} />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
+                    {searchResults.length > 0 && (
+                      <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
+                        {searchResults.map((prod, idx) => (
+                          <div
+                            key={prod.id}
+                            onClick={() => {
+                              router.push(`/products/${prod.slug}`);
+                              setIsSearchFocused(false);
+                            }}
+                            className={`p-3 flex items-center justify-between gap-3 cursor-pointer transition-colors ${
+                              idx === selectedIndex ? 'bg-primary-light' : 'hover:bg-slate-50'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <SmartImage 
+                                src={prod.images?.[0]} 
+                                alt={prod.name} 
+                                width={48}
+                                height={48}
+                                fallbackType="product"
+                                fallbackLabel={prod.name}
+                                className="w-12 h-12 object-cover rounded-xl border border-slate-200 flex-shrink-0" 
+                              />
+                              <div className="min-w-0 flex-1">
+                                <div className="text-xs font-bold text-slate-900 truncate">{prod.name}</div>
+                                <div className="text-xs font-black text-accent mt-0.5">${prod.price}</div>
+                              </div>
+                            </div>
+                            <Badge variant={prod.stock > 0 ? 'success' : 'error'} size="sm">
+                              {prod.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => handleSearchSubmit()}
+                      className="w-full p-3 bg-slate-50 hover:bg-primary/5 text-center text-xs font-bold text-primary border-t border-slate-100 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <span>View all search results for "{searchInput}"</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          {/* Wishlist Button */}
-          <button
-            onClick={() => navigateTo('wishlist')}
-            className="relative p-2 sm:px-3 sm:py-2 text-primary hover:text-accent hover:bg-surface rounded-2xl transition-all flex items-center gap-2 cursor-pointer min-h-[44px]"
-            aria-label="View Wishlist"
-          >
-            <div className="relative">
-              <Heart size={22} />
-              {wishlist.length > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-accent text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-scale-in shadow-accent">
-                  {wishlist.length}
-                </span>
-              )}
-            </div>
-            <span className="hidden xl:inline text-xs font-bold text-primary">
-              Wishlist
-            </span>
-          </button>
+          {/* Action Controls: User Account, Wishlist, Cart */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+            
+            {/* User Account Button & Dropdown */}
+            <div className="relative" ref={accountMenuRef}>
+              <button
+                onClick={() => {
+                  if (user) {
+                    setIsAccountMenuOpen(!isAccountMenuOpen);
+                  } else {
+                    router.push('/login');
+                  }
+                }}
+                className="flex items-center gap-2 p-2 sm:px-3 sm:py-2 text-primary hover:text-accent hover:bg-surface rounded-2xl transition-all cursor-pointer min-h-[44px]"
+              >
+                <div className="w-8 h-8 rounded-full bg-white border border-border-default flex items-center justify-center text-primary font-bold text-xs shadow-premium">
+                  {user ? user.fullName.charAt(0).toUpperCase() : <User size={18} />}
+                </div>
+                <div className="hidden xl:block text-left">
+                  <div className="text-[10px] text-slate-400 uppercase font-black leading-tight tracking-wider">
+                    {user ? 'Welcome' : 'Account'}
+                  </div>
+                  <div className="text-xs font-bold text-primary leading-tight truncate max-w-[110px]">
+                    {user ? user.fullName.split(' ')[0] : 'Sign In'}
+                  </div>
+                </div>
+                {user && <ChevronDown size={14} className="text-slate-400 hidden xl:block" />}
+              </button>
 
-          {/* Shopping Cart Button */}
-          <button
-            onClick={() => setIsCartOpen(true)}
-            className="flex items-center gap-2.5 px-4 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-2xl font-bold shadow-accent transition-all cursor-pointer group min-h-[44px]"
-            aria-label="Open Cart"
-          >
-            <div className="relative">
-              <ShoppingCart size={20} className="group-hover:scale-110 transition-transform" />
-              {totalCartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-accent shadow-premium">
-                  {totalCartCount}
-                </span>
+              {/* Account Dropdown Menu */}
+              {user && isAccountMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 z-50 animate-in fade-in-50 duration-150">
+                  <div className="p-3 bg-slate-50 rounded-xl mb-1 border border-slate-100">
+                    <div className="text-xs font-bold text-slate-900">{user.fullName}</div>
+                    <div className="text-[11px] text-slate-500 truncate">{user.email}</div>
+                  </div>
+
+                  <div className="space-y-0.5">
+                    <Link
+                      href="/account/profile"
+                      onClick={() => setIsAccountMenuOpen(false)}
+                      className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:text-primary hover:bg-primary-light rounded-xl transition-colors flex items-center gap-2"
+                    >
+                      <User size={15} />
+                      <span>My Profile</span>
+                    </Link>
+
+                    <Link
+                      href="/account/orders"
+                      onClick={() => setIsAccountMenuOpen(false)}
+                      className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:text-primary hover:bg-primary-light rounded-xl transition-colors flex items-center gap-2"
+                    >
+                      <Package size={15} />
+                      <span>Order History</span>
+                    </Link>
+
+                    <Link
+                      href="/account/wishlist"
+                      onClick={() => setIsAccountMenuOpen(false)}
+                      className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:text-primary hover:bg-primary-light rounded-xl transition-colors flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Heart size={15} />
+                        <span>Wishlist</span>
+                      </div>
+                      {wishlist.length > 0 && (
+                        <span className="text-[10px] bg-primary text-white font-bold px-1.5 py-0.5 rounded-full">
+                          {wishlist.length}
+                        </span>
+                      )}
+                    </Link>
+                  </div>
+
+                  <div className="pt-1 mt-1 border-t border-slate-100">
+                    <button
+                      onClick={async () => {
+                        await logout();
+                        setIsAccountMenuOpen(false);
+                        router.push('/');
+                      }}
+                      className="w-full text-left px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-2 cursor-pointer"
+                    >
+                      <LogOut size={15} />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
-            <div className="text-left hidden sm:block">
-              <div className="text-[9px] text-white/80 uppercase font-bold tracking-wider leading-none">
-                Cart
+
+            {/* Wishlist Button */}
+            <Link
+              href="/account/wishlist"
+              className="relative p-2 sm:px-3 sm:py-2 text-primary hover:text-accent hover:bg-surface rounded-2xl transition-all flex items-center gap-2 min-h-[44px]"
+              aria-label="View Wishlist"
+            >
+              <div className="relative">
+                <Heart size={22} />
+                {wishlist.length > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-accent text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-accent">
+                    {wishlist.length}
+                  </span>
+                )}
               </div>
-              <div className="text-xs font-black leading-tight">
-                ${cart.total.toFixed(2)}
+              <span className="hidden xl:inline text-xs font-bold text-primary">
+                Wishlist
+              </span>
+            </Link>
+
+            {/* Shopping Cart Button */}
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="flex items-center gap-2.5 px-4 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-2xl font-bold shadow-accent transition-all cursor-pointer group min-h-[44px]"
+              aria-label="Open Cart"
+            >
+              <div className="relative">
+                <ShoppingCart size={20} className="group-hover:scale-110 transition-transform" />
+                {totalCartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-accent shadow-premium">
+                    {totalCartCount}
+                  </span>
+                )}
               </div>
-            </div>
-          </button>
+              <div className="text-left hidden sm:block">
+                <div className="text-[9px] text-white/80 uppercase font-bold tracking-wider leading-none">
+                  Cart
+                </div>
+                <div className="text-xs font-black leading-tight">
+                  ${(cart?.total || 0).toFixed(2)}
+                </div>
+              </div>
+            </button>
+          </div>
         </div>
-      </div>
 
-        {/* Desktop Secondary Navigation Bar */}
+        {/* 3. PRIMARY NAVIGATION BAR */}
         <div className="hidden lg:block bg-surface border-t border-border-default relative" ref={navContainerRef}>
           <div className="container-vyzobd py-0 flex items-center justify-between">
             <nav className="flex items-center">
-              {[
-                { label: 'Home', view: 'home' },
-                { label: 'Shop', view: 'shop' },
-                { label: 'Categories', isMega: true },
-                { label: 'Brands', view: 'shop' },
-                { label: 'Deals', view: 'deals' },
-                { label: 'New Arrivals', view: 'shop' },
-                { label: 'Blog', view: 'blog' },
-                { label: 'About', view: 'cms-page', params: { cmsPageType: 'about' } },
-                { label: 'Contact', view: 'cms-page', params: { cmsPageType: 'contact' } },
-              ].map((link) => (
-                <div key={link.label} className="relative">
-                  <button
-                    onClick={() => {
-                      if (link.isMega) {
-                        setIsMegaMenuOpen(!isMegaMenuOpen);
-                      } else {
-                        navigateTo(link.view as any, link.params as any);
-                        setIsMegaMenuOpen(false);
-                      }
-                      setActiveNavTab(link.label);
-                    }}
-                    onMouseEnter={() => {
-                      if (link.isMega) setIsMegaMenuOpen(true);
-                    }}
-                    className={`px-5 py-4 text-[13px] font-bold uppercase tracking-widest transition-all cursor-pointer flex items-center gap-1.5 border-b-2 ${
-                      activeNavTab === link.label 
-                        ? 'text-accent border-accent' 
-                        : 'text-primary border-transparent hover:text-accent'
-                    }`}
-                  >
-                    {link.label}
-                    {link.isMega && <ChevronDown size={14} className={`transition-transform duration-300 ${isMegaMenuOpen ? 'rotate-180' : ''}`} />}
-                  </button>
-                </div>
-              ))}
+              <Link
+                href="/"
+                className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                  isNavActive('/', true) 
+                    ? 'text-accent border-accent' 
+                    : 'text-primary border-transparent hover:text-accent'
+                }`}
+              >
+                Home
+              </Link>
+
+              <Link
+                href="/products"
+                className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                  isNavActive('/products', true) 
+                    ? 'text-accent border-accent' 
+                    : 'text-primary border-transparent hover:text-accent'
+                }`}
+              >
+                Shop
+              </Link>
+
+              <div 
+                className="relative"
+                onMouseEnter={() => setIsMegaMenuOpen(true)}
+              >
+                <Link
+                  href="/categories"
+                  className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                    isNavActive('/categories') 
+                      ? 'text-accent border-accent' 
+                      : 'text-primary border-transparent hover:text-accent'
+                  }`}
+                >
+                  <span>Categories</span>
+                  <ChevronDown size={14} className={`transition-transform duration-300 ${isMegaMenuOpen ? 'rotate-180' : ''}`} />
+                </Link>
+              </div>
+
+              <Link
+                href="/brands"
+                className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                  isNavActive('/brands') 
+                    ? 'text-accent border-accent' 
+                    : 'text-primary border-transparent hover:text-accent'
+                }`}
+              >
+                Brands
+              </Link>
+
+              <Link
+                href="/products?deals=true"
+                className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                  isNavActive('/products?deals=true') 
+                    ? 'text-accent border-accent' 
+                    : 'text-primary border-transparent hover:text-accent'
+                }`}
+              >
+                Deals
+              </Link>
+
+              <Link
+                href="/products?sort=newest"
+                className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                  isNavActive('/products?sort=newest') 
+                    ? 'text-accent border-accent' 
+                    : 'text-primary border-transparent hover:text-accent'
+                }`}
+              >
+                New Arrivals
+              </Link>
+
+              <Link
+                href="/blog"
+                className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                  isNavActive('/blog') 
+                    ? 'text-accent border-accent' 
+                    : 'text-primary border-transparent hover:text-accent'
+                }`}
+              >
+                Blog
+              </Link>
+
+              <Link
+                href="/pages/about"
+                className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                  isNavActive('/pages/about') 
+                    ? 'text-accent border-accent' 
+                    : 'text-primary border-transparent hover:text-accent'
+                }`}
+              >
+                About
+              </Link>
+
+              <Link
+                href="/pages/contact"
+                className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                  isNavActive('/pages/contact') 
+                    ? 'text-accent border-accent' 
+                    : 'text-primary border-transparent hover:text-accent'
+                }`}
+              >
+                Contact
+              </Link>
             </nav>
 
             <div className="flex items-center gap-6">
-               <button 
-                onClick={() => navigateTo('deals')}
+              <Link 
+                href="/products?deals=true"
                 className="flex items-center gap-2 text-xs font-black text-accent animate-pulse uppercase tracking-tighter"
               >
                 <Zap size={14} />
                 <span>Flash Deals ending soon</span>
-              </button>
-              
-              <div className="h-4 w-[1px] bg-border-default" />
-              
-              <div className="flex items-center gap-4">
-                <img src="/navLogo.png" alt="" className="h-5 w-auto opacity-40 grayscale" />
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Precision Engineered</span>
-              </div>
+              </Link>
             </div>
           </div>
 
@@ -751,73 +727,46 @@ export const Header: React.FC = () => {
           </AnimatePresence>
         </div>
 
-        {/* Mobile Row Search Bar */}
+        {/* Mobile Search Row */}
         <div className="lg:hidden px-4 pb-4">
-          <form 
-            onSubmit={handleSearchSubmit} 
-            className="relative flex items-center w-full"
-            ref={searchContainerRef}
-          >
-            <input
-              type="text"
-              placeholder="What are you looking for?"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onFocus={() => setIsSearchFocused(true)}
-              className="w-full py-3 pl-10 pr-10 text-sm bg-surface border border-border-default rounded-2xl focus:outline-none focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 font-medium transition-all"
-            />
-            <Search size={18} className="absolute left-3.5 text-primary pointer-events-none" />
-            {searchInput && (
-              <button
-                type="button"
-                onClick={() => setSearchInput('')}
-                className="absolute right-3 text-slate-400 hover:text-primary transition-colors"
-              >
-                <X size={18} />
-              </button>
-            )}
-            
-            {/* Mobile Search Suggestions Dropdown */}
-            {isSearchFocused && searchInput.trim().length >= 2 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden overflow-y-auto max-h-96">
-                 {searchResults.slice(0, 5).map((prod) => (
-                    <div
-                      key={prod.id}
-                      onClick={() => {
-                        navigateTo('product-detail', { productSlug: prod.slug });
-                        setIsSearchFocused(false);
-                      }}
-                      className="flex items-center gap-3 p-3 border-b border-slate-50 last:border-0"
-                    >
-                      <img src={prod.images[0]} alt="" className="w-10 h-10 object-cover rounded-lg border border-slate-100" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[13px] font-bold text-primary truncate">{prod.name}</div>
-                        <div className="text-[11px] font-bold text-accent">${prod.price}</div>
-                      </div>
-                    </div>
-                 ))}
-                 <button 
-                  onClick={() => handleSearchSubmit()}
-                  className="w-full py-3 bg-surface text-center text-xs font-bold text-primary"
-                 >
-                   View All Results
-                 </button>
-              </div>
-            )}
-          </form>
+          <div ref={searchContainerRef} className="relative w-full">
+            <form 
+              onSubmit={handleSearchSubmit} 
+              className="relative flex items-center w-full"
+            >
+              <input
+                type="text"
+                placeholder="Search webcams, headphones, chargers..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                className="w-full py-3 pl-10 pr-10 text-sm bg-surface border border-border-default rounded-2xl focus:outline-none focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 font-medium transition-all"
+              />
+              <Search size={18} className="absolute left-3.5 text-primary pointer-events-none" />
+              {searchInput && (
+                <button
+                  type="button"
+                  onClick={() => setSearchInput('')}
+                  className="absolute right-3 text-slate-400 hover:text-primary transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              )}
+            </form>
+          </div>
         </div>
 
-        {/* Responsive Mobile Slide-out Drawer Menu */}
+        {/* Mobile Slide-out Drawer */}
         <Drawer
           isOpen={isMobileMenuOpen}
           onClose={() => setIsMobileMenuOpen(false)}
           position="left"
           size="md"
           title={
-            <div className="flex items-center gap-2 group">
+            <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 group">
               <img src="/logo.svg" alt="Vyzobd" className="h-8 w-auto" />
               <span className="font-display font-black text-xl text-primary tracking-tighter uppercase group-hover:text-accent transition-colors">Vyzobd</span>
-            </div>
+            </Link>
           }
           footer={
             <div className="space-y-4">
@@ -838,7 +787,7 @@ export const Header: React.FC = () => {
             </div>
           }
         >
-          <div className="space-y-8">
+          <div className="space-y-8 overflow-x-hidden">
             {/* User Profile Summary */}
             <div className="relative overflow-hidden rounded-3xl bg-primary p-6 text-white shadow-xl">
               <div className="relative z-10 flex items-center gap-4">
@@ -855,21 +804,19 @@ export const Header: React.FC = () => {
                 </div>
               </div>
               <div className="mt-6 flex gap-2 relative z-10">
-                <button
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    navigateTo(user ? 'account' : 'login');
-                  }}
-                  className="flex-1 py-3 px-4 bg-white text-primary font-black text-xs rounded-xl shadow-lg active:scale-95 transition-all"
+                <Link
+                  href={user ? '/account/profile' : '/login'}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex-1 py-3 px-4 bg-white text-primary font-black text-xs rounded-xl shadow-lg text-center block"
                 >
                   {user ? 'My Dashboard' : 'Sign In / Register'}
-                </button>
+                </Link>
                 {user && (
-                   <button
+                  <button
                     onClick={async () => {
                       await logout();
                       setIsMobileMenuOpen(false);
-                      navigateTo('home');
+                      router.push('/');
                     }}
                     className="p-3 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-colors"
                   >
@@ -877,42 +824,37 @@ export const Header: React.FC = () => {
                   </button>
                 )}
               </div>
-              
-              {/* Decorative Background Elements */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-accent/20 rounded-full -mr-16 -mt-16 blur-2xl" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12 blur-xl" />
             </div>
 
             {/* Main Navigation Links */}
             <div className="space-y-1">
               <div className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Explore Store</div>
               {[
-                { label: 'Shop Catalog', view: 'shop', icon: LayoutGrid },
-                { label: 'Hot Deals', view: 'deals', icon: Zap, isHot: true },
-                { label: 'Best Sellers', view: 'shop', icon: Star },
-                { label: 'New Arrivals', view: 'shop', icon: Sparkles },
-                { label: 'Vyzobd Blog', view: 'blog', icon: Box },
+                { label: 'Shop Catalog', href: '/products', icon: LayoutGrid },
+                { label: 'Hot Deals', href: '/products?deals=true', icon: Zap, isHot: true },
+                { label: 'Best Sellers', href: '/products?sort=bestsellers', icon: Star },
+                { label: 'New Arrivals', href: '/products?sort=newest', icon: Sparkles },
+                { label: 'Brands', href: '/brands', icon: Box },
+                { label: 'Vyzobd Blog', href: '/blog', icon: Box },
               ].map((item) => (
-                <button
+                <Link
                   key={item.label}
-                  onClick={() => {
-                    navigateTo(item.view as any);
-                    setIsMobileMenuOpen(false);
-                  }}
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
                   className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${
                     item.isHot ? 'bg-accent/5 hover:bg-accent/10' : 'hover:bg-surface'
                   }`}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`p-2.5 rounded-xl transition-colors ${
-                      item.isHot ? 'bg-accent/10 text-accent' : 'bg-slate-100 text-primary group-hover:bg-white group-hover:shadow-md'
+                      item.isHot ? 'bg-accent/10 text-accent' : 'bg-slate-100 text-primary group-hover:bg-white'
                     }`}>
                       <item.icon size={20} />
                     </div>
                     <span className={`text-sm font-bold ${item.isHot ? 'text-accent' : 'text-primary'}`}>{item.label}</span>
                   </div>
                   <ChevronRight size={18} className={item.isHot ? 'text-accent' : 'text-slate-300'} />
-                </button>
+                </Link>
               ))}
             </div>
 
@@ -920,49 +862,56 @@ export const Header: React.FC = () => {
             <div>
               <div className="px-4 flex items-center justify-between mb-4">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Top Categories</span>
-                <button onClick={() => { navigateTo('shop'); setIsMobileMenuOpen(false); }} className="text-[11px] font-black text-accent uppercase tracking-tighter">View All</button>
+                <Link 
+                  href="/categories" 
+                  onClick={() => setIsMobileMenuOpen(false)} 
+                  className="text-[11px] font-black text-accent uppercase tracking-tighter"
+                >
+                  View All
+                </Link>
               </div>
               <div className="grid grid-cols-2 gap-3 px-1">
                 {categories.slice(0, 4).map((cat) => (
-                  <button
+                  <Link
                     key={cat.id}
-                    onClick={() => {
-                      setFilters(prev => ({ ...prev, categorySlug: cat.slug }));
-                      navigateTo('shop');
-                      setIsMobileMenuOpen(false);
-                    }}
+                    href={`/categories/${cat.slug}`}
+                    onClick={() => setIsMobileMenuOpen(false)}
                     className="flex flex-col p-3 rounded-2xl bg-surface border border-border-default hover:border-accent transition-all group"
                   >
                     <div className="aspect-square rounded-xl overflow-hidden mb-3">
-                      <img src={cat.image} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <SmartImage 
+                        src={cat.image} 
+                        alt={cat.name} 
+                        fill
+                        fallbackType="category"
+                        fallbackLabel={cat.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                      />
                     </div>
                     <span className="text-xs font-bold text-primary truncate">{cat.name}</span>
-                    <span className="text-[10px] text-slate-400 font-medium mt-0.5">{cat.itemCount} Items</span>
-                  </button>
+                    <span className="text-[10px] text-slate-400 font-medium mt-0.5">{cat.itemCount || 0} Items</span>
+                  </Link>
                 ))}
               </div>
             </div>
 
             {/* Support & Links */}
             <div className="pt-4 border-t border-border-default">
-               <div className="grid grid-cols-2 gap-y-2">
+              <div className="grid grid-cols-2 gap-y-2">
                 {[
-                  { label: 'About Us', type: 'about' },
-                  { label: 'Help & FAQ', view: 'faq' },
-                  { label: 'Contact', type: 'contact' },
-                  { label: 'Privacy', type: 'privacy' },
+                  { label: 'About Us', href: '/pages/about' },
+                  { label: 'Help & FAQ', href: '/faq' },
+                  { label: 'Contact', href: '/pages/contact' },
+                  { label: 'Privacy Policy', href: '/pages/privacy' },
                 ].map((item) => (
-                  <button
+                  <Link
                     key={item.label}
-                    onClick={() => {
-                      if (item.view) navigateTo(item.view as any);
-                      else navigateTo('cms-page', { cmsPageType: item.type as any });
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="text-left px-4 py-2 text-xs font-bold text-slate-500 hover:text-primary transition-colors"
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-left px-4 py-2 text-xs font-bold text-slate-500 hover:text-primary transition-colors block"
                   >
                     {item.label}
-                  </button>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -970,5 +919,19 @@ export const Header: React.FC = () => {
         </Drawer>
       </header>
     </AnimatePresence>
+  );
+}
+
+export const Header: React.FC = () => {
+  return (
+    <Suspense fallback={
+      <header className="w-full bg-white border-b border-border-default sticky top-0 z-40 py-4">
+        <div className="container-vyzobd flex items-center justify-between">
+          <Link href="/" className="font-display font-black text-2xl text-primary uppercase">VYZOBD</Link>
+        </div>
+      </header>
+    }>
+      <HeaderContent />
+    </Suspense>
   );
 };
