@@ -345,14 +345,13 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
     const initData = async () => {
       setIsLoading(true);
       try {
-        const [catsData, brandsData, ordersData] = await Promise.all([
-          storefrontApi.getCategories(),
-          storefrontApi.getBrands(),
-          storefrontApi.getOrders(),
-        ]);
-
+        const catsData = await storefrontApi.getCategories().catch(() => []);
         setCategories(catsData);
+        
+        const brandsData = await storefrontApi.getBrands().catch(() => []);
         setBrands(brandsData);
+        
+        const ordersData = await storefrontApi.getOrders().catch(() => []);
         setUserOrders(ordersData);
       } catch (err) {
         console.error('Initialization error:', err);

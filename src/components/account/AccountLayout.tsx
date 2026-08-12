@@ -27,7 +27,21 @@ interface AccountLayoutProps {
 
 export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTab }) => {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
+
+  React.useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading || !user) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
+      </div>
+    );
+  }
 
   const menuItems = [
     { id: 'account', href: '/account', label: 'Dashboard', icon: Activity },
