@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { useStorefront } from '../../context/StorefrontContext';
 import { X, RotateCcw, Filter, Check, Star, Search } from 'lucide-react';

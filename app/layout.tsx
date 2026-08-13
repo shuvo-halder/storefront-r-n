@@ -41,8 +41,6 @@ export default function RootLayout({
             <main>{children}</main>
           </div>
           <Footer />
-
-          {/* Global Drawers & Modals */}
           <CartDrawer />
           <QuickViewModal />
           <AuthModal />

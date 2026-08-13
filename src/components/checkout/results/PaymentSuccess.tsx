@@ -1,3 +1,4 @@
+'use client';
 import React, { useEffect, useState } from 'react';
 import { useStorefront } from '../../../context/StorefrontContext';
 import { storefrontApi } from '../../../services/storefrontApi';

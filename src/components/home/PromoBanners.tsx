@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { useStorefront } from '../../context/StorefrontContext';
 import { ArrowRight, Sparkles, Zap, Flame } from 'lucide-react';

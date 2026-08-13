@@ -1,3 +1,4 @@
+'use client';
 import React, { useEffect, useState } from 'react';
 import { useStorefront } from '../../context/StorefrontContext';
 import { Loader2, ShieldCheck, Lock, Landmark } from 'lucide-react';

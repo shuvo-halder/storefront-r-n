@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { useStorefront } from '../../../context/StorefrontContext';
 import { XCircle, RefreshCw, ShoppingBag, ArrowLeft } from 'lucide-react';

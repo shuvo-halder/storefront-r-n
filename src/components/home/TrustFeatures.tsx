@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { useStorefront } from '../../context/StorefrontContext';
 import { Truck, ShieldCheck, RotateCcw, Headphones, Lock, Award } from 'lucide-react';

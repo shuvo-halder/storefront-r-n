@@ -1,5 +1,6 @@
+'use client';
 import Link from 'next/link';
-import { Home, Search, ArrowLeft } from 'lucide-react';
+import { Home, Search } from 'lucide-react';
 
 export default function NotFound() {
   return (
@@ -14,17 +15,11 @@ export default function NotFound() {
         The page or product you are looking for does not exist or has been moved to a new URL.
       </p>
       <div className="flex flex-wrap items-center justify-center gap-4">
-        <Link
-          href="/"
-          className="btn-accent flex items-center gap-2"
-        >
+        <Link href="/" className="btn-accent flex items-center gap-2">
           <Home className="w-4 h-4" />
           Back to Home
         </Link>
-        <Link
-          href="/shop"
-          className="btn-primary flex items-center gap-2"
-        >
+        <Link href="/shop" className="btn-primary flex items-center gap-2">
           <Search className="w-4 h-4" />
           Browse Shop
         </Link>
