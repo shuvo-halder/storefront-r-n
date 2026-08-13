@@ -1,7 +1,7 @@
 import { apiClient, unwrapApiResponse, extractApiError, ApiResponse } from '../lib/api';
 import { Category } from '../types/storefront';
 
-export function normalizeCategory(raw: any): Category {
+export function normalizeCategory(raw: any, facetCountMap?: { bySlug?: Map<string, number>; byId?: Map<string, number> }): Category {
   if (!raw) {
     return {
       id: '',
@@ -12,13 +12,27 @@ export function normalizeCategory(raw: any): Category {
       itemCount: 0
     };
   }
+
+  const id = String(raw.id || raw._id || '');
+  const slug = String(raw.slug || raw.id || '');
+  let itemCount = Number(raw.itemCount ?? raw.productCount ?? raw.count ?? 0);
+
+  if (facetCountMap) {
+    const slugKey = slug.toLowerCase();
+    if (facetCountMap.bySlug && facetCountMap.bySlug.has(slugKey)) {
+      itemCount = facetCountMap.bySlug.get(slugKey) ?? 0;
+    } else if (facetCountMap.byId && facetCountMap.byId.has(id)) {
+      itemCount = facetCountMap.byId.get(id) ?? 0;
+    }
+  }
+
   return {
-    id: String(raw.id || raw._id || ''),
-    slug: String(raw.slug || raw.id || ''),
+    id,
+    slug,
     name: String(raw.name || 'Category'),
     description: String(raw.description || ''),
     image: String(raw.image || raw.imageUrl || raw.thumbnail || ''),
-    itemCount: Number(raw.itemCount ?? raw.productCount ?? raw.count ?? 0),
+    itemCount,
     iconName: raw.icon || raw.iconName || undefined,
     subcategories: Array.isArray(raw.children) ? raw.children.map((child: any) => ({
       id: String(child.id || child.slug || ''),
@@ -29,18 +43,39 @@ export function normalizeCategory(raw: any): Category {
 }
 
 export const categoryService = {
-  // GET /categories
+  // GET /categories merged with GET /search/facets for itemCount
   getCategories: async (): Promise<ApiResponse<Category[]>> => {
     try {
-      const res = await apiClient.get('/categories');
-      const unwrapped = unwrapApiResponse<any>(res);
+      const [categoriesRes, facetsRes] = await Promise.allSettled([
+        apiClient.get('/categories'),
+        apiClient.get('/search/facets')
+      ]);
 
-      if (unwrapped.status === 'error') {
-        return { status: 'error', message: unwrapped.message || 'Failed to fetch categories', data: [] };
+      let rawCategories: any[] = [];
+      if (categoriesRes.status === 'fulfilled') {
+        const unwrapped = unwrapApiResponse<any>(categoriesRes.value);
+        if (unwrapped.status === 'success' && unwrapped.data) {
+          rawCategories = Array.isArray(unwrapped.data) ? unwrapped.data : (unwrapped.data?.categories || []);
+        }
       }
 
-      const list = Array.isArray(unwrapped.data) ? unwrapped.data : (unwrapped.data?.categories || []);
-      const categories = list.map(normalizeCategory);
+      const bySlugMap = new Map<string, number>();
+      const byIdMap = new Map<string, number>();
+
+      if (facetsRes.status === 'fulfilled') {
+        const unwrapped = unwrapApiResponse<any>(facetsRes.value);
+        if (unwrapped.status === 'success' && unwrapped.data?.categories) {
+          const facetCategories = Array.isArray(unwrapped.data.categories) ? unwrapped.data.categories : [];
+          facetCategories.forEach((fc: any) => {
+            const count = Number(fc.count || 0);
+            if (fc.slug) bySlugMap.set(String(fc.slug).toLowerCase(), count);
+            if (fc.id) byIdMap.set(String(fc.id), count);
+          });
+        }
+      }
+
+      const facetCountMap = { bySlug: bySlugMap, byId: byIdMap };
+      const categories = rawCategories.map(raw => normalizeCategory(raw, facetCountMap));
       return { status: 'success', message: null, data: categories };
     } catch (err: any) {
       const { message, errors } = extractApiError(err, 'Failed to fetch categories');

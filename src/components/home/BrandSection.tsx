@@ -69,7 +69,7 @@ export const BrandSection: React.FC = () => {
             </div>
 
             <Badge variant="secondary" size="sm" className="mt-2">
-              {brand.itemCount} Items
+              {brand.itemCount ?? 0} Items
             </Badge>
           </div>
         ))}

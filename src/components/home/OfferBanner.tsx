@@ -5,7 +5,7 @@ import { SmartImage } from '../common/SmartImage';
 import { Banner } from '../../types/storefront';
 import { storefrontApi } from '../../services/storefrontApi';
 import { useStorefront } from '../../context/StorefrontContext';
-import { ArrowRight, Sparkles, Tag } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { Skeleton } from '../ui/Skeleton';
 
 export const OfferBanner: React.FC = () => {
@@ -43,55 +43,96 @@ export const OfferBanner: React.FC = () => {
 
   if (!offerBanner) return null;
 
+  const handleClick = () => {
+    if (offerBanner.linkUrl && offerBanner.linkUrl.trim() !== '') {
+      const url = offerBanner.linkUrl.trim();
+      if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else if (url.startsWith('/products/')) {
+        const slug = url.replace('/products/', '').split('?')[0];
+        navigateTo('product-detail', { productSlug: slug });
+      } else if (url.startsWith('/categories/')) {
+        const slug = url.replace('/categories/', '').split('?')[0];
+        setFilters(prev => ({ ...prev, categorySlug: slug }));
+        navigateTo('shop');
+      } else if (url === '/shop' || url.startsWith('/shop?')) {
+        navigateTo('shop');
+      } else {
+        window.location.href = url;
+      }
+    } else if (offerBanner.productSlug) {
+      navigateTo('product-detail', { productSlug: offerBanner.productSlug });
+    } else if (offerBanner.categorySlug) {
+      setFilters(prev => ({ ...prev, categorySlug: offerBanner.categorySlug }));
+      navigateTo('shop');
+    } else {
+      navigateTo('shop');
+    }
+  };
+
+  const ctaText = offerBanner.ctaText || offerBanner.buttonText;
+  const descriptionText = offerBanner.subtitle || offerBanner.description;
+  const mobileImg = offerBanner.mobileImage || offerBanner.desktopImage || offerBanner.image;
+  const desktopImg = offerBanner.desktopImage || offerBanner.image;
+
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div 
-        onClick={() => {
-          if (offerBanner.categorySlug) {
-            setFilters(prev => ({ ...prev, categorySlug: offerBanner.categorySlug || null }));
-            navigateTo('shop');
-          } else {
-            navigateTo('shop');
-          }
-        }}
-        className="group relative overflow-hidden rounded-3xl bg-slate-900 border border-slate-800 text-white p-8 sm:p-12 cursor-pointer shadow-2xl transition-all duration-300 hover:border-primary/50"
+        onClick={handleClick}
+        className="group relative overflow-hidden rounded-3xl bg-slate-900 border border-slate-800 text-white p-8 sm:p-12 cursor-pointer shadow-2xl transition-all duration-300 hover:border-accent/50"
       >
         {/* Background Image & Gradient */}
         <div className="absolute inset-0 z-0">
-          <SmartImage 
-            src={offerBanner.image} 
-            alt={offerBanner.title} 
-            fill
-            fallbackType="banner"
-            fallbackLabel={offerBanner.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-30" 
-          />
+          <div className="block sm:hidden absolute inset-0">
+            <SmartImage 
+              src={mobileImg} 
+              alt={offerBanner.title} 
+              fill
+              fallbackType="banner"
+              fallbackLabel={offerBanner.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-30" 
+            />
+          </div>
+          <div className="hidden sm:block absolute inset-0">
+            <SmartImage 
+              src={desktopImg} 
+              alt={offerBanner.title} 
+              fill
+              fallbackType="banner"
+              fallbackLabel={offerBanner.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-30" 
+            />
+          </div>
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-transparent" />
         </div>
 
         {/* Banner Content */}
         <div className="relative z-10 max-w-xl space-y-4">
           {offerBanner.badge && (
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/20 border border-primary/30 text-rose-300 text-xs font-black uppercase tracking-wider backdrop-blur-xs">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-accent/20 border border-accent/30 text-rose-300 text-xs font-black uppercase tracking-wider backdrop-blur-xs">
               <Sparkles size={14} className="text-amber-300 animate-pulse" />
               {offerBanner.badge}
             </span>
           )}
 
-          <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight group-hover:text-primary/20 transition-colors">
+          <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight group-hover:text-accent transition-colors">
             {offerBanner.title}
           </h2>
 
-          <p className="text-xs sm:text-sm text-slate-300 font-normal leading-relaxed">
-            {offerBanner.subtitle}
-          </p>
+          {descriptionText && (
+            <p className="text-xs sm:text-sm text-slate-300 font-normal leading-relaxed">
+              {descriptionText}
+            </p>
+          )}
 
-          <div className="pt-2">
-            <button className="px-6 py-3.5 bg-primary hover:bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-primary/30 transition-all flex items-center gap-2 cursor-pointer">
-              <span>{offerBanner.buttonText || 'Explore Desk Upgrades'}</span>
-              <ArrowRight size={16} />
-            </button>
-          </div>
+          {ctaText && (
+            <div className="pt-2">
+              <button className="px-6 py-3.5 bg-accent hover:bg-accent/90 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-accent/30 transition-all flex items-center gap-2 cursor-pointer">
+                <span>{ctaText}</span>
+                <ArrowRight size={16} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </section>

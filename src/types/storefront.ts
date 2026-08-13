@@ -288,17 +288,23 @@ export interface Banner {
   id: string;
   badge?: string;
   title: string;
-  subtitle: string;
+  subtitle?: string;
+  description?: string;
   price?: string;
   comparePrice?: string;
   discount?: string;
   image: string;
+  desktopImage?: string;
+  mobileImage?: string;
   buttonText?: string;
+  ctaText?: string;
   linkUrl?: string;
   productSlug?: string;
   categorySlug?: string;
-  type: 'hero' | 'promo' | 'offer';
+  type?: 'hero' | 'promo' | 'offer' | string;
   bgColor?: string;
+  priority?: number;
+  isActive?: boolean;
 }
 
 export interface SearchFacetCategory {

@@ -2,6 +2,40 @@ import { apiClient, unwrapApiResponse, extractApiError, ApiResponse } from '../l
 import { Banner, BlogArticle, CMSPage } from '../types/storefront';
 
 export const contentService = {
+  // Helper: Normalize raw banner data from backend API
+  normalizeBanner(raw: any): Banner | null {
+    if (!raw) return null;
+    const desktopImage = String(raw.desktopImage || raw.desktopImageUrl || raw.image || raw.imageUrl || '');
+    const mobileImage = String(raw.mobileImage || raw.mobileImageUrl || desktopImage);
+    const image = String(raw.image || raw.imageUrl || desktopImage || mobileImage);
+
+    const ctaText = raw.ctaText || raw.buttonText || raw.ctaLabel || raw.buttonLabel || undefined;
+    const buttonText = raw.buttonText || raw.ctaText || raw.buttonLabel || raw.ctaLabel || undefined;
+
+    return {
+      id: String(raw.id || raw._id || Math.random().toString(36).substring(2, 9)),
+      badge: raw.badge || raw.tag || raw.label || undefined,
+      title: String(raw.title || raw.heading || ''),
+      subtitle: raw.subtitle || raw.description || raw.subheading || undefined,
+      description: raw.description || raw.subtitle || undefined,
+      price: raw.price ? String(raw.price) : undefined,
+      comparePrice: raw.comparePrice ? String(raw.comparePrice) : undefined,
+      discount: raw.discount || undefined,
+      image,
+      desktopImage: desktopImage || image,
+      mobileImage: mobileImage || desktopImage || image,
+      buttonText,
+      ctaText,
+      linkUrl: raw.linkUrl || raw.url || raw.link || undefined,
+      productSlug: raw.productSlug || raw.product?.slug || undefined,
+      categorySlug: raw.categorySlug || raw.category?.slug || undefined,
+      type: raw.type || 'hero',
+      bgColor: raw.bgColor || raw.backgroundColor || undefined,
+      priority: typeof raw.priority === 'number' ? raw.priority : (typeof raw.sortOrder === 'number' ? raw.sortOrder : undefined),
+      isActive: typeof raw.isActive === 'boolean' ? raw.isActive : true,
+    };
+  },
+
   // GET /banners
   getBanners: async (type?: 'hero' | 'promo' | 'offer'): Promise<ApiResponse<Banner[]>> => {
     try {
@@ -12,8 +46,23 @@ export const contentService = {
         return { status: 'success', message: null, data: [] };
       }
 
-      const list = Array.isArray(unwrapped.data) ? unwrapped.data : (unwrapped.data?.banners || []);
-      return { status: 'success', message: null, data: list };
+      const list = Array.isArray(unwrapped.data) ? unwrapped.data : (unwrapped.data?.banners || unwrapped.data?.data || []);
+      
+      let normalizedList = list
+        .map((item: any) => contentService.normalizeBanner(item))
+        .filter((item: Banner | null): item is Banner => item !== null && (item.isActive ?? true));
+
+      if (type) {
+        const filtered = normalizedList.filter(b => !b.type || b.type === type);
+        if (filtered.length > 0) {
+          normalizedList = filtered;
+        }
+      }
+
+      // Sort by priority if provided
+      normalizedList.sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0));
+
+      return { status: 'success', message: null, data: normalizedList };
     } catch {
       return { status: 'success', message: null, data: [] };
     }

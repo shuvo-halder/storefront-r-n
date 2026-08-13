@@ -140,7 +140,7 @@ export const BrandsIndexView: React.FC = () => {
                 </div>
 
                 <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-600 group-hover:text-primary">
-                  <span>{brand.itemCount} Products</span>
+                  <span>{brand.itemCount ?? 0} Products</span>
                   <ChevronRight size={16} className="text-slate-400 group-hover:text-primary" />
                 </div>
               </Link>
