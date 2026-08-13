@@ -66,11 +66,11 @@ export const Drawer: React.FC<DrawerProps> = ({
               animate="visible"
               exit="hidden"
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className={`w-screen ${sizeClasses[size]} bg-white shadow-2xl flex flex-col justify-between z-10 border-l border-slate-100`}
+              className={`w-screen ${sizeClasses[size]} bg-white shadow-2xl flex flex-col justify-between z-10 ${position === 'right' ? 'border-l' : 'border-r'} border-slate-100`}
             >
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                <div className="font-extrabold text-base sm:text-lg text-slate-900">
+                <div className="font-extrabold text-base sm:text-lg text-slate-900 min-w-0 flex-1 pr-2">
                   {title}
                 </div>
                 <button

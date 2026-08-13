@@ -104,6 +104,7 @@ export const storefrontApi = {
     minPrice?: number;
     maxPrice?: number;
     inStock?: boolean;
+    inStockOnly?: boolean;
     ratingMin?: number;
     sort?: string;
     page?: number;
@@ -113,7 +114,17 @@ export const storefrontApi = {
     const q = params?.q || params?.searchQuery || params?.query || '';
     const page = params?.page || 1;
     const pageSize = params?.pageSize || params?.limit || 20;
-    const res = await searchService.search(q, page, pageSize);
+    const res = await searchService.search(q, page, pageSize, {
+      category: params?.category,
+      brand: params?.brand,
+      minPrice: params?.minPrice,
+      maxPrice: params?.maxPrice,
+      inStock: params?.inStock ?? params?.inStockOnly,
+      ratingMin: params?.ratingMin,
+      sort: params?.sort,
+      page,
+      pageSize
+    });
     return {
       products: res.data?.products || [],
       total: res.data?.total || 0,

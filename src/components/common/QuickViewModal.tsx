@@ -343,7 +343,7 @@ export const QuickViewModal: React.FC = () => {
 
                   {/* Wishlist toggle */}
                   <button
-                    onClick={() => toggleWishlist(currentProduct.id)}
+                    onClick={() => toggleWishlist(currentProduct)}
                     className={`p-3 rounded-xl border transition-colors cursor-pointer ${
                       inWishlist 
                         ? 'bg-primary/5 border-primary/20 text-primary' 

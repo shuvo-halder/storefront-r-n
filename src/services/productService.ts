@@ -1,5 +1,6 @@
 import { apiClient, unwrapApiResponse, normalizeProduct, extractApiError, ApiResponse } from '../lib/api';
 import { Product, ProductFilterState } from '../types/storefront';
+import { smartFilterAndRankProducts } from '../lib/searchUtils';
 
 export { normalizeProduct };
 
@@ -8,6 +9,8 @@ export const productService = {
   getProducts: async (filters?: Partial<ProductFilterState>): Promise<ApiResponse<{ products: Product[]; total: number }>> => {
     try {
       const params: Record<string, any> = {};
+      const hasSearchQuery = Boolean(filters?.searchQuery && filters.searchQuery.trim().length > 0);
+
       if (filters) {
         if (filters.searchQuery) params.q = filters.searchQuery;
         if (filters.categorySlug) params.category = filters.categorySlug;
@@ -18,7 +21,12 @@ export const productService = {
         if (filters.inStockOnly) params.inStock = true;
         if (filters.sortBy) params.sort = filters.sortBy;
         if (filters.page) params.page = filters.page;
-        if (filters.pageSize) params.limit = filters.pageSize;
+        // If searchQuery is present, fetch more candidates so client-side smart ranking has full view
+        if (hasSearchQuery) {
+          params.limit = 100;
+        } else if (filters.pageSize) {
+          params.limit = filters.pageSize;
+        }
       }
 
       const res = await apiClient.get('/products', { params });
@@ -42,9 +50,29 @@ export const productService = {
         totalCount = 1;
       }
 
-      const products = rawList.map(normalizeProduct);
+      let products = rawList.map(normalizeProduct);
+
+      // If search query is provided, apply smart partial matching and ranking
+      if (hasSearchQuery && filters?.searchQuery) {
+        const smartRes = smartFilterAndRankProducts(products, filters.searchQuery, {
+          category: filters.categorySlug,
+          brand: filters.brandSlugs,
+          minPrice: filters.minPrice,
+          maxPrice: filters.maxPrice,
+          inStock: filters.inStockOnly,
+          ratingMin: filters.ratingMin,
+          sort: filters.sortBy,
+          page: filters.page || 1,
+          pageSize: filters.pageSize || 12
+        });
+        products = smartRes.products;
+        totalCount = smartRes.total;
+      }
+
       return {
-        status: 'success', message: null, data: { products, total: totalCount },
+        status: 'success', 
+        message: null, 
+        data: { products, total: totalCount },
         pagination: unwrapped.pagination
       };
     } catch (err: any) {

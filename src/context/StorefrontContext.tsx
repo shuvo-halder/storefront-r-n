@@ -13,6 +13,7 @@ import {
   Brand
 } from '../types/storefront';
 import { storefrontApi } from '../services/storefrontApi';
+import { trackGA4AddToWishlist } from '../utils/analytics';
 import confetti from 'canvas-confetti';
 
 export type AppView = 
@@ -98,7 +99,7 @@ interface StorefrontContextType {
   
   // Wishlist & Recently Viewed
   wishlist: string[]; // product IDs
-  toggleWishlist: (productId: string) => void;
+  toggleWishlist: (productOrId: string | Product) => void;
   isInWishlist: (productId: string) => boolean;
   recentlyViewed: string[];
   trackRecentlyViewed: (productId: string) => void;
@@ -415,7 +416,8 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
   }, []);
 
   // Wishlist
-  const toggleWishlist = (productId: string) => {
+  const toggleWishlist = (productOrId: string | Product) => {
+    const productId = typeof productOrId === 'string' ? productOrId : productOrId.id;
     setWishlist(prev => {
       const exists = prev.includes(productId);
       const updated = exists ? prev.filter(id => id !== productId) : [...prev, productId];
@@ -425,6 +427,25 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
         title: exists ? 'Removed from Wishlist' : 'Saved to Wishlist',
         type: 'info',
       });
+
+      if (!exists) {
+        const currency = publicSettings?.general?.currency || 'BDT';
+        if (typeof productOrId !== 'string') {
+          trackGA4AddToWishlist(productOrId, currency);
+        } else {
+          storefrontApi.getProducts().then(res => {
+            const found = (res.products || []).find(p => p.id === productOrId);
+            if (found) {
+              trackGA4AddToWishlist(found, currency);
+            } else {
+              trackGA4AddToWishlist({ id: productOrId, name: 'Product', price: 0 }, currency);
+            }
+          }).catch(() => {
+            trackGA4AddToWishlist({ id: productOrId, name: 'Product', price: 0 }, currency);
+          });
+        }
+      }
+
       return updated;
     });
   };

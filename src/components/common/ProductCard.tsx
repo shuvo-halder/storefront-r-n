@@ -121,7 +121,7 @@ export const ProductCard = React.memo(({
                 <Eye size={18} />
               </button>
               <button
-                onClick={() => toggleWishlist(product.id)}
+                onClick={() => toggleWishlist(product)}
                 className={`p-3 rounded-xl border transition-all cursor-pointer ${
                   inWishlist ? 'bg-accent-muted border-accent/20 text-accent' : 'bg-surface border-transparent text-slate-600 hover:text-accent'
                 }`}
@@ -163,7 +163,7 @@ export const ProductCard = React.memo(({
 
       {/* Wishlist Button Top Right */}
       <button
-        onClick={() => toggleWishlist(product.id)}
+        onClick={() => toggleWishlist(product)}
         className={`absolute top-4 right-4 z-10 p-2.5 rounded-full backdrop-blur-md transition-all shadow-premium cursor-pointer ${
           inWishlist 
             ? 'bg-white/90 text-accent shadow-accent scale-110' 

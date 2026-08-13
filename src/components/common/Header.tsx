@@ -102,6 +102,7 @@ function HeaderContent() {
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const mobileSearchContainerRef = useRef<HTMLDivElement>(null);
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const navContainerRef = useRef<HTMLDivElement>(null);
 
@@ -156,13 +157,16 @@ function HeaderContent() {
   // Click outside listener
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      const isInsideDesktop = searchContainerRef.current?.contains(target);
+      const isInsideMobile = mobileSearchContainerRef.current?.contains(target);
+      if (!isInsideDesktop && !isInsideMobile) {
         setIsSearchFocused(false);
       }
-      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(target)) {
         setIsAccountMenuOpen(false);
       }
-      if (navContainerRef.current && !navContainerRef.current.contains(e.target as Node)) {
+      if (navContainerRef.current && !navContainerRef.current.contains(target)) {
         setIsMegaMenuOpen(false);
       }
     };
@@ -236,6 +240,128 @@ function HeaderContent() {
     return pathname.startsWith(path);
   };
 
+  const renderSearchDropdown = () => (
+    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden animate-in fade-in-50 duration-150">
+      {searchInput.trim().length < 2 && (
+        <div className="p-4 space-y-4">
+          {searchHistory.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                <span>Recent Searches</span>
+                <button onClick={clearSearchHistory} className="text-[10px] text-accent hover:underline cursor-pointer">Clear All</button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {searchHistory.map((q) => (
+                  <span 
+                    key={q}
+                    onClick={() => {
+                      setSearchInput(q);
+                      router.push(`/search?q=${encodeURIComponent(q)}`);
+                      setIsSearchFocused(false);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:border-accent hover:text-accent cursor-pointer transition-colors"
+                  >
+                    <span>{q}</span>
+                    <X 
+                      size={12} 
+                      className="hover:text-red-500 cursor-pointer" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeSearchHistoryItem(q);
+                      }} 
+                    />
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Popular Categories</div>
+            <div className="grid grid-cols-2 gap-2">
+              {categories.slice(0, 6).map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/categories/${cat.slug}`}
+                  onClick={() => setIsSearchFocused(false)}
+                  className="p-2 rounded-xl bg-surface hover:bg-primary-light hover:text-primary transition-colors text-xs font-semibold text-slate-700 flex items-center justify-between"
+                >
+                  <span className="truncate">{cat.name}</span>
+                  <ChevronRight size={14} className="text-slate-400 flex-shrink-0" />
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {searchInput.trim().length >= 2 && (
+        <div>
+          {categorySuggestions.length > 0 && (
+            <div className="p-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] font-bold text-slate-400 uppercase">Categories:</span>
+              {categorySuggestions.map(cat => (
+                <Link
+                  key={cat.slug}
+                  href={`/categories/${cat.slug}`}
+                  onClick={() => setIsSearchFocused(false)}
+                  className="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-primary hover:border-accent hover:text-accent transition-colors"
+                >
+                  {cat.name}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {searchResults.length > 0 && (
+            <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
+              {searchResults.map((prod, idx) => (
+                <div
+                  key={prod.id}
+                  onClick={() => {
+                    router.push(`/products/${prod.slug}`);
+                    setIsSearchFocused(false);
+                  }}
+                  className={`p-3 flex items-center justify-between gap-3 cursor-pointer transition-colors ${
+                    idx === selectedIndex ? 'bg-primary-light' : 'hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <SmartImage 
+                      src={prod.images?.[0]} 
+                      alt={prod.name} 
+                      width={48}
+                      height={48}
+                      fallbackType="product"
+                      fallbackLabel={prod.name}
+                      className="w-12 h-12 object-cover rounded-xl border border-slate-200 flex-shrink-0" 
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-bold text-slate-900 truncate">{prod.name}</div>
+                      <div className="text-xs font-black text-accent mt-0.5">${prod.price}</div>
+                    </div>
+                  </div>
+                  <Badge variant={prod.stock > 0 ? 'success' : 'error'} size="sm" className="flex-shrink-0">
+                    {prod.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => handleSearchSubmit()}
+            className="w-full p-3 bg-slate-50 hover:bg-primary/5 text-center text-xs font-bold text-primary border-t border-slate-100 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            <span className="truncate">View all search results for "{searchInput}"</span>
+            <ArrowRight size={14} className="flex-shrink-0" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <AnimatePresence>
       <header className={`w-full bg-white border-b border-border-default sticky top-0 z-40 shadow-premium transition-transform duration-300 ease-in-out ${
@@ -291,23 +417,23 @@ function HeaderContent() {
         )}
 
         {/* 2. MAIN HEADER */}
-        <div className="container-vyzobd py-4 flex items-center justify-between gap-4 lg:gap-10">
+        <div className="container-vyzobd py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4 lg:gap-10">
           
           {/* Mobile: Hamburger and Logo */}
-          <div className="flex items-center gap-3 lg:hidden">
+          <div className="flex items-center gap-2 sm:gap-3 lg:hidden min-w-0 flex-1 sm:flex-initial">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 text-primary hover:text-accent rounded-xl hover:bg-surface transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="p-2 text-primary hover:text-accent rounded-xl hover:bg-surface transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center flex-shrink-0"
               aria-label="Open Menu"
             >
               <Menu size={24} />
             </button>
             
-            <Link href="/" className="flex items-center group select-none flex-shrink-0">
+            <Link href="/" className="flex items-center gap-2 group select-none min-w-0">
               <img 
                 src="/logo.svg" 
-                alt="Vyzobd Store" 
-                className="h-8 w-auto object-contain"
+                alt={publicSettings?.general?.siteName || "Vyzobd Store"} 
+                className="h-7 sm:h-8 w-auto object-contain flex-shrink-0 max-w-[110px] xs:max-w-[140px] sm:max-w-[180px]"
               />
             </Link>
           </div>
@@ -316,7 +442,7 @@ function HeaderContent() {
           <Link href="/" className="hidden lg:flex items-center group select-none flex-shrink-0">
             <img 
               src="/logo.svg" 
-              alt="Vyzobd Flagship Store" 
+              alt={publicSettings?.general?.siteName || "Vyzobd Flagship Store"} 
               className="h-9 w-auto object-contain"
             />
           </Link>
@@ -359,7 +485,7 @@ function HeaderContent() {
                   <button
                     type="button"
                     onClick={() => setSearchInput('')}
-                    className="p-1 mr-2 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="p-1 mr-2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                   >
                     <X size={16} />
                   </button>
@@ -376,132 +502,12 @@ function HeaderContent() {
               </button>
             </form>
 
-            {/* Search Autocomplete Dropdown */}
-            {isSearchFocused && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden animate-in fade-in-50 duration-150">
-                {searchInput.trim().length < 2 && (
-                  <div className="p-4 space-y-4">
-                    {searchHistory.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                          <span>Recent Searches</span>
-                          <button onClick={clearSearchHistory} className="text-[10px] text-accent hover:underline">Clear All</button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {searchHistory.map((q) => (
-                            <span 
-                              key={q}
-                              onClick={() => {
-                                setSearchInput(q);
-                                router.push(`/search?q=${encodeURIComponent(q)}`);
-                                setIsSearchFocused(false);
-                              }}
-                              className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:border-accent hover:text-accent cursor-pointer transition-colors"
-                            >
-                              <span>{q}</span>
-                              <X 
-                                size={12} 
-                                className="hover:text-red-500" 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeSearchHistoryItem(q);
-                                }} 
-                              />
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div>
-                      <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Popular Categories</div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {categories.slice(0, 6).map((cat) => (
-                          <Link
-                            key={cat.id}
-                            href={`/categories/${cat.slug}`}
-                            onClick={() => setIsSearchFocused(false)}
-                            className="p-2 rounded-xl bg-surface hover:bg-primary-light hover:text-primary transition-colors text-xs font-semibold text-slate-700 flex items-center justify-between"
-                          >
-                            <span>{cat.name}</span>
-                            <ChevronRight size={14} className="text-slate-400" />
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {searchInput.trim().length >= 2 && (
-                  <div>
-                    {categorySuggestions.length > 0 && (
-                      <div className="p-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2 flex-wrap">
-                        <span className="text-[11px] font-bold text-slate-400 uppercase">Categories:</span>
-                        {categorySuggestions.map(cat => (
-                          <Link
-                            key={cat.slug}
-                            href={`/categories/${cat.slug}`}
-                            onClick={() => setIsSearchFocused(false)}
-                            className="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-primary hover:border-accent hover:text-accent transition-colors"
-                          >
-                            {cat.name}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-
-                    {searchResults.length > 0 && (
-                      <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
-                        {searchResults.map((prod, idx) => (
-                          <div
-                            key={prod.id}
-                            onClick={() => {
-                              router.push(`/products/${prod.slug}`);
-                              setIsSearchFocused(false);
-                            }}
-                            className={`p-3 flex items-center justify-between gap-3 cursor-pointer transition-colors ${
-                              idx === selectedIndex ? 'bg-primary-light' : 'hover:bg-slate-50'
-                            }`}
-                          >
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                              <SmartImage 
-                                src={prod.images?.[0]} 
-                                alt={prod.name} 
-                                width={48}
-                                height={48}
-                                fallbackType="product"
-                                fallbackLabel={prod.name}
-                                className="w-12 h-12 object-cover rounded-xl border border-slate-200 flex-shrink-0" 
-                              />
-                              <div className="min-w-0 flex-1">
-                                <div className="text-xs font-bold text-slate-900 truncate">{prod.name}</div>
-                                <div className="text-xs font-black text-accent mt-0.5">${prod.price}</div>
-                              </div>
-                            </div>
-                            <Badge variant={prod.stock > 0 ? 'success' : 'error'} size="sm">
-                              {prod.stock > 0 ? 'In Stock' : 'Out of Stock'}
-                            </Badge>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => handleSearchSubmit()}
-                      className="w-full p-3 bg-slate-50 hover:bg-primary/5 text-center text-xs font-bold text-primary border-t border-slate-100 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      <span>View all search results for "{searchInput}"</span>
-                      <ArrowRight size={14} />
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+            {/* Search Autocomplete Dropdown (Desktop) */}
+            {isSearchFocused && renderSearchDropdown()}
           </div>
 
           {/* Action Controls: User Account, Wishlist, Cart */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5">
+          <div className="flex items-center gap-1 sm:gap-2.5 flex-shrink-0">
             
             {/* User Account Button & Dropdown */}
             <div className="relative" ref={accountMenuRef}>
@@ -531,7 +537,7 @@ function HeaderContent() {
 
               {/* Account Dropdown Menu */}
               {user && isAccountMenuOpen && (
-                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 z-50 animate-in fade-in-50 duration-150">
+                <div className="absolute right-0 top-full mt-2 w-56 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 z-50 animate-in fade-in-50 duration-150">
                   <div className="p-3 bg-slate-50 rounded-xl mb-1 border border-slate-100">
                     <div className="text-xs font-bold text-slate-900">{user.fullName}</div>
                     <div className="text-[11px] text-slate-500 truncate">{user.email}</div>
@@ -774,8 +780,8 @@ function HeaderContent() {
         </div>
 
         {/* Mobile Search Row */}
-        <div className="lg:hidden px-4 pb-4">
-          <div ref={searchContainerRef} className="relative w-full">
+        <div className="lg:hidden px-4 pb-3">
+          <div ref={mobileSearchContainerRef} className="relative w-full">
             <form 
               onSubmit={handleSearchSubmit} 
               className="relative flex items-center w-full"
@@ -786,19 +792,22 @@ function HeaderContent() {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
-                className="w-full py-3 pl-10 pr-10 text-sm bg-surface border border-border-default rounded-2xl focus:outline-none focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 font-medium transition-all"
+                className="w-full py-2.5 sm:py-3 pl-10 pr-10 text-sm bg-surface border border-border-default rounded-2xl focus:outline-none focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 font-medium transition-all"
               />
               <Search size={18} className="absolute left-3.5 text-primary pointer-events-none" />
               {searchInput && (
                 <button
                   type="button"
                   onClick={() => setSearchInput('')}
-                  className="absolute right-3 text-slate-400 hover:text-primary transition-colors"
+                  className="absolute right-3 text-slate-400 hover:text-primary transition-colors cursor-pointer p-1"
                 >
                   <X size={18} />
                 </button>
               )}
             </form>
+
+            {/* Mobile Search Autocomplete Dropdown */}
+            {isSearchFocused && renderSearchDropdown()}
           </div>
         </div>
 
@@ -809,9 +818,11 @@ function HeaderContent() {
           position="left"
           size="md"
           title={
-            <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 group">
-              <img src="/logo.svg" alt="Vyzobd" className="h-8 w-auto" />
-              <span className="font-display font-black text-xl text-primary tracking-tighter uppercase group-hover:text-accent transition-colors">Vyzobd</span>
+            <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 group min-w-0">
+              <img src="/logo.svg" alt={publicSettings?.general?.siteName || "Vyzobd"} className="h-7 sm:h-8 w-auto flex-shrink-0" />
+              <span className="font-display font-black text-lg sm:text-xl text-primary tracking-tighter uppercase group-hover:text-accent transition-colors truncate max-w-[180px] sm:max-w-[220px]">
+                {publicSettings?.general?.siteName || "Vyzobd"}
+              </span>
             </Link>
           }
           footer={

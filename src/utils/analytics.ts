@@ -344,6 +344,29 @@ export const trackGA4RemoveFromCart = (
   }
 };
 
+export const trackGA4AddToWishlist = (
+  item: any,
+  currency: string = 'BDT'
+) => {
+  try {
+    if (!item) return;
+
+    const formattedItem = cartItemToGA4Item(item, { quantity: 1 });
+    const unitPrice = formattedItem.price || 0;
+
+    pushToDataLayer({
+      event: 'add_to_wishlist',
+      ecommerce: {
+        currency: currency || 'BDT',
+        value: unitPrice,
+        items: [formattedItem],
+      },
+    });
+  } catch (err) {
+    console.error('[GA4 add_to_wishlist error]', err);
+  }
+};
+
 export const trackGA4BeginCheckout = (
   items: any[],
   totalValue: number,
@@ -520,5 +543,79 @@ export const trackGA4Purchase = (order: any, currency: string = 'BDT') => {
     }
   } catch (err) {
     console.error('[GA4 purchase error]', err);
+  }
+};
+
+export const trackGA4Refund = (
+  refundData: {
+    id?: string;
+    refundId?: string;
+    orderId?: string;
+    transactionId?: string;
+    amount?: number;
+    value?: number;
+    coupon?: string;
+    items?: any[];
+  },
+  currency: string = 'BDT'
+) => {
+  try {
+    if (!refundData) return;
+
+    const transactionId = String(
+      refundData.orderId || refundData.transactionId || refundData.id || ''
+    );
+    if (!transactionId) return;
+
+    const refundId = String(refundData.id || refundData.refundId || transactionId);
+
+    // Deduplication check for refund using refundId / transactionId
+    const storageKey = `refund_tracked_${refundId}`;
+    if (typeof window !== 'undefined') {
+      try {
+        if (
+          window.sessionStorage.getItem(storageKey) === 'true' ||
+          window.localStorage.getItem(storageKey) === 'true'
+        ) {
+          return; // Already tracked for this refund
+        }
+      } catch (e) {
+        // Storage access blocked or restricted
+      }
+    }
+
+    const rawItems = Array.isArray(refundData.items) ? refundData.items : [];
+    const formattedItems = rawItems.map((item: any, idx: number) =>
+      cartItemToGA4Item(item, { index: idx + 1 })
+    );
+
+    const value = typeof refundData.amount === 'number'
+      ? refundData.amount
+      : (typeof refundData.value === 'number' ? refundData.value : parseFloat(String(refundData.amount || refundData.value || '0')));
+
+    const couponCode = refundData.coupon;
+
+    pushToDataLayer({
+      event: 'refund',
+      ecommerce: {
+        transaction_id: transactionId,
+        value: isNaN(value) ? 0 : value,
+        currency: currency || 'BDT',
+        ...(couponCode ? { coupon: String(couponCode) } : {}),
+        items: formattedItems,
+      },
+    });
+
+    // Mark refund as tracked
+    if (typeof window !== 'undefined') {
+      try {
+        window.sessionStorage.setItem(storageKey, 'true');
+        window.localStorage.setItem(storageKey, 'true');
+      } catch (e) {
+        // Storage access blocked or restricted
+      }
+    }
+  } catch (err) {
+    console.error('[GA4 refund error]', err);
   }
 };

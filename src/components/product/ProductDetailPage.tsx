@@ -621,7 +621,7 @@ export const ProductDetailPage: React.FC = () => {
                 {/* Wishlist & Share Buttons */}
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => toggleWishlist(product.id)}
+                    onClick={() => toggleWishlist(product)}
                     className={`p-3 rounded-xl border transition-colors cursor-pointer min-h-[46px] min-w-[46px] flex items-center justify-center ${
                       inWishlist ? 'bg-primary/5 border-primary/20 text-primary' : 'bg-white border-slate-200 text-slate-500 hover:text-primary'
                     }`}
