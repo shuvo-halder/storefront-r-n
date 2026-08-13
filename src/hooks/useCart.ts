@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { storefrontApi } from '../services/storefrontApi';
 import { Cart } from '../types/storefront';
+import { useSettings } from '../context/SettingsContext';
 import { 
   trackGA4AddToCart, 
   trackGA4RemoveFromCart, 
@@ -13,6 +14,13 @@ export const CART_QUERY_KEY = ['cart'];
 
 export function useCart() {
   const queryClient = useQueryClient();
+  let currency = 'BDT';
+  try {
+    const { settings } = useSettings();
+    currency = settings?.general?.currency || 'BDT';
+  } catch {
+    // Fallback if rendered outside SettingsProvider
+  }
 
   // GET /cart
   const { 
@@ -46,7 +54,7 @@ export function useCart() {
       
       const addedItem = updated.items.find(i => i.productId === productId);
       if (addedItem) {
-        trackGA4AddToCart(addedItem, quantity);
+        trackGA4AddToCart(addedItem, quantity, currency);
       }
     },
   });
@@ -54,11 +62,24 @@ export function useCart() {
   // PUT /cart/items/:itemId
   const updateQuantityMutation = useMutation({
     mutationFn: async ({ itemId, quantity }: { itemId: string; quantity: number }) => {
+      const currentCart = queryClient.getQueryData<Cart>(CART_QUERY_KEY);
+      const targetItem = currentCart?.items.find(i => i.id === itemId);
+      const oldQuantity = targetItem?.quantity || 0;
+
       const updated = await storefrontApi.updateCartItem(itemId, quantity);
-      return updated;
+      return { updated, targetItem, oldQuantity, newQuantity: quantity };
     },
-    onSuccess: (updated) => {
+    onSuccess: ({ updated, targetItem, oldQuantity, newQuantity }) => {
       queryClient.setQueryData<Cart>(CART_QUERY_KEY, updated);
+
+      if (targetItem) {
+        const diff = newQuantity - oldQuantity;
+        if (diff > 0) {
+          trackGA4AddToCart(targetItem, diff, currency);
+        } else if (diff < 0) {
+          trackGA4RemoveFromCart(targetItem, Math.abs(diff), currency);
+        }
+      }
     },
   });
 
@@ -74,7 +95,7 @@ export function useCart() {
     onSuccess: ({ updated, targetItem }) => {
       queryClient.setQueryData<Cart>(CART_QUERY_KEY, updated);
       if (targetItem) {
-        trackGA4RemoveFromCart(targetItem);
+        trackGA4RemoveFromCart(targetItem, targetItem.quantity, currency);
       }
     },
   });
@@ -82,11 +103,16 @@ export function useCart() {
   // DELETE /cart
   const clearCartMutation = useMutation({
     mutationFn: async () => {
+      const currentCart = queryClient.getQueryData<Cart>(CART_QUERY_KEY);
+      const previousItems = currentCart?.items || [];
       const updated = await storefrontApi.clearCart();
-      return updated;
+      return { updated, previousItems };
     },
-    onSuccess: (updated) => {
+    onSuccess: ({ updated, previousItems }) => {
       queryClient.setQueryData<Cart>(CART_QUERY_KEY, updated);
+      previousItems.forEach(item => {
+        trackGA4RemoveFromCart(item, item.quantity, currency);
+      });
     },
   });
 
@@ -105,7 +131,7 @@ export function useCart() {
   const totalItemCount = (cart.items || []).reduce((sum, item) => sum + item.quantity, 0);
 
   const viewCartGA4 = () => {
-    trackGA4ViewCart(cart.items, cart.total);
+    trackGA4ViewCart(cart.items, cart.total, currency);
   };
 
   return {

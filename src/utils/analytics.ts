@@ -1,4 +1,192 @@
-// GA4 Analytics helper for E-commerce tracking
+// Centralized Analytics and DataLayer helper for GA4 & Google Tag Manager
+
+declare global {
+  interface Window {
+    dataLayer: Record<string, any>[];
+    gtag?: (...args: any[]) => void;
+  }
+}
+
+/**
+ * Get GA4 Measurement ID safely from env
+ */
+export const getGA4Id = (): string => {
+  return process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() || '';
+};
+
+/**
+ * Get GTM Container ID safely from env
+ */
+export const getGTMId = (): string => {
+  return process.env.NEXT_PUBLIC_GTM_ID?.trim() || '';
+};
+
+/**
+ * Push an event or payload to window.dataLayer cleanly and SSR-safely.
+ * Single source of truth to avoid duplicate event dispatches.
+ */
+export const pushToDataLayer = (payload: Record<string, any>) => {
+  if (typeof window === 'undefined') return;
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push(payload);
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[DataLayer Push]', payload);
+  }
+};
+
+export interface GA4Item {
+  item_id: string;
+  item_name: string;
+  price?: number;
+  item_brand?: string;
+  item_category?: string;
+  item_variant?: string;
+  quantity?: number;
+  index?: number;
+  [key: string]: any;
+}
+
+/**
+ * Centralized product to GA4 item mapper.
+ * Only includes fields that are available; never invents values.
+ */
+export const productToGA4Item = (
+  product: any,
+  options?: { index?: number; quantity?: number; variant?: string }
+): GA4Item => {
+  if (!product) {
+    return {
+      item_id: '',
+      item_name: 'Unknown Product',
+    };
+  }
+
+  const itemId = String(product.id || product.productId || product.slug || '');
+  const itemName = String(product.name || product.title || product.productName || 'Product');
+
+  const item: GA4Item = {
+    item_id: itemId,
+    item_name: itemName,
+  };
+
+  const rawPrice = product.price ?? product.unitPrice;
+  if (rawPrice !== undefined && rawPrice !== null) {
+    const numericPrice = typeof rawPrice === 'number' ? rawPrice : parseFloat(rawPrice);
+    if (!isNaN(numericPrice) && numericPrice >= 0) {
+      item.price = numericPrice;
+    }
+  }
+
+  if (product.brand) {
+    item.item_brand = String(product.brand);
+  }
+
+  if (product.category) {
+    item.item_category = String(product.category);
+  }
+
+  const variantName = options?.variant || product.selectedVariant?.name || product.variantName;
+  if (variantName) {
+    item.item_variant = String(variantName);
+  }
+
+  if (typeof options?.quantity === 'number') {
+    item.quantity = options.quantity;
+  }
+
+  if (typeof options?.index === 'number') {
+    item.index = options.index;
+  }
+
+  return item;
+};
+
+/**
+ * 1. view_item_list
+ * Structure: { event: "view_item_list", ecommerce: { item_list_id, item_list_name, items } }
+ */
+export const trackGA4ViewItemList = (
+  listId: string,
+  listName: string,
+  products: any[]
+) => {
+  try {
+    if (!products || !Array.isArray(products) || products.length === 0) return;
+
+    const items = products.map((prod, idx) =>
+      productToGA4Item(prod, { index: idx + 1 })
+    );
+
+    pushToDataLayer({
+      event: 'view_item_list',
+      ecommerce: {
+        item_list_id: listId || 'product_list',
+        item_list_name: listName || 'Product List',
+        items,
+      },
+    });
+  } catch (err) {
+    console.error('[GA4 view_item_list error]', err);
+  }
+};
+
+/**
+ * 2. select_item
+ * Structure: { event: "select_item", ecommerce: { item_list_id, item_list_name, items } }
+ */
+export const trackGA4SelectItem = (
+  listId: string,
+  listName: string,
+  product: any,
+  index?: number
+) => {
+  try {
+    if (!product) return;
+
+    const item = productToGA4Item(product, { index });
+
+    pushToDataLayer({
+      event: 'select_item',
+      ecommerce: {
+        item_list_id: listId || 'product_list',
+        item_list_name: listName || 'Product List',
+        items: [item],
+      },
+    });
+  } catch (err) {
+    console.error('[GA4 select_item error]', err);
+  }
+};
+
+/**
+ * 3. view_item
+ * Structure: { event: "view_item", ecommerce: { currency, value, items } }
+ */
+export const trackGA4ViewItem = (
+  product: any,
+  currency: string = 'BDT'
+) => {
+  try {
+    if (!product) return;
+
+    const item = productToGA4Item(product);
+    const rawPrice = product.price ?? product.unitPrice;
+    const numericPrice = typeof rawPrice === 'number' ? rawPrice : parseFloat(rawPrice || '0');
+
+    pushToDataLayer({
+      event: 'view_item',
+      ecommerce: {
+        currency: currency || 'BDT',
+        value: !isNaN(numericPrice) ? numericPrice : 0,
+        items: [item],
+      },
+    });
+  } catch (err) {
+    console.error('[GA4 view_item error]', err);
+  }
+};
 
 export interface GA4CartItem {
   item_id: string;
@@ -10,109 +198,327 @@ export interface GA4CartItem {
   item_variant?: string;
 }
 
-export const trackGA4Event = (eventName: string, params?: Record<string, any>) => {
-  if (typeof window !== 'undefined') {
-    (window as any).dataLayer = (window as any).dataLayer || [];
-    (window as any).dataLayer.push({
-      event: eventName,
-      ...params,
-    });
-    
-    if (typeof (window as any).gtag === 'function') {
-      (window as any).gtag('event', eventName, params);
-    } else {
-      console.log(`[GA4 Event Logged: ${eventName}]`, params);
+export const cartItemToGA4Item = (
+  item: any,
+  options?: { quantity?: number; variant?: string; index?: number }
+): GA4Item => {
+  if (!item) {
+    return {
+      item_id: '',
+      item_name: 'Unknown Product',
+    };
+  }
+
+  const productObj = item.product || item;
+
+  const itemId = String(item.productId || productObj.id || productObj.productId || item.id || '');
+  const itemName = String(productObj.name || item.productName || item.name || 'Product');
+
+  const ga4Item: GA4Item = {
+    item_id: itemId,
+    item_name: itemName,
+  };
+
+  const rawPrice = item.unitPrice ?? productObj.price ?? item.price;
+  if (rawPrice !== undefined && rawPrice !== null) {
+    const numericPrice = typeof rawPrice === 'number' ? rawPrice : parseFloat(rawPrice);
+    if (!isNaN(numericPrice) && numericPrice >= 0) {
+      ga4Item.price = numericPrice;
     }
+  }
+
+  const qty = options?.quantity ?? item.quantity;
+  if (typeof qty === 'number' && qty > 0) {
+    ga4Item.quantity = qty;
+  }
+
+  const brand = productObj.brand || item.brand;
+  if (brand) {
+    ga4Item.item_brand = String(brand);
+  }
+
+  const category = productObj.category || item.category;
+  if (category) {
+    ga4Item.item_category = String(category);
+  }
+
+  const variantName =
+    options?.variant ||
+    item.selectedVariant?.name ||
+    item.variantName ||
+    productObj.selectedVariant?.name;
+  if (variantName) {
+    ga4Item.item_variant = String(variantName);
+  }
+
+  if (typeof options?.index === 'number') {
+    ga4Item.index = options.index;
+  }
+
+  return ga4Item;
+};
+
+/**
+ * Generic event tracker delegating to pushToDataLayer.
+ */
+export const trackGA4Event = (eventName: string, params?: Record<string, any>) => {
+  pushToDataLayer({
+    event: eventName,
+    ...params,
+  });
+};
+
+export const trackGA4ViewCart = (
+  items: any[],
+  totalValue: number,
+  currency: string = 'BDT'
+) => {
+  try {
+    if (!items || !Array.isArray(items)) return;
+
+    const formattedItems = items.map((item, idx) =>
+      cartItemToGA4Item(item, { index: idx + 1 })
+    );
+
+    pushToDataLayer({
+      event: 'view_cart',
+      ecommerce: {
+        currency: currency || 'BDT',
+        value: typeof totalValue === 'number' ? totalValue : parseFloat(totalValue || '0'),
+        items: formattedItems,
+      },
+    });
+  } catch (err) {
+    console.error('[GA4 view_cart error]', err);
   }
 };
 
-export const trackGA4ViewCart = (items: any[], totalValue: number) => {
-  const formattedItems: GA4CartItem[] = items.map(item => ({
-    item_id: item.productId || item.id,
-    item_name: item.product?.name || 'Product',
-    price: item.unitPrice,
-    quantity: item.quantity,
-    item_brand: item.product?.brand,
-    item_category: item.product?.category,
-    item_variant: item.selectedVariant?.name,
-  }));
+export const trackGA4AddToCart = (
+  item: any,
+  quantity: number = 1,
+  currency: string = 'BDT'
+) => {
+  try {
+    if (!item) return;
 
-  trackGA4Event('view_cart', {
-    currency: 'USD',
-    value: totalValue,
-    items: formattedItems,
-  });
+    const formattedItem = cartItemToGA4Item(item, { quantity });
+    const unitPrice = formattedItem.price || 0;
+    const totalVal = unitPrice * (formattedItem.quantity || quantity || 1);
+
+    pushToDataLayer({
+      event: 'add_to_cart',
+      ecommerce: {
+        currency: currency || 'BDT',
+        value: totalVal,
+        items: [formattedItem],
+      },
+    });
+  } catch (err) {
+    console.error('[GA4 add_to_cart error]', err);
+  }
 };
 
-export const trackGA4AddToCart = (item: any, quantity: number) => {
-  const formattedItem: GA4CartItem = {
-    item_id: item.productId || item.id || item.product?.id,
-    item_name: item.product?.name || item.name || 'Product',
-    price: item.unitPrice || item.price || 0,
-    quantity: quantity,
-    item_brand: item.product?.brand || item.brand,
-    item_category: item.product?.category || item.category,
-    item_variant: item.selectedVariant?.name,
-  };
+export const trackGA4RemoveFromCart = (
+  item: any,
+  quantityRemoved?: number,
+  currency: string = 'BDT'
+) => {
+  try {
+    if (!item) return;
 
-  trackGA4Event('add_to_cart', {
-    currency: 'USD',
-    value: (item.unitPrice || item.price || 0) * quantity,
-    items: [formattedItem],
-  });
+    const qty = quantityRemoved ?? item.quantity ?? 1;
+    const formattedItem = cartItemToGA4Item(item, { quantity: qty });
+    const unitPrice = formattedItem.price || 0;
+    const totalVal = unitPrice * qty;
+
+    pushToDataLayer({
+      event: 'remove_from_cart',
+      ecommerce: {
+        currency: currency || 'BDT',
+        value: totalVal,
+        items: [formattedItem],
+      },
+    });
+  } catch (err) {
+    console.error('[GA4 remove_from_cart error]', err);
+  }
 };
 
-export const trackGA4RemoveFromCart = (item: any) => {
-  const formattedItem: GA4CartItem = {
-    item_id: item.productId || item.id,
-    item_name: item.product?.name || 'Product',
-    price: item.unitPrice || 0,
-    quantity: item.quantity || 1,
-    item_brand: item.product?.brand,
-    item_category: item.product?.category,
-    item_variant: item.selectedVariant?.name,
-  };
+export const trackGA4BeginCheckout = (
+  items: any[],
+  totalValue: number,
+  currency: string = 'BDT',
+  coupon?: string
+) => {
+  try {
+    if (!items || !Array.isArray(items)) return;
 
-  trackGA4Event('remove_from_cart', {
-    currency: 'USD',
-    value: (item.unitPrice || 0) * (item.quantity || 1),
-    items: [formattedItem],
-  });
+    const formattedItems = items.map((item, idx) =>
+      cartItemToGA4Item(item, { index: idx + 1 })
+    );
+
+    pushToDataLayer({
+      event: 'begin_checkout',
+      ecommerce: {
+        currency: currency || 'BDT',
+        value: typeof totalValue === 'number' ? totalValue : parseFloat(totalValue || '0'),
+        ...(coupon ? { coupon } : {}),
+        items: formattedItems,
+      },
+    });
+  } catch (err) {
+    console.error('[GA4 begin_checkout error]', err);
+  }
 };
 
-export const trackGA4BeginCheckout = (items: any[], totalValue: number) => {
-  const formattedItems: GA4CartItem[] = items.map(item => ({
-    item_id: item.productId || item.id,
-    item_name: item.product?.name || 'Product',
-    price: item.unitPrice,
-    quantity: item.quantity,
-    item_brand: item.product?.brand,
-    item_category: item.product?.category,
-    item_variant: item.selectedVariant?.name,
-  }));
+export const trackGA4AddShippingInfo = (
+  items: any[],
+  totalValue: number,
+  shippingTier: string,
+  currency: string = 'BDT',
+  coupon?: string
+) => {
+  try {
+    if (!items || !Array.isArray(items)) return;
 
-  trackGA4Event('begin_checkout', {
-    currency: 'USD',
-    value: totalValue,
-    items: formattedItems,
-  });
+    const formattedItems = items.map((item, idx) =>
+      cartItemToGA4Item(item, { index: idx + 1 })
+    );
+
+    pushToDataLayer({
+      event: 'add_shipping_info',
+      ecommerce: {
+        currency: currency || 'BDT',
+        value: typeof totalValue === 'number' ? totalValue : parseFloat(totalValue || '0'),
+        ...(coupon ? { coupon } : {}),
+        shipping_tier: shippingTier || 'Standard Shipping',
+        items: formattedItems,
+      },
+    });
+  } catch (err) {
+    console.error('[GA4 add_shipping_info error]', err);
+  }
 };
 
-export const trackGA4Purchase = (order: any) => {
-  const formattedItems: GA4CartItem[] = order.items.map((item: any) => ({
-    item_id: item.productId,
-    item_name: item.productName || 'Product',
-    price: item.unitPrice,
-    quantity: item.quantity,
-    item_variant: item.variantName,
-  }));
+export const trackGA4AddPaymentInfo = (
+  items: any[],
+  totalValue: number,
+  paymentType: string,
+  currency: string = 'BDT',
+  coupon?: string
+) => {
+  try {
+    if (!items || !Array.isArray(items)) return;
 
-  trackGA4Event('purchase', {
-    transaction_id: order.id,
-    value: order.totalAmount,
-    currency: 'USD',
-    tax: order.tax,
-    shipping: order.shippingFee,
-    items: formattedItems,
-  });
+    const formattedItems = items.map((item, idx) =>
+      cartItemToGA4Item(item, { index: idx + 1 })
+    );
+
+    pushToDataLayer({
+      event: 'add_payment_info',
+      ecommerce: {
+        currency: currency || 'BDT',
+        value: typeof totalValue === 'number' ? totalValue : parseFloat(totalValue || '0'),
+        ...(coupon ? { coupon } : {}),
+        payment_type: paymentType || 'cod',
+        items: formattedItems,
+      },
+    });
+  } catch (err) {
+    console.error('[GA4 add_payment_info error]', err);
+  }
+};
+
+export const trackGA4Purchase = (order: any, currency: string = 'BDT') => {
+  try {
+    if (!order) return;
+
+    const transactionId = String(order.id || order.orderId || order.transactionId || '');
+    if (!transactionId) return;
+
+    // Deduplication check using sessionStorage & localStorage
+    const storageKey = `purchase_tracked_${transactionId}`;
+    if (typeof window !== 'undefined') {
+      try {
+        if (
+          window.sessionStorage.getItem(storageKey) === 'true' ||
+          window.localStorage.getItem(storageKey) === 'true'
+        ) {
+          return; // Already tracked for this transaction
+        }
+      } catch (e) {
+        // Storage access blocked or restricted
+      }
+    }
+
+    const rawItems = Array.isArray(order.items) ? order.items : [];
+    const formattedItems = rawItems.map((item: any, idx: number) => {
+      const itemPrice = typeof item.unitPrice === 'number'
+        ? item.unitPrice
+        : (typeof item.price === 'number' ? item.price : parseFloat(item.unitPrice || item.price || '0'));
+
+      const itemQty = typeof item.quantity === 'number'
+        ? item.quantity
+        : parseInt(item.quantity || '1', 10);
+
+      return cartItemToGA4Item(
+        {
+          productId: item.productId || item.id,
+          id: item.productId || item.id,
+          product: {
+            id: item.productId || item.id,
+            name: item.productName || item.name || 'Product',
+            price: itemPrice,
+            images: item.productImage ? [item.productImage] : [],
+            category: item.category || item.productCategory || item.product?.category,
+            brand: item.brand || item.productBrand || item.product?.brand,
+          },
+          unitPrice: itemPrice,
+          quantity: itemQty,
+          selectedVariant: item.variantName || item.selectedVariant
+            ? { name: typeof item.variantName === 'string' ? item.variantName : item.selectedVariant?.name }
+            : undefined,
+        },
+        { index: idx + 1 }
+      );
+    });
+
+    const couponCode = order.coupon || order.couponCode || order.discountCode || order.appliedCoupon;
+    const value = typeof order.totalAmount === 'number'
+      ? order.totalAmount
+      : (typeof order.total === 'number' ? order.total : parseFloat(order.totalAmount || order.total || '0'));
+    
+    const tax = typeof order.tax === 'number'
+      ? order.tax
+      : parseFloat(order.tax || '0');
+    
+    const shipping = typeof order.shippingFee === 'number'
+      ? order.shippingFee
+      : (typeof order.shipping === 'number' ? order.shipping : parseFloat(order.shippingFee || order.shipping || '0'));
+
+    pushToDataLayer({
+      event: 'purchase',
+      ecommerce: {
+        transaction_id: transactionId,
+        value,
+        currency: currency || 'BDT',
+        tax,
+        shipping,
+        ...(couponCode ? { coupon: String(couponCode) } : {}),
+        items: formattedItems,
+      },
+    });
+
+    // Mark transaction as tracked
+    if (typeof window !== 'undefined') {
+      try {
+        window.sessionStorage.setItem(storageKey, 'true');
+        window.localStorage.setItem(storageKey, 'true');
+      } catch (e) {
+        // Storage access blocked or restricted
+      }
+    }
+  } catch (err) {
+    console.error('[GA4 purchase error]', err);
+  }
 };

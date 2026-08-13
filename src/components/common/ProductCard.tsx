@@ -6,16 +6,23 @@ import { Product } from '../../types/storefront';
 import { useStorefront } from '../../context/StorefrontContext';
 import { useCart } from '../../hooks/useCart';
 import { RatingStars } from './RatingStars';
+import { trackGA4SelectItem } from '../../utils/analytics';
 import { Heart, Eye, ShoppingCart, Sparkles, Zap, Loader2 } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
   viewMode?: 'grid' | 'list';
+  itemListId?: string;
+  itemListName?: string;
+  index?: number;
 }
 
 export const ProductCard = React.memo(({ 
   product, 
-  viewMode = 'grid' 
+  viewMode = 'grid',
+  itemListId = 'product_list',
+  itemListName = 'Product List',
+  index
 }: ProductCardProps) => {
   const { 
     toggleWishlist, 
@@ -32,6 +39,7 @@ export const ProductCard = React.memo(({
   const [isLocalAdding, setIsLocalAdding] = React.useState(false);
 
   const handleCardClick = () => {
+    trackGA4SelectItem(itemListId, itemListName, product, index);
     navigateTo('product-detail', { productSlug: product.slug });
   };
 

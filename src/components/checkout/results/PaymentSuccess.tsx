@@ -1,7 +1,9 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useStorefront } from '../../../context/StorefrontContext';
+import { useSettings } from '../../../context/SettingsContext';
 import { storefrontApi } from '../../../services/storefrontApi';
+import { trackGA4Purchase } from '../../../utils/analytics';
 import { CheckCircle2, ShoppingBag, ArrowRight, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -11,15 +13,28 @@ export const PaymentSuccess: React.FC = () => {
   const [isVerifying, setIsVerifying] = useState(true);
   const [order, setOrder] = useState<any>(null);
 
+  let currency = 'BDT';
+  try {
+    const { settings } = useSettings();
+    currency = settings?.general?.currency || 'BDT';
+  } catch {
+    // Fallback if rendered outside SettingsProvider
+  }
+
   useEffect(() => {
     const verify = async () => {
       if (!orderId) return;
       try {
         const result = await storefrontApi.verifyPayment(orderId);
+        let fetchedOrder: any = null;
         if (result?.orderId) {
-          const fetchedOrder = await storefrontApi.getOrderById(result.orderId);
+          fetchedOrder = await storefrontApi.getOrderById(result.orderId);
+          setOrder(fetchedOrder);
+        } else if (orderId) {
+          fetchedOrder = await storefrontApi.getOrderById(orderId);
           setOrder(fetchedOrder);
         }
+
         if (result?.verified) {
           confetti({
             particleCount: 150,
@@ -27,13 +42,19 @@ export const PaymentSuccess: React.FC = () => {
             origin: { y: 0.6 },
             colors: ['#101A25', '#DC2B53', '#fb7185']
           });
+
+          if (fetchedOrder) {
+            trackGA4Purchase(fetchedOrder, currency);
+          }
         }
+      } catch (err) {
+        console.error('[PaymentSuccess verify error]', err);
       } finally {
         setIsVerifying(false);
       }
     };
     verify();
-  }, [orderId]);
+  }, [orderId, currency]);
 
   if (isVerifying) {
     return (

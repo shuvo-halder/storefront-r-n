@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { SmartImage } from '../common/SmartImage';
 import { useParams } from 'next/navigation';
 import { useStorefront } from '../../context/StorefrontContext';
@@ -9,6 +9,7 @@ import { storefrontApi } from '../../services/storefrontApi';
 import { Product, ProductReview, ProductVariant } from '../../types/storefront';
 import { RatingStars } from '../common/RatingStars';
 import { ProductCard } from '../common/ProductCard';
+import { trackGA4ViewItem, trackGA4ViewItemList } from '../../utils/analytics';
 import { 
   ShoppingCart, 
   Heart, 
@@ -72,6 +73,30 @@ export const ProductDetailPage: React.FC = () => {
   // Review form modal
   const [isReviewFormOpen, setIsReviewFormOpen] = useState<boolean>(false);
   const [newReview, setNewReview] = useState({ name: '', rating: 5, title: '', comment: '' });
+
+  // GA4 Event Tracking Refs for duplicate prevention
+  const trackedProductIdRef = useRef<string | null>(null);
+  const trackedRelatedRef = useRef<string | null>(null);
+
+  // Track GA4 view_item event on product load
+  useEffect(() => {
+    if (product && trackedProductIdRef.current !== product.id) {
+      trackedProductIdRef.current = product.id;
+      const currency = publicSettings?.general?.currency || 'BDT';
+      trackGA4ViewItem(product, currency);
+    }
+  }, [product, publicSettings]);
+
+  // Track GA4 view_item_list event for related products
+  useEffect(() => {
+    if (relatedProducts.length > 0) {
+      const listKey = relatedProducts.map(p => p.id).join(',');
+      if (trackedRelatedRef.current !== listKey) {
+        trackedRelatedRef.current = listKey;
+        trackGA4ViewItemList('related_products', 'Related Products', relatedProducts);
+      }
+    }
+  }, [relatedProducts]);
 
   // Load product data based on viewParams.productSlug
   useEffect(() => {
@@ -802,8 +827,14 @@ export const ProductDetailPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((relProduct) => (
-                <ProductCard key={relProduct.id} product={relProduct} />
+              {relatedProducts.map((relProduct, idx) => (
+                <ProductCard 
+                  key={relProduct.id} 
+                  product={relProduct} 
+                  itemListId="related_products"
+                  itemListName="Related Products"
+                  index={idx + 1}
+                />
               ))}
             </div>
           </div>

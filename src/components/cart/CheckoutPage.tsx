@@ -6,6 +6,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useStorefront } from '../../context/StorefrontContext';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 import { useCart } from '../../hooks/useCart';
 import { storefrontApi } from '../../services/storefrontApi';
 import { checkoutSchema, CheckoutFormData } from '../../types/checkout';
@@ -14,6 +15,8 @@ import { PaymentStep } from '../checkout/PaymentStep';
 import { OrderReview } from '../checkout/OrderReview';
 import { 
   trackGA4BeginCheckout, 
+  trackGA4AddShippingInfo,
+  trackGA4AddPaymentInfo,
   trackGA4Purchase 
 } from '../../utils/analytics';
 import { 
@@ -43,10 +46,22 @@ const STEPS = [
 export const CheckoutPage: React.FC = () => {
   const { navigateTo } = useStorefront();
   const { user } = useAuth();
+  let currency = 'BDT';
+  try {
+    const { settings } = useSettings();
+    currency = settings?.general?.currency || 'BDT';
+  } catch {
+    // Fallback if rendered outside SettingsProvider
+  }
+
   const { cart, isLoading: isCartLoading, totalItemCount } = useCart();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+
+  const trackedBeginCheckoutKeyRef = React.useRef<string | null>(null);
+  const trackedShippingKeyRef = React.useRef<string | null>(null);
+  const trackedPaymentKeyRef = React.useRef<string | null>(null);
 
   const {
     register,
@@ -107,11 +122,18 @@ export const CheckoutPage: React.FC = () => {
     }
   }, [sameAsShipping, shippingAddress, setValue]);
 
+  // GA4 begin_checkout
   useEffect(() => {
     if (cart.items.length > 0) {
-      trackGA4BeginCheckout(cart.items, cart.total);
+      const couponCode = cart.appliedCoupon || watch('couponCode');
+      const beginCheckoutKey = `begin_checkout_${cart.items.map(i => `${i.id}_${i.quantity}`).join(',')}_${cart.total}_${couponCode || ''}`;
+      
+      if (trackedBeginCheckoutKeyRef.current !== beginCheckoutKey) {
+        trackedBeginCheckoutKeyRef.current = beginCheckoutKey;
+        trackGA4BeginCheckout(cart.items, cart.total, currency, couponCode);
+      }
     }
-  }, [cart.items.length]);
+  }, [cart.items, cart.total, cart.appliedCoupon, currency]);
 
   const handleNextStep = async () => {
     const fieldsToValidate: any = {
@@ -123,6 +145,34 @@ export const CheckoutPage: React.FC = () => {
 
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
+      const couponCode = cart.appliedCoupon || watch('couponCode');
+
+      if (currentStep === 2) {
+        // Step 2 = Delivery / Shipping Method
+        const methodId = watch('shippingMethod');
+        const methodTierMap: Record<string, string> = {
+          standard: 'Standard Shipping',
+          express: 'Express Shipping',
+          overnight: 'Overnight Priority',
+        };
+        const shippingTier = methodTierMap[methodId] || methodId || 'Standard Shipping';
+        const shippingKey = `shipping_${methodId}_${cart.total}_${couponCode || ''}`;
+
+        if (trackedShippingKeyRef.current !== shippingKey) {
+          trackedShippingKeyRef.current = shippingKey;
+          trackGA4AddShippingInfo(cart.items, cart.total, shippingTier, currency, couponCode);
+        }
+      } else if (currentStep === 3) {
+        // Step 3 = Payment Method
+        const paymentType = watch('paymentMethod') || 'stripe';
+        const paymentKey = `payment_${paymentType}_${cart.total}_${couponCode || ''}`;
+
+        if (trackedPaymentKeyRef.current !== paymentKey) {
+          trackedPaymentKeyRef.current = paymentKey;
+          trackGA4AddPaymentInfo(cart.items, cart.total, paymentType, currency, couponCode);
+        }
+      }
+
       setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
       window.scrollTo(0, 0);
     }
@@ -161,8 +211,17 @@ export const CheckoutPage: React.FC = () => {
 
       const createdOrder = await storefrontApi.checkoutComplete(orderPayload);
       
-      trackGA4Purchase(createdOrder);
-      navigateTo('order-confirmation', { orderId: createdOrder.id });
+      const isCod = data.paymentMethod === 'cod';
+
+      if (isCod) {
+        // Track purchase only for COD orders upon successful order creation
+        trackGA4Purchase(createdOrder, currency);
+        navigateTo('order-confirmation', { confirmedOrder: createdOrder, orderId: createdOrder.id });
+      } else {
+        // Online payments (bKash, Nagad, SSLCommerz, Stripe):
+        // DO NOT fire purchase here. Route to Gateway Simulation for payment authorization.
+        navigateTo('checkout-gateway', { orderId: createdOrder.id, method: data.paymentMethod });
+      }
     } catch (err: any) {
       setServerError(err.message || 'An error occurred while placing your order. Please try again.');
     } finally {

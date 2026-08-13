@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Product } from '../../types/storefront';
 import { ProductCard } from '../common/ProductCard';
 import { Skeleton } from '../ui/Skeleton';
 import { useStorefront } from '../../context/StorefrontContext';
+import { trackGA4ViewItemList } from '../../utils/analytics';
 import { ArrowRight, Sparkles, Flame, Zap } from 'lucide-react';
 
 interface TabOption {
@@ -43,6 +44,19 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
   limit = 8,
 }) => {
   const displayedProducts = limit ? products.slice(0, limit) : products;
+
+  const trackedSectionRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!isLoading && displayedProducts.length > 0) {
+      const listKey = `${title}_${activeTabId || ''}_${displayedProducts.map(p => p.id).join(',')}`;
+      if (trackedSectionRef.current !== listKey) {
+        trackedSectionRef.current = listKey;
+        const listId = title.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+        trackGA4ViewItemList(listId, title, displayedProducts);
+      }
+    }
+  }, [isLoading, displayedProducts, title, activeTabId]);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -111,8 +125,14 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
         </div>
       ) : displayedProducts.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {displayedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {displayedProducts.map((product, idx) => (
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+              itemListId={title.toLowerCase().replace(/[^a-z0-9]+/g, '_')}
+              itemListName={title}
+              index={idx + 1}
+            />
           ))}
         </div>
       ) : (

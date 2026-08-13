@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useTransition } from 'react';
+import React, { useState, useEffect, useCallback, useTransition, useRef } from 'react';
 import { useStorefront } from '../../context/StorefrontContext';
 import { storefrontApi } from '../../services/storefrontApi';
 import { Product, SearchFacetsResponse } from '../../types/storefront';
 import { ProductCard } from '../common/ProductCard';
+import { trackGA4ViewItemList } from '../../utils/analytics';
 import { 
   Search, 
   SlidersHorizontal, 
@@ -68,6 +69,19 @@ export const SearchPageView: React.FC = () => {
   const [facets, setFacets] = useState<SearchFacetsResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isFacetsLoading, setIsFacetsLoading] = useState<boolean>(true);
+
+  const trackedSearchRef = useRef<string | null>(null);
+
+  // Track search_results view_item_list
+  useEffect(() => {
+    if (!isLoading && products.length > 0) {
+      const listKey = `search_${searchQuery}_${page}_${products.map(p => p.id).join(',')}`;
+      if (trackedSearchRef.current !== listKey) {
+        trackedSearchRef.current = listKey;
+        trackGA4ViewItemList('search_results', `Search Results: ${searchQuery || 'All'}`, products);
+      }
+    }
+  }, [isLoading, products, searchQuery, page]);
 
   // Sync state from URL as absolute Source of Truth
   const syncFromURL = useCallback(() => {
@@ -704,8 +718,14 @@ export const SearchPageView: React.FC = () => {
                   ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
                   : 'space-y-4'
               }>
-                {products.map((prod) => (
-                  <ProductCard key={prod.id} product={prod} />
+                {products.map((prod, idx) => (
+                  <ProductCard 
+                    key={prod.id} 
+                    product={prod} 
+                    itemListId="search_results"
+                    itemListName={`Search Results: ${searchQuery || 'All'}`}
+                    index={idx + 1}
+                  />
                 ))}
               </div>
             ) : (

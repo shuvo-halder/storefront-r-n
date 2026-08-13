@@ -1,12 +1,28 @@
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SmartImage } from '../common/SmartImage';
 import { useStorefront } from '../../context/StorefrontContext';
+import { useSettings } from '../../context/SettingsContext';
+import { trackGA4Purchase } from '../../utils/analytics';
 import { CheckCircle2, Truck, Package, ArrowRight, Printer, Share2 } from 'lucide-react';
 
 export const OrderConfirmationPage: React.FC = () => {
   const { viewParams, navigateTo } = useStorefront();
   const order = viewParams.confirmedOrder;
+
+  let currency = 'BDT';
+  try {
+    const { settings } = useSettings();
+    currency = settings?.general?.currency || 'BDT';
+  } catch {
+    // Fallback if rendered outside SettingsProvider
+  }
+
+  useEffect(() => {
+    if (order) {
+      trackGA4Purchase(order, currency);
+    }
+  }, [order, currency]);
 
   if (!order) {
     return (

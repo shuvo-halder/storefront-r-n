@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import '../src/index.css';
 import { StorefrontProviders } from '../src/providers/StorefrontProviders';
+import { AnalyticsProvider } from '../src/providers/AnalyticsProvider';
 import { Header } from '../src/components/common/Header';
 import { Footer } from '../src/components/common/Footer';
 import { CartDrawer } from '../src/components/common/CartDrawer';
@@ -35,6 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="light">
       <body className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col justify-between selection:bg-accent selection:text-white antialiased overflow-x-hidden">
+        <AnalyticsProvider />
         <StorefrontProviders>
           <div>
             <Header />
@@ -50,3 +52,4 @@ export default function RootLayout({
     </html>
   );
 }
+

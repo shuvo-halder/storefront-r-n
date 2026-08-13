@@ -33,13 +33,18 @@ export const CartPage: React.FC = () => {
   } = useCart();
 
   const [couponCode, setCouponCode] = React.useState('');
+  const trackedPageKeyRef = React.useRef<string | null>(null);
 
   // GA4 Tracking
   useEffect(() => {
     if (cart.items.length > 0) {
-      viewCartGA4();
+      const pageKey = `page_${cart.items.map(i => `${i.id}_${i.quantity}`).join(',')}_${cart.total}`;
+      if (trackedPageKeyRef.current !== pageKey) {
+        trackedPageKeyRef.current = pageKey;
+        viewCartGA4();
+      }
     }
-  }, []);
+  }, [cart.items, cart.total]);
 
   const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();

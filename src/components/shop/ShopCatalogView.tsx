@@ -7,6 +7,7 @@ import { storefrontApi } from '../../services/storefrontApi';
 import { Product, ProductFilterState } from '../../types/storefront';
 import { ProductCard } from '../common/ProductCard';
 import { ProductFilterSidebar } from './ProductFilterSidebar';
+import { trackGA4ViewItemList } from '../../utils/analytics';
 import { 
   Grid, 
   List, 
@@ -34,6 +35,33 @@ export const ShopCatalogView: React.FC = () => {
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState<boolean>(false);
+
+  const trackedCatalogRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!isLoading && products.length > 0) {
+      const listKey = `shop_${filters.page}_${filters.categorySlug || 'all'}_${(filters.brandSlugs || []).join(',')}_${filters.searchQuery || ''}_${products.map(p => p.id).join(',')}`;
+      if (trackedCatalogRef.current !== listKey) {
+        trackedCatalogRef.current = listKey;
+
+        let listId = 'shop_catalog';
+        let listName = 'Shop Catalog';
+
+        if (filters.categorySlug) {
+          listId = `category_${filters.categorySlug}`;
+          listName = `Category: ${filters.categorySlug}`;
+        } else if (filters.brandSlugs && filters.brandSlugs.length > 0) {
+          listId = `brand_${filters.brandSlugs[0]}`;
+          listName = `Brand: ${filters.brandSlugs[0]}`;
+        } else if (filters.searchQuery) {
+          listId = 'search_results';
+          listName = `Search Results for "${filters.searchQuery}"`;
+        }
+
+        trackGA4ViewItemList(listId, listName, products);
+      }
+    }
+  }, [isLoading, products, filters]);
 
   // Sync route params like /categories/[slug] and /brands/[slug] into filter state
   useEffect(() => {
@@ -415,9 +443,32 @@ export const ShopCatalogView: React.FC = () => {
                     ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
                     : 'space-y-4'
                 }>
-                  {products.map((product) => (
-                    <ProductCard key={product.id} product={product} viewMode={viewMode} />
-                  ))}
+                  {products.map((product, idx) => {
+                    let listId = 'shop_catalog';
+                    let listName = 'Shop Catalog';
+
+                    if (filters.categorySlug) {
+                      listId = `category_${filters.categorySlug}`;
+                      listName = `Category: ${filters.categorySlug}`;
+                    } else if (filters.brandSlugs && filters.brandSlugs.length > 0) {
+                      listId = `brand_${filters.brandSlugs[0]}`;
+                      listName = `Brand: ${filters.brandSlugs[0]}`;
+                    } else if (filters.searchQuery) {
+                      listId = 'search_results';
+                      listName = `Search Results for "${filters.searchQuery}"`;
+                    }
+
+                    return (
+                      <ProductCard 
+                        key={product.id} 
+                        product={product} 
+                        viewMode={viewMode}
+                        itemListId={listId}
+                        itemListName={listName}
+                        index={idx + 1}
+                      />
+                    );
+                  })}
                 </div>
 
                 {/* Pagination Controls */}

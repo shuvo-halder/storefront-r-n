@@ -1,9 +1,10 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useStorefront } from '../../context/StorefrontContext';
 import { storefrontApi } from '../../services/storefrontApi';
 import { ProductCard } from '../common/ProductCard';
+import { trackGA4ViewItemList } from '../../utils/analytics';
 import { ArrowRight, Sparkles, AlertCircle, RefreshCw } from 'lucide-react';
 import { Skeleton } from '../ui/Skeleton';
 
@@ -24,6 +25,18 @@ export const FeaturedProductsSection: React.FC = () => {
   const displayedProducts = activeTab === 'all'
     ? products.slice(0, 8)
     : products.filter(p => p.categoryId === activeTab || p.category.toLowerCase().includes(activeTab.toLowerCase())).slice(0, 8);
+
+  const trackedFeaturedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!isLoading && displayedProducts.length > 0) {
+      const listKey = `featured_${activeTab}_${displayedProducts.map(p => p.id).join(',')}`;
+      if (trackedFeaturedRef.current !== listKey) {
+        trackedFeaturedRef.current = listKey;
+        trackGA4ViewItemList('featured_collection', 'Featured Collection', displayedProducts);
+      }
+    }
+  }, [isLoading, displayedProducts, activeTab]);
 
   return (
     <section className="py-12 bg-white">
@@ -79,8 +92,14 @@ export const FeaturedProductsSection: React.FC = () => {
         {/* Product Grid */}
         {!isLoading && !isError && displayedProducts.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {displayedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {displayedProducts.map((product, idx) => (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                itemListId="featured_collection"
+                itemListName="Featured Collection"
+                index={idx + 1}
+              />
             ))}
           </div>
         )}

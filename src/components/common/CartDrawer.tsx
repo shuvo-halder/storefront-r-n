@@ -41,13 +41,20 @@ export const CartDrawer: React.FC = () => {
   } = useCart();
 
   const [couponInput, setCouponInput] = useState('');
+  const trackedDrawerKeyRef = React.useRef<string | null>(null);
 
   // GA4 Tracking when drawer opens
   useEffect(() => {
     if (isCartOpen && cart.items.length > 0) {
-      viewCartGA4();
+      const cartKey = `drawer_${cart.items.map(i => `${i.id}_${i.quantity}`).join(',')}_${cart.total}`;
+      if (trackedDrawerKeyRef.current !== cartKey) {
+        trackedDrawerKeyRef.current = cartKey;
+        viewCartGA4();
+      }
+    } else if (!isCartOpen) {
+      trackedDrawerKeyRef.current = null;
     }
-  }, [isCartOpen]);
+  }, [isCartOpen, cart.items, cart.total]);
 
   if (!isCartOpen) return null;
 
