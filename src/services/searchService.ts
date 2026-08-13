@@ -1,79 +1,71 @@
-import { apiClient, unwrapApiResponse, ApiResult } from '../lib/api';
-import { Product, SearchFacetsResponse, SearchResponse } from '../types/storefront';
-import { normalizeProduct } from './productService';
+import { apiClient, unwrapApiResponse, normalizeProduct, extractApiError, ApiResponse } from '../lib/api';
+import { SearchFacetsResponse, SearchResponse } from '../types/storefront';
 
 export const searchService = {
   // GET /search?q=...
-  search: async (query: string, page = 1, limit = 20): Promise<ApiResult<SearchResponse>> => {
+  search: async (query: string, page = 1, limit = 20): Promise<ApiResponse<SearchResponse>> => {
     try {
       const res = await apiClient.get('/search', {
         params: { q: query, page, limit }
       });
       const unwrapped = unwrapApiResponse<any>(res);
 
-      if (!unwrapped.success || !unwrapped.data) {
+      if (unwrapped.status === 'error' || !unwrapped.data) {
         return {
-          success: false,
-          data: { products: [], total: 0, page: 1, pageSize: limit, totalPages: 0, query },
-          error: unwrapped.error
-        };
+          status: 'error', message: unwrapped.message || 'Search failed', data: { products: [], total: 0, page: 1, pageSize: limit, totalPages: 0, query } };
       }
 
       const rawList = Array.isArray(unwrapped.data) ? unwrapped.data : (unwrapped.data.products || []);
       const products = rawList.map(normalizeProduct);
-      const total = unwrapped.meta?.total || unwrapped.data.total || products.length;
+      const total = unwrapped.pagination?.total || unwrapped.data.total || products.length;
 
       return {
-        success: true,
+        status: 'success',
         data: {
           products,
           total,
           page,
           pageSize: limit,
-          totalPages: Math.ceil(total / limit) || 1,
+          totalPages: unwrapped.pagination?.totalPages || Math.ceil(total / limit) || 1,
           query,
           suggestions: unwrapped.data.suggestions
         },
-        error: null
+        message: null
       };
     } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Search failed');
       return {
-        success: false,
-        data: { products: [], total: 0, page: 1, pageSize: limit, totalPages: 0, query },
-        error: { message: err.response?.data?.message || err.message || 'Search failed' }
+        status: 'error', message, errors, data: { products: [], total: 0, page: 1, pageSize: limit, totalPages: 0, query }
       };
     }
   },
 
   // GET /search/facets
-  getFacets: async (category?: string): Promise<ApiResult<SearchFacetsResponse>> => {
+  getFacets: async (category?: string): Promise<ApiResponse<SearchFacetsResponse>> => {
     try {
       const res = await apiClient.get('/search/facets', { params: { category } });
       const unwrapped = unwrapApiResponse<any>(res);
 
-      if (!unwrapped.success || !unwrapped.data) {
+      if (unwrapped.status === 'error' || !unwrapped.data) {
         return {
-          success: false,
-          data: { categories: [], brands: [], priceRange: { min: 0, max: 1000 } },
-          error: unwrapped.error
-        };
+          status: 'error', message: unwrapped.message || 'Failed to fetch facets', data: { categories: [], brands: [], priceRange: { min: 0, max: 1000 } } };
       }
 
       return {
-        success: true,
+        status: 'success',
         data: {
           categories: unwrapped.data.categories || [],
           brands: unwrapped.data.brands || [],
           priceRange: unwrapped.data.priceRange || { min: 0, max: 1000 }
         },
-        error: null
+        message: null
       };
     } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Failed to fetch search facets');
       return {
-        success: false,
-        data: { categories: [], brands: [], priceRange: { min: 0, max: 1000 } },
-        error: { message: err.response?.data?.message || err.message || 'Failed to fetch search facets' }
+        status: 'error', message, errors, data: { categories: [], brands: [], priceRange: { min: 0, max: 1000 } }
       };
     }
   }
 };
+

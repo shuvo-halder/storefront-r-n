@@ -9,8 +9,8 @@ interface AuthContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (data: LoginFormData) => Promise<void>;
-  register: (data: RegisterFormData) => Promise<void>;
+  login: (data: LoginFormData) => Promise<AuthResponse>;
+  register: (data: RegisterFormData) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -23,11 +23,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   const refreshUser = useCallback(async () => {
+    setIsLoading(true);
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('vyzobd_auth_token') : null;
+      if (!token) {
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
       const currentUser = await storefrontApi.getCurrentUser();
-      setUser(currentUser);
+      if (currentUser) {
+        setUser(currentUser);
+      } else {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('vyzobd_auth_token');
+          localStorage.removeItem('vyzobd_refresh_token');
+        }
+        setUser(null);
+      }
     } catch (error) {
-      console.error('Failed to restore session:', error);
+      console.error('Failed to restore customer session:', error);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('vyzobd_auth_token');
+        localStorage.removeItem('vyzobd_refresh_token');
+      }
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -38,21 +57,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     refreshUser();
   }, [refreshUser]);
 
-  const login = async (data: LoginFormData) => {
+  const login = async (data: LoginFormData): Promise<AuthResponse> => {
     setIsLoading(true);
     try {
       const response = await storefrontApi.login(data);
-      setUser(response.user);
+      if (response.user) {
+        setUser(response.user);
+      } else {
+        await refreshUser();
+      }
+      return response;
+    } catch (err) {
+      setUser(null);
+      throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (data: RegisterFormData) => {
+  const register = async (data: RegisterFormData): Promise<AuthResponse> => {
     setIsLoading(true);
     try {
       const response = await storefrontApi.register(data);
-      setUser(response.user);
+      if (response.user) {
+        setUser(response.user);
+      } else {
+        await refreshUser();
+      }
+      return response;
+    } catch (err) {
+      setUser(null);
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -62,8 +97,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       await storefrontApi.logout();
-      setUser(null);
+    } catch (err) {
+      console.error('Logout error:', err);
     } finally {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('vyzobd_auth_token');
+        localStorage.removeItem('vyzobd_refresh_token');
+      }
+      setUser(null);
       setIsLoading(false);
     }
   };
@@ -103,3 +144,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

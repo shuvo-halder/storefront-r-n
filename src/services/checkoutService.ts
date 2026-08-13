@@ -1,4 +1,4 @@
-import { apiClient, unwrapApiResponse, ApiResult } from '../lib/api';
+import { apiClient, unwrapApiResponse, extractApiError, ApiResponse } from '../lib/api';
 import { CheckoutFormData } from '../types/checkout';
 import { Coupon, Order } from '../types/storefront';
 
@@ -15,21 +15,18 @@ export interface CheckoutSummary {
 
 export const checkoutService = {
   // GET /checkout/session
-  getCheckoutSession: async (): Promise<ApiResult<CheckoutSummary>> => {
+  getCheckoutSession: async (): Promise<ApiResponse<CheckoutSummary>> => {
     try {
       const res = await apiClient.get('/checkout/session');
       const unwrapped = unwrapApiResponse<any>(res);
 
-      if (!unwrapped.success || !unwrapped.data) {
+      if (unwrapped.status === 'error' || !unwrapped.data) {
         return {
-          success: false,
-          data: { subtotal: 0, discount: 0, shippingFee: 0, tax: 0, totalAmount: 0 },
-          error: unwrapped.error
-        };
+          status: 'error', message: unwrapped.message || 'Failed to initialize session', errors: unwrapped.errors, data: { subtotal: 0, discount: 0, shippingFee: 0, tax: 0, totalAmount: 0 } };
       }
 
       return {
-        success: true,
+        status: 'success',
         data: {
           subtotal: Number(unwrapped.data.subtotal ?? 0),
           discount: Number(unwrapped.data.discount ?? 0),
@@ -40,62 +37,52 @@ export const checkoutService = {
           shippingMethods: unwrapped.data.shippingMethods,
           paymentGateways: unwrapped.data.paymentGateways
         },
-        error: null
+        message: null
       };
     } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Failed to initialize checkout session');
       return {
-        success: false,
-        data: { subtotal: 0, discount: 0, shippingFee: 0, tax: 0, totalAmount: 0 },
-        error: { message: err.response?.data?.message || err.message || 'Failed to initialize checkout session' }
+        status: 'error', message, errors, data: { subtotal: 0, discount: 0, shippingFee: 0, tax: 0, totalAmount: 0 }
       };
     }
   },
 
   // POST /checkout/coupon
-  applyCoupon: async (couponCode: string): Promise<ApiResult<Coupon>> => {
+  applyCoupon: async (couponCode: string): Promise<ApiResponse<Coupon>> => {
     try {
       const res = await apiClient.post('/checkout/coupon', { code: couponCode });
       const unwrapped = unwrapApiResponse<any>(res);
 
-      if (!unwrapped.success || !unwrapped.data) {
-        return {
-          success: false,
-          data: null,
-          error: unwrapped.error || { message: 'Invalid or expired coupon code' }
-        };
+      if (unwrapped.status === 'error' || !unwrapped.data) {
+        return { status: 'error', message: unwrapped.message || 'Invalid coupon code', errors: unwrapped.errors, data: null as any };
       }
 
       return {
-        success: true,
+        status: 'success',
         data: {
           code: unwrapped.data.code || couponCode,
           discountPercent: unwrapped.data.discountPercent,
           discountAmount: unwrapped.data.discountAmount,
           description: unwrapped.data.description || 'Coupon applied'
         },
-        error: null
+        message: unwrapped.message || null
       };
     } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Failed to apply coupon');
       return {
-        success: false,
-        data: null,
-        error: { message: err.response?.data?.message || err.message || 'Failed to apply coupon' }
+        status: 'error', message, errors, data: null as any
       };
     }
   },
 
   // POST /checkout/complete
-  completeCheckout: async (formData: CheckoutFormData): Promise<ApiResult<Order>> => {
+  completeCheckout: async (formData: CheckoutFormData): Promise<ApiResponse<Order>> => {
     try {
       const res = await apiClient.post('/checkout/complete', formData);
       const unwrapped = unwrapApiResponse<any>(res);
 
-      if (!unwrapped.success || !unwrapped.data) {
-        return {
-          success: false,
-          data: null,
-          error: unwrapped.error || { message: 'Failed to complete order' }
-        };
+      if (unwrapped.status === 'error' || !unwrapped.data) {
+        return { status: 'error', message: unwrapped.message || 'Checkout failed', errors: unwrapped.errors, data: null as any };
       }
 
       const rawOrder = unwrapped.data;
@@ -116,13 +103,13 @@ export const checkoutService = {
         trackingSteps: rawOrder.trackingSteps
       };
 
-      return { success: true, data: order, error: null };
+      return { status: 'success', message: unwrapped.message || null, data: order };
     } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Checkout failed');
       return {
-        success: false,
-        data: null,
-        error: { message: err.response?.data?.message || err.message || 'Checkout failed' }
+        status: 'error', message, errors, data: null as any
       };
     }
   }
 };
+

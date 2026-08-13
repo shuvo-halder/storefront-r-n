@@ -1,21 +1,23 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema, RegisterFormData } from '../../types/auth';
 import { useAuth } from '../../context/AuthContext';
-import { useStorefront } from '../../context/StorefrontContext';
 import { Loader2, Mail, Lock, User, Phone, ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {
+  const router = useRouter();
   const { register: registerAccount } = useAuth();
-  const { navigateTo } = useStorefront();
   const [error, setError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
+    setError: setErrorField,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -25,9 +27,16 @@ export const RegisterPage: React.FC = () => {
     setError(null);
     try {
       await registerAccount(data);
-      navigateTo('account');
+      router.push('/account');
     } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+      if (err?.errors && Array.isArray(err.errors)) {
+        err.errors.forEach((e: any) => {
+          if (e.field) {
+            setErrorField(e.field as any, { type: 'server', message: e.message });
+          }
+        });
+      }
+      setError(err?.message || 'Registration failed. Please try again.');
     }
   };
 
@@ -38,12 +47,12 @@ export const RegisterPage: React.FC = () => {
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">Create Account</h2>
           <p className="mt-2 text-sm text-slate-500 font-medium">
             Already have an account?{' '}
-            <button
-              onClick={() => navigateTo('login')}
+            <Link
+              href="/login"
               className="text-primary font-bold hover:text-primary-hover transition-colors"
             >
               Sign in here
-            </button>
+            </Link>
           </p>
         </div>
       </div>
@@ -61,7 +70,7 @@ export const RegisterPage: React.FC = () => {
                   <input
                     {...register('fullName')}
                     className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
-                    placeholder="John Doe"
+                    placeholder="Full Name"
                   />
                 </div>
                 {errors.fullName && <p className="mt-1.5 text-[10px] font-black text-primary uppercase tracking-tighter">{errors.fullName.message}</p>}
@@ -142,7 +151,7 @@ export const RegisterPage: React.FC = () => {
               </div>
               <div className="ml-3 text-xs">
                 <label htmlFor="agree-terms" className="font-bold text-slate-700">
-                  I agree to the <button type="button" className="text-primary hover:underline">Terms of Service</button> and <button type="button" className="text-primary hover:underline">Privacy Policy</button>
+                  I agree to the <Link href="/pages/terms" className="text-primary hover:underline">Terms of Service</Link> and <Link href="/pages/privacy" className="text-primary hover:underline">Privacy Policy</Link>
                 </label>
                 {errors.agreeTerms && <p className="mt-1 text-[10px] font-black text-primary uppercase tracking-tighter">{errors.agreeTerms.message}</p>}
               </div>
@@ -169,3 +178,4 @@ export const RegisterPage: React.FC = () => {
     </div>
   );
 };
+

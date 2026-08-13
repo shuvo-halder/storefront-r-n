@@ -1,7 +1,33 @@
-import { apiClient, unwrapApiResponse, ApiResult } from '../lib/api';
+import { apiClient, unwrapApiResponse, extractApiError, ApiResponse } from '../lib/api';
 import { Order } from '../types/storefront';
 
 export function normalizeOrder(raw: any): Order {
+  if (!raw) {
+    return {
+      id: '',
+      createdAt: new Date().toISOString(),
+      status: 'Placed',
+      items: [],
+      shippingAddress: {
+        fullName: '',
+        email: '',
+        phone: '',
+        addressLine1: '',
+        city: '',
+        state: '',
+        postalCode: '',
+        country: ''
+      },
+      shippingMethod: 'Standard',
+      paymentMethod: 'COD',
+      subtotal: 0,
+      discount: 0,
+      shippingFee: 0,
+      tax: 0,
+      totalAmount: 0
+    };
+  }
+
   return {
     id: String(raw.id || raw.orderId || ''),
     createdAt: raw.createdAt || raw.created_at || new Date().toISOString(),
@@ -42,60 +68,54 @@ export function normalizeOrder(raw: any): Order {
 
 export const orderService = {
   // GET /orders
-  getOrders: async (): Promise<ApiResult<Order[]>> => {
+  getOrders: async (): Promise<ApiResponse<Order[]>> => {
     try {
       const res = await apiClient.get('/orders');
       const unwrapped = unwrapApiResponse<any>(res);
-
-      if (!unwrapped.success) {
-        return { success: false, data: [], error: unwrapped.error };
+      if (unwrapped.status === 'error') {
+        return { status: 'error', message: unwrapped.message || 'Failed to fetch orders', errors: unwrapped.errors, data: [] };
       }
-
       const list = Array.isArray(unwrapped.data) ? unwrapped.data : (unwrapped.data?.orders || []);
       const orders = list.map(normalizeOrder);
-      return { success: true, data: orders, error: null };
+      return { status: 'success', message: null, data: orders };
     } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Failed to fetch orders');
       return {
-        success: false,
-        data: [],
-        error: { message: err.response?.data?.message || err.message || 'Failed to fetch orders' }
+        status: 'error', message, errors, data: []
       };
     }
   },
 
   // GET /orders/:id
-  getOrderById: async (id: string): Promise<ApiResult<Order>> => {
+  getOrderById: async (id: string): Promise<ApiResponse<Order>> => {
     try {
       const res = await apiClient.get(`/orders/${encodeURIComponent(id)}`);
       const unwrapped = unwrapApiResponse<any>(res);
-
-      if (!unwrapped.success || !unwrapped.data) {
-        return { success: false, data: null, error: unwrapped.error || { message: 'Order not found' } };
+      if (unwrapped.status === 'error' || !unwrapped.data) {
+        return { status: 'error', message: unwrapped.message || 'Order not found', errors: unwrapped.errors, data: null as any };
       }
-
       const order = normalizeOrder(unwrapped.data);
-      return { success: true, data: order, error: null };
+      return { status: 'success', message: null, data: order };
     } catch (err: any) {
+      const { message, errors } = extractApiError(err, `Failed to fetch order ${id}`);
       return {
-        success: false,
-        data: null,
-        error: { message: err.response?.data?.message || err.message || `Failed to fetch order ${id}` }
+        status: 'error', message, errors, data: null as any
       };
     }
   },
 
   // GET /orders/:id/shipments
-  getOrderShipments: async (id: string): Promise<ApiResult<any>> => {
+  getOrderShipments: async (id: string): Promise<ApiResponse<any>> => {
     try {
       const res = await apiClient.get(`/orders/${encodeURIComponent(id)}/shipments`);
       const unwrapped = unwrapApiResponse<any>(res);
-      return { success: unwrapped.success, data: unwrapped.data, error: unwrapped.error };
+      return { status: unwrapped.status, data: unwrapped.data, message: unwrapped.message || null };
     } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Failed to fetch shipment details');
       return {
-        success: false,
-        data: null,
-        error: { message: err.response?.data?.message || err.message || 'Failed to fetch shipment details' }
+        status: 'error', message, errors, data: null
       };
     }
   }
 };
+

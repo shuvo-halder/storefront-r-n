@@ -1,7 +1,7 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { Cart } from '../types/storefront';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { Cart, Product, ProductVariant } from '../types/storefront';
 
-// Get base URL from environment or default to admin.vyzobd.com storefront API
+// Base URL from environment or default
 const getRawApiUrl = (): string => {
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
   if (envUrl && envUrl.trim() !== '') {
@@ -10,40 +10,36 @@ const getRawApiUrl = (): string => {
   return 'https://admin.vyzobd.com/api/storefront/v1';
 };
 
-// Ensure URL does not end with trailing slash or duplicate endpoint prefixes
 const sanitizeBaseUrl = (url: string): string => {
-  let cleaned = url.replace(/\/+$/, '');
-  return cleaned;
+  return url.replace(/\/+$/, '');
 };
 
 export const API_BASE_URL = sanitizeBaseUrl(getRawApiUrl());
 
-export interface ApiSuccessEnvelope<T> {
-  success?: boolean;
-  status?: string;
-  data: T;
-  meta?: any;
-  ga4?: any;
-  message?: string;
+export interface ApiPagination {
+  total?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
 }
 
-export interface ApiErrorDetail {
-  code?: string;
+export interface ApiFieldError {
+  field?: string;
   message: string;
-  details?: any;
 }
 
-export interface ApiErrorEnvelope {
-  success: false;
-  error?: ApiErrorDetail;
-  message?: string;
+export interface ApiResponse<T = any> {
+  status: 'success' | 'error';
+  message: string | null;
+  data: T;
+  pagination?: ApiPagination;
+  errors?: ApiFieldError[];
 }
 
-export interface ApiResult<T> {
-  success: boolean;
-  data: T | null;
-  error: ApiErrorDetail | null;
-  meta?: any;
+export interface ApiError {
+  status: 'error';
+  message: string;
+  errors?: ApiFieldError[];
 }
 
 // Axios Instance
@@ -56,7 +52,6 @@ export const apiClient: AxiosInstance = axios.create({
   timeout: 15000,
 });
 
-// Request Interceptor: Attach Auth Token
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('vyzobd_auth_token');
@@ -71,7 +66,6 @@ apiClient.interceptors.request.use((config) => {
   return config;
 }, (error) => Promise.reject(error));
 
-// Response Interceptor: Automatic 401 Token Refresh
 let isRefreshing = false;
 let failedQueue: Array<{ resolve: (token: string | null) => void; reject: (err: any) => void }> = [];
 
@@ -115,8 +109,9 @@ apiClient.interceptors.response.use(
       try {
         const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('vyzobd_refresh_token') : null;
         if (refreshToken) {
-          const res = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
-          const newToken = res.data?.token || res.data?.data?.token;
+          const res = await axios.post<ApiResponse>(`${API_BASE_URL}/auth/refresh`, { refreshToken });
+          const newToken = res.data?.data?.token;
+
           if (newToken) {
             if (typeof window !== 'undefined') {
               localStorage.setItem('vyzobd_auth_token', newToken);
@@ -137,65 +132,197 @@ apiClient.interceptors.response.use(
         isRefreshing = false;
       }
     }
-    return Promise.reject(error);
+    
+    // Normalize error response to standardized ApiError format
+    if (error.response?.data) {
+      const data = error.response.data;
+      if (data.status === 'error') {
+        return Promise.reject(data);
+      }
+    }
+    
+    return Promise.reject({
+      status: 'error',
+      message: error.message || 'An unknown network error occurred',
+      data: null
+    });
   }
 );
 
 /**
- * Universal Response Unwrapper
- * Unwraps data safely from envelopes like:
- * - { success: true, data: ... }
- * - { status: 'success', data: ... }
- * - { data: ... }
- * - Raw data payload
+ * Universal Response Unwrapper for the backend API contract.
+ * Safely handles null, undefined, arrays, and objects.
  */
-export function unwrapApiResponse<T>(res: AxiosResponse<any>, defaultValue: T | null = null): ApiResult<T> {
+export function unwrapApiResponse<T>(res: AxiosResponse<any>, defaultValue: T | null = null): ApiResponse<T> {
   if (!res || !res.data) {
     return {
-      success: false,
-      data: defaultValue,
-      error: { message: 'No response data received from server' }
+      status: 'error',
+      message: 'No response data received from server',
+      data: defaultValue as unknown as T
     };
   }
 
   const body = res.data;
-
-  // Handle explicit success = false or error envelope
-  if (body.success === false || body.status === 'error' || body.status === 'fail') {
-    const errorMsg = body.error?.message || body.message || 'An unexpected API error occurred';
-    const errorCode = body.error?.code || String(res.status);
+  
+  if (body.status === 'error') {
     return {
-      success: false,
-      data: defaultValue,
-      error: { code: errorCode, message: errorMsg, details: body.error?.details || body.details },
-      meta: body.meta
+      status: 'error',
+      message: body.message || 'An unexpected API error occurred',
+      data: (body.data !== undefined && body.data !== null) ? body.data : defaultValue,
+      errors: body.errors
     };
   }
 
-  // Handle { data: ... } standard pattern
-  if (Object.prototype.hasOwnProperty.call(body, 'data')) {
-    const rawData = body.data;
+  // Handle successful standardized response
+  if (body.status === 'success') {
     return {
-      success: true,
-      data: rawData !== undefined && rawData !== null ? rawData : defaultValue,
-      error: null,
-      meta: body.meta
+      status: 'success',
+      message: body.message || null,
+      data: (body.data !== undefined && body.data !== null) ? body.data : defaultValue,
+      pagination: body.pagination
     };
   }
 
-  // Raw payload fallback
+  // Fallback for non-standardized responses
   return {
-    success: true,
-    data: body !== undefined && body !== null ? body : defaultValue,
-    error: null,
-    meta: body.meta
+    status: 'success',
+    message: null,
+    data: (body.data !== undefined && body.data !== null) ? body.data : (body || defaultValue),
+    pagination: body.pagination
   };
 }
 
 /**
- * Cart Normalizer Guarantee
- * Guarantees cart.items is always a valid CartItem[] array.
- * Fixes "Cannot read properties of undefined (reading 'reduce')"
+ * Safely extract error message and field validation errors.
+ */
+export function extractApiError(err: any, fallbackMessage: string): { message: string; errors?: ApiFieldError[] } {
+  if (err && typeof err === 'object') {
+    if (err.status === 'error') {
+      return {
+        message: err.message || fallbackMessage,
+        errors: err.errors
+      };
+    }
+    if (err.response?.data) {
+      const data = err.response.data;
+      return {
+        message: data.message || fallbackMessage,
+        errors: data.errors
+      };
+    }
+    if (err.message && typeof err.message === 'string') {
+      return { message: err.message };
+    }
+  }
+  return { message: fallbackMessage };
+}
+
+/**
+ * Canonical Product Normalizer Strategy
+ * Safely normalizes product data and computes stock / availability across product and variants.
+ */
+export function normalizeProduct(raw: any): Product {
+  if (!raw) {
+    return {
+      id: '',
+      slug: '',
+      name: '',
+      brand: '',
+      category: '',
+      categoryId: '',
+      price: 0,
+      rating: 5,
+      reviewCount: 0,
+      images: [],
+      description: '',
+      features: [],
+      specifications: [],
+      stock: 0
+    };
+  }
+
+  const categoryName = typeof raw.category === 'string' ? raw.category : (raw.category?.name || '');
+  const categoryId = typeof raw.category === 'object' ? (raw.category?.id || raw.category?.slug || '') : (raw.categoryId || '');
+  const brandName = typeof raw.brand === 'string' ? raw.brand : (raw.brand?.name || '');
+  const brandId = typeof raw.brand === 'object' ? (raw.brand?.id || raw.brand?.slug || '') : (raw.brandId || '');
+
+  const rawImages = Array.isArray(raw.images) && raw.images.length > 0
+    ? raw.images.map((img: any) => typeof img === 'string' ? img : (img.url || img.src || ''))
+    : (raw.imageUrl || raw.primaryImage?.url || raw.thumbnail ? [raw.imageUrl || raw.primaryImage?.url || raw.thumbnail] : []);
+
+  const variants: ProductVariant[] = Array.isArray(raw.variants) ? raw.variants.map((v: any) => {
+    const vInStock = v.inStock ?? v.in_stock ?? v.is_in_stock ?? v.isAvailable;
+    const rawVStock = v.stock ?? v.quantity ?? v.inventory ?? v.stock_quantity ?? v.inventory_quantity;
+    let vStock = 0;
+    if (rawVStock !== undefined && rawVStock !== null && !isNaN(Number(rawVStock))) {
+      vStock = Number(rawVStock);
+    } else if (vInStock === false) {
+      vStock = 0;
+    } else if (vInStock === true) {
+      vStock = 10;
+    }
+    return {
+      id: String(v.id || v.sku || ''),
+      name: String(v.name || v.sku || 'Variant'),
+      sku: String(v.sku || ''),
+      price: Number(v.price ?? raw.price ?? 0),
+      compareAtPrice: v.compareAtPrice ? Number(v.compareAtPrice) : undefined,
+      stock: vStock,
+      image: v.image ? (typeof v.image === 'string' ? v.image : (v.image.url || v.image.src)) : undefined,
+      colorHex: v.colorHex || undefined
+    };
+  }) : [];
+
+  // Determine product-level stock from raw fields & variants
+  const rawStock = raw.stock ?? raw.quantity ?? raw.inventory ?? raw.stock_quantity ?? raw.inventory_quantity;
+  const rawInStock = raw.inStock ?? raw.in_stock ?? raw.is_in_stock ?? raw.isAvailable;
+
+  let stock = 0;
+
+  if (variants.length > 0) {
+    // If product has variants, total stock is the sum of variant stock
+    stock = variants.reduce((sum, v) => sum + v.stock, 0);
+  } else if (rawStock !== undefined && rawStock !== null && !isNaN(Number(rawStock))) {
+    stock = Number(rawStock);
+  } else if (rawInStock === false) {
+    stock = 0;
+  } else if (rawInStock === true) {
+    stock = 10;
+  }
+
+  return {
+    id: String(raw.id || raw._id || ''),
+    slug: String(raw.slug || raw.id || ''),
+    name: String(raw.name || 'Untitled Product'),
+    subtitle: raw.subtitle || raw.shortDescription || undefined,
+    brand: brandName,
+    brandId: brandId || undefined,
+    category: categoryName,
+    categoryId: categoryId,
+    price: Number(raw.price ?? 0),
+    compareAtPrice: raw.compareAtPrice ? Number(raw.compareAtPrice) : undefined,
+    discountPercent: raw.discountPercent ? Number(raw.discountPercent) : undefined,
+    rating: Number(raw.rating ?? 5),
+    reviewCount: Number(raw.reviewCount ?? 0),
+    images: rawImages.filter(Boolean),
+    description: String(raw.description || raw.shortDescription || ''),
+    features: Array.isArray(raw.features) ? raw.features : [],
+    specifications: Array.isArray(raw.specifications) ? raw.specifications : [],
+    stock,
+    isNew: Boolean(raw.isNew),
+    isFeatured: Boolean(raw.isFeatured),
+    isBestSeller: Boolean(raw.isBestSeller),
+    isDealOfDay: Boolean(raw.isDealOfDay),
+    dealEndTime: raw.dealEndTime || undefined,
+    variants,
+    reviews: Array.isArray(raw.reviews) ? raw.reviews : [],
+    tags: Array.isArray(raw.tags) ? raw.tags : []
+  };
+}
+
+/**
+ * Canonical Cart Normalizer Strategy
+ * Guarantees UI always receives a valid Cart object with items array and calculated totals.
  */
 export function normalizeCart(rawCart: any): Cart {
   if (!rawCart) {
@@ -210,8 +337,8 @@ export function normalizeCart(rawCart: any): Cart {
     };
   }
 
-  const rawItems = Array.isArray(rawCart.items)
-    ? rawCart.items
+  const rawItems = Array.isArray(rawCart.items) 
+    ? rawCart.items 
     : (Array.isArray(rawCart.cartItems) ? rawCart.cartItems : []);
 
   const items = rawItems.map((item: any, idx: number) => {
@@ -223,28 +350,7 @@ export function normalizeCart(rawCart: any): Cart {
     return {
       id: String(item.id || item._id || `cart-item-${idx}`),
       productId: String(item.productId || p.id || item.product_id || ''),
-      product: {
-        id: String(p.id || item.productId || ''),
-        slug: String(p.slug || p.id || ''),
-        name: String(p.name || item.productName || 'Product'),
-        brand: String(p.brand || p.brandName || ''),
-        brandId: p.brandId,
-        category: String(p.category || p.categoryName || ''),
-        categoryId: String(p.categoryId || ''),
-        price: Number(p.price ?? unitPrice),
-        compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : undefined,
-        discountPercent: p.discountPercent ? Number(p.discountPercent) : undefined,
-        rating: Number(p.rating ?? 5),
-        reviewCount: Number(p.reviewCount ?? 0),
-        images: Array.isArray(p.images) && p.images.length > 0 ? p.images : (p.image ? [p.image] : []),
-        description: String(p.description || ''),
-        features: Array.isArray(p.features) ? p.features : [],
-        specifications: Array.isArray(p.specifications) ? p.specifications : [],
-        stock: Number(p.stock ?? 99),
-        variants: p.variants,
-        reviews: p.reviews,
-        tags: p.tags
-      },
+      product: normalizeProduct(p),
       selectedVariant: item.selectedVariant || item.variant,
       quantity: qty,
       unitPrice,
@@ -268,3 +374,4 @@ export function normalizeCart(rawCart: any): Cart {
     total
   };
 }
+

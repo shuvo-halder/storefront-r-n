@@ -130,8 +130,10 @@ export interface OrderTrackingStep {
 
 export interface Order {
   id: string; // Order ID e.g. "ORD-94821"
+  orderNumber?: string;
   createdAt: string;
   status: OrderStatus;
+  orderStatus?: OrderStatus | string;
   items: OrderItem[];
   shippingAddress: ShippingAddress;
   shippingMethod: string;
@@ -141,6 +143,7 @@ export interface Order {
   shippingFee: number;
   tax: number;
   totalAmount: number;
+  total?: number;
   trackingNumber?: string;
   trackingSteps?: OrderTrackingStep[];
   estimatedDeliveryDate?: string;

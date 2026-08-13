@@ -1,68 +1,60 @@
-import { apiClient, unwrapApiResponse, ApiResult } from '../lib/api';
+import { apiClient, unwrapApiResponse, extractApiError, ApiResponse } from '../lib/api';
 import { PaymentInitiationResponse } from '../types/checkout';
 
 export const paymentService = {
   // POST /payment/initiate
-  initiatePayment: async (orderId: string, paymentMethod: string): Promise<ApiResult<PaymentInitiationResponse>> => {
+  initiatePayment: async (orderId: string, paymentMethod: string): Promise<ApiResponse<PaymentInitiationResponse>> => {
     try {
       const res = await apiClient.post('/payment/initiate', { orderId, paymentMethod });
       const unwrapped = unwrapApiResponse<any>(res);
 
-      if (!unwrapped.success || !unwrapped.data) {
-        return {
-          success: false,
-          data: null,
-          error: unwrapped.error || { message: 'Payment initiation failed' }
-        };
+      if (unwrapped.status === 'error' || !unwrapped.data) {
+        return { status: 'error', message: unwrapped.message || 'Payment initiation failed', errors: unwrapped.errors, data: null as any };
       }
 
       return {
-        success: true,
+        status: 'success',
         data: {
           orderId: unwrapped.data.orderId || orderId,
           status: unwrapped.data.status || 'pending',
           paymentUrl: unwrapped.data.paymentUrl || unwrapped.data.redirectUrl,
           transactionId: unwrapped.data.transactionId
         },
-        error: null
+        message: unwrapped.message || null
       };
     } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Payment initiation failed');
       return {
-        success: false,
-        data: null,
-        error: { message: err.response?.data?.message || err.message || 'Payment initiation failed' }
+        status: 'error', message, errors, data: null as any
       };
     }
   },
 
   // POST /payment/verify
-  verifyPayment: async (transactionId: string, provider: string): Promise<ApiResult<{ verified: boolean; orderId?: string }>> => {
+  verifyPayment: async (transactionId: string, provider: string): Promise<ApiResponse<{ verified: boolean; orderId?: string }>> => {
     try {
       const res = await apiClient.post('/payment/verify', { transactionId, provider });
       const unwrapped = unwrapApiResponse<any>(res);
 
-      if (!unwrapped.success || !unwrapped.data) {
+      if (unwrapped.status === 'error' || !unwrapped.data) {
         return {
-          success: false,
-          data: { verified: false },
-          error: unwrapped.error
-        };
+          status: 'error', message: unwrapped.message || 'Payment verification failed', errors: unwrapped.errors, data: { verified: false } };
       }
 
       return {
-        success: true,
+        status: 'success',
         data: {
           verified: Boolean(unwrapped.data.verified ?? unwrapped.data.status === 'success'),
           orderId: unwrapped.data.orderId
         },
-        error: null
+        message: unwrapped.message || null
       };
     } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Payment verification failed');
       return {
-        success: false,
-        data: { verified: false },
-        error: { message: err.response?.data?.message || err.message || 'Payment verification failed' }
+        status: 'error', message, errors, data: { verified: false }
       };
     }
   }
 };
+

@@ -1,54 +1,54 @@
-import { apiClient, unwrapApiResponse, ApiResult } from '../lib/api';
+import { apiClient, unwrapApiResponse, extractApiError, ApiResponse } from '../lib/api';
 import { PublicSettings } from '../types/storefront';
+
+const DEFAULT_SETTINGS: PublicSettings = {
+  branding: {
+    logoUrl: '',
+    faviconUrl: '',
+    primaryColor: '#0f172a'
+  },
+  seo: {
+    metaTitle: 'Vyzobd Store',
+    metaDescription: 'Modern Hardware & E-commerce Storefront'
+  },
+  shipping: {
+    freeShippingThreshold: 100,
+    flatRateShippingFee: 15,
+    estimatedDeliveryDays: '3-5 business days'
+  },
+  tax: {
+    taxEnabled: true,
+    taxRate: 0.05,
+    pricesIncludeTax: false
+  },
+  general: {
+    siteName: 'Vyzobd',
+    siteTitle: 'Vyzobd Store',
+    currency: 'USD',
+    currencySymbol: '$',
+    storePhone: '',
+    storeEmail: 'support@vyzobd.com'
+  },
+  siteName: 'Vyzobd',
+  siteTitle: 'Vyzobd Store',
+  logoUrl: '',
+  faviconUrl: '',
+  currency: 'USD',
+  currencySymbol: '$',
+  freeShippingThreshold: 100,
+  supportEmail: 'support@vyzobd.com',
+  supportPhone: ''
+};
 
 export const settingsService = {
   // GET /settings/public
-  getPublicSettings: async (): Promise<ApiResult<PublicSettings>> => {
+  getPublicSettings: async (): Promise<ApiResponse<PublicSettings>> => {
     try {
       const res = await apiClient.get('/settings/public');
       const unwrapped = unwrapApiResponse<any>(res);
 
-      if (!unwrapped.success || !unwrapped.data) {
-        // Safe default fallback shape for settings if endpoint is empty
-        const defaultSettings: PublicSettings = {
-          branding: {
-            logoUrl: '',
-            faviconUrl: '',
-            primaryColor: '#0f172a'
-          },
-          seo: {
-            metaTitle: 'Vyzobd Store',
-            metaDescription: 'Modern Hardware & E-commerce Storefront'
-          },
-          shipping: {
-            freeShippingThreshold: 100,
-            flatRateShippingFee: 15,
-            estimatedDeliveryDays: '3-5 business days'
-          },
-          tax: {
-            taxEnabled: true,
-            taxRate: 0.05,
-            pricesIncludeTax: false
-          },
-          general: {
-            siteName: 'Vyzobd',
-            siteTitle: 'Vyzobd Store',
-            currency: 'USD',
-            currencySymbol: '$',
-            storePhone: '',
-            storeEmail: 'support@vyzobd.com'
-          },
-          siteName: 'Vyzobd',
-          siteTitle: 'Vyzobd Store',
-          logoUrl: '',
-          faviconUrl: '',
-          currency: 'USD',
-          currencySymbol: '$',
-          freeShippingThreshold: 100,
-          supportEmail: 'support@vyzobd.com',
-          supportPhone: ''
-        };
-        return { success: true, data: defaultSettings, error: null };
+      if (unwrapped.status === 'error' || !unwrapped.data) {
+        return { status: 'success', message: null, data: DEFAULT_SETTINGS };
       }
 
       const raw = unwrapped.data;
@@ -96,13 +96,12 @@ export const settingsService = {
         supportPhone: raw.general?.storePhone || raw.supportPhone || ''
       };
 
-      return { success: true, data: settings, error: null };
-    } catch (err: any) {
+      return { status: 'success', message: null, data: settings };
+    } catch {
       return {
-        success: false,
-        data: null,
-        error: { message: err.response?.data?.message || err.message || 'Failed to fetch public settings' }
+        status: 'success', message: null, data: DEFAULT_SETTINGS
       };
     }
   }
 };
+

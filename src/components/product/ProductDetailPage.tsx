@@ -213,6 +213,11 @@ export const ProductDetailPage: React.FC = () => {
     if (variant.image) {
       setSelectedImage(variant.image);
     }
+    if (variant.stock > 0) {
+      setQuantity(prev => Math.min(prev, variant.stock));
+    } else {
+      setQuantity(1);
+    }
   };
 
   const handleAddToCart = () => {

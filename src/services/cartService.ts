@@ -1,37 +1,31 @@
-import { apiClient, unwrapApiResponse, normalizeCart, ApiResult } from '../lib/api';
+import { apiClient, unwrapApiResponse, normalizeCart, extractApiError, ApiResponse } from '../lib/api';
 import { Cart } from '../types/storefront';
 
 export const cartService = {
   // GET /cart
-  getCart: async (): Promise<ApiResult<Cart>> => {
+  getCart: async (): Promise<ApiResponse<Cart>> => {
     try {
       const res = await apiClient.get('/cart');
       const unwrapped = unwrapApiResponse<any>(res);
 
-      if (!unwrapped.success) {
-        // If 404/500/empty or guest session missing, interpret as empty cart safely
+      if (unwrapped.status === 'error') {
+        // Safe empty cart guarantee on initial fetch or session init
         return {
-          success: true,
-          data: normalizeCart(null),
-          error: null
+          status: 'success', message: null, data: normalizeCart(null)
         };
       }
 
-      // If data is null or undefined (empty cart)
       const cart = normalizeCart(unwrapped.data);
-      return { success: true, data: cart, error: null };
+      return { status: 'success', message: null, data: cart };
     } catch {
-      // Return normalized empty cart instead of throwing
       return {
-        success: true,
-        data: normalizeCart(null),
-        error: null
+        status: 'success', message: null, data: normalizeCart(null)
       };
     }
   },
 
   // POST /cart/items
-  addItem: async (productId: string, quantity = 1, variantId?: string): Promise<ApiResult<Cart>> => {
+  addItem: async (productId: string, quantity = 1, variantId?: string): Promise<ApiResponse<Cart>> => {
     try {
       const res = await apiClient.post('/cart/items', {
         productId,
@@ -40,61 +34,57 @@ export const cartService = {
       });
       const unwrapped = unwrapApiResponse<any>(res);
       const cart = normalizeCart(unwrapped.data);
-      return { success: true, data: cart, error: null };
+      return { status: 'success', message: unwrapped.message || null, data: cart };
     } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Failed to add item to cart');
       return {
-        success: false,
-        data: normalizeCart(null),
-        error: { message: err.response?.data?.message || err.message || 'Failed to add item to cart' }
+        status: 'error', message, errors, data: normalizeCart(null)
       };
     }
   },
 
   // PUT /cart/items/:itemId
-  updateItem: async (itemId: string, quantity: number): Promise<ApiResult<Cart>> => {
+  updateItem: async (itemId: string, quantity: number): Promise<ApiResponse<Cart>> => {
     try {
       const res = await apiClient.put(`/cart/items/${encodeURIComponent(itemId)}`, { quantity });
       const unwrapped = unwrapApiResponse<any>(res);
       const cart = normalizeCart(unwrapped.data);
-      return { success: true, data: cart, error: null };
+      return { status: 'success', message: unwrapped.message || null, data: cart };
     } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Failed to update cart item');
       return {
-        success: false,
-        data: normalizeCart(null),
-        error: { message: err.response?.data?.message || err.message || 'Failed to update cart item' }
+        status: 'error', message, errors, data: normalizeCart(null)
       };
     }
   },
 
   // DELETE /cart/items/:itemId
-  removeItem: async (itemId: string): Promise<ApiResult<Cart>> => {
+  removeItem: async (itemId: string): Promise<ApiResponse<Cart>> => {
     try {
       const res = await apiClient.delete(`/cart/items/${encodeURIComponent(itemId)}`);
       const unwrapped = unwrapApiResponse<any>(res);
       const cart = normalizeCart(unwrapped.data);
-      return { success: true, data: cart, error: null };
+      return { status: 'success', message: unwrapped.message || null, data: cart };
     } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Failed to remove cart item');
       return {
-        success: false,
-        data: normalizeCart(null),
-        error: { message: err.response?.data?.message || err.message || 'Failed to remove cart item' }
+        status: 'error', message, errors, data: normalizeCart(null)
       };
     }
   },
 
   // DELETE /cart
-  clearCart: async (): Promise<ApiResult<Cart>> => {
+  clearCart: async (): Promise<ApiResponse<Cart>> => {
     try {
       const res = await apiClient.delete('/cart');
       const unwrapped = unwrapApiResponse<any>(res);
       const cart = normalizeCart(unwrapped.data);
-      return { success: true, data: cart, error: null };
+      return { status: 'success', message: unwrapped.message || null, data: cart };
     } catch {
       return {
-        success: true,
-        data: normalizeCart(null),
-        error: null
+        status: 'success', message: null, data: normalizeCart(null)
       };
     }
   }
 };
+

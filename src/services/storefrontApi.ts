@@ -38,7 +38,7 @@ export const storefrontApi = {
   getPublicSettings: async (): Promise<PublicSettings> => {
     const res = await settingsService.getPublicSettings();
     if (res.data) return res.data;
-    throw new Error(res.error?.message || 'Failed to fetch public settings');
+    throw new Error(res.message || 'Failed to fetch public settings');
   },
 
   // BANNERS & CONTENT
@@ -177,16 +177,16 @@ export const storefrontApi = {
   // AUTH
   login: async (data: LoginFormData): Promise<AuthResponse> => {
     const res = await authService.login(data);
-    if (!res.success || !res.data) {
-      throw new Error(res.error?.message || 'Login failed');
+    if (res.status === 'error' || !res.data) {
+      throw new Error(res.message || 'Login failed');
     }
     return res.data;
   },
 
   register: async (data: RegisterFormData): Promise<AuthResponse> => {
     const res = await authService.register(data);
-    if (!res.success || !res.data) {
-      throw new Error(res.error?.message || 'Registration failed');
+    if (res.status === 'error' || !res.data) {
+      throw new Error(res.message || 'Registration failed');
     }
     return res.data;
   },
@@ -201,13 +201,11 @@ export const storefrontApi = {
   },
 
   updateProfile: async (data: Partial<UserProfile>): Promise<UserProfile> => {
-    // Return merged profile or call authService.me
+    const res = await authService.updateProfile(data);
+    if (res.data) return res.data;
     const current = await authService.me();
-    return current.data || {
-      id: 'usr_1',
-      fullName: data.fullName || 'User',
-      email: data.email || ''
-    };
+    if (current.data) return current.data;
+    throw new Error('Failed to update profile');
   },
 
   forgotPassword: async (email: string): Promise<boolean> => {
@@ -226,16 +224,16 @@ export const storefrontApi = {
 
   checkout: async (payload: CheckoutFormData): Promise<Order> => {
     const res = await checkoutService.completeCheckout(payload);
-    if (!res.success || !res.data) {
-      throw new Error(res.error?.message || 'Checkout failed');
+    if (res.status === 'error' || !res.data) {
+      throw new Error(res.message || 'Checkout failed');
     }
     return res.data;
   },
 
   checkoutComplete: async (payload: CheckoutFormData): Promise<Order> => {
     const res = await checkoutService.completeCheckout(payload);
-    if (!res.success || !res.data) {
-      throw new Error(res.error?.message || 'Checkout failed');
+    if (res.status === 'error' || !res.data) {
+      throw new Error(res.message || 'Checkout failed');
     }
     return res.data;
   },

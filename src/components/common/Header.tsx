@@ -63,6 +63,37 @@ function HeaderContent() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState<boolean>(false);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState<boolean>(false);
+  const [isHeaderVisible, setIsHeaderVisible] = useState<boolean>(true);
+
+  const lastScrollYRef = useRef<number>(0);
+
+  // Header scroll-direction listener (scroll down hides, scroll up shows, top visible)
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY <= 15) {
+        setIsHeaderVisible(true);
+      } else if (currentScrollY > lastScrollYRef.current + 8) {
+        setIsHeaderVisible(false);
+      } else if (currentScrollY < lastScrollYRef.current - 8) {
+        setIsHeaderVisible(true);
+      }
+
+      lastScrollYRef.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Reset dropdowns on route or searchParam change
+  useEffect(() => {
+    setIsMegaMenuOpen(false);
+    setIsMobileMenuOpen(false);
+    setIsAccountMenuOpen(false);
+    setIsSearchFocused(false);
+  }, [pathname, searchParams]);
 
   // Search suggestion state
   const [searchResults, setSearchResults] = useState<Product[]>([]);
@@ -207,7 +238,11 @@ function HeaderContent() {
 
   return (
     <AnimatePresence>
-      <header className="w-full bg-white border-b border-border-default sticky top-0 z-40 shadow-premium transition-all">
+      <header className={`w-full bg-white border-b border-border-default sticky top-0 z-40 shadow-premium transition-transform duration-300 ease-in-out ${
+        isHeaderVisible || isMobileMenuOpen || isMegaMenuOpen || isAccountMenuOpen || isSearchFocused
+          ? 'translate-y-0'
+          : '-translate-y-full'
+      }`}>
         {/* 1. TOP UTILITY BAR */}
         <div className="bg-white border-b border-border-default py-2.5 hidden lg:block">
           <div className="container-vyzobd flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-widest">
@@ -235,7 +270,7 @@ function HeaderContent() {
                 className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer border-l border-slate-200 pl-6 ml-2"
               >
                 <User size={13} className="text-accent" />
-                <span>{user ? user.fullName : 'Sign In'}</span>
+                <span>{user ? user.fullName : 'Login / Register'}</span>
               </Link>
             </div>
           </div>
@@ -488,7 +523,7 @@ function HeaderContent() {
                     {user ? 'Welcome' : 'Account'}
                   </div>
                   <div className="text-xs font-bold text-primary leading-tight truncate max-w-[110px]">
-                    {user ? user.fullName.split(' ')[0] : 'Sign In'}
+                    {user ? user.fullName.split(' ')[0] : 'Login / Register'}
                   </div>
                 </div>
                 {user && <ChevronDown size={14} className="text-slate-400 hidden xl:block" />}
@@ -601,7 +636,11 @@ function HeaderContent() {
         </div>
 
         {/* 3. PRIMARY NAVIGATION BAR */}
-        <div className="hidden lg:block bg-surface border-t border-border-default relative" ref={navContainerRef}>
+        <div 
+          className="hidden lg:block bg-surface border-t border-border-default relative" 
+          ref={navContainerRef}
+          onMouseLeave={() => setIsMegaMenuOpen(false)}
+        >
           <div className="container-vyzobd py-0 flex items-center justify-between">
             <nav className="flex items-center">
               <Link
@@ -723,7 +762,14 @@ function HeaderContent() {
 
           {/* Mega Menu Dropdown */}
           <AnimatePresence>
-            {isMegaMenuOpen && <MegaMenu onClose={() => setIsMegaMenuOpen(false)} />}
+            {isMegaMenuOpen && (
+              <div 
+                onMouseEnter={() => setIsMegaMenuOpen(true)}
+                onMouseLeave={() => setIsMegaMenuOpen(false)}
+              >
+                <MegaMenu onClose={() => setIsMegaMenuOpen(false)} />
+              </div>
+            )}
           </AnimatePresence>
         </div>
 

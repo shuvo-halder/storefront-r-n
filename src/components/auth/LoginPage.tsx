@@ -1,22 +1,24 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, LoginFormData } from '../../types/auth';
 import { useAuth } from '../../context/AuthContext';
-import { useStorefront } from '../../context/StorefrontContext';
 import { Loader2, Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
+  const router = useRouter();
   const { login } = useAuth();
-  const { navigateTo } = useStorefront();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
+    setError: setErrorField,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -26,9 +28,16 @@ export const LoginPage: React.FC = () => {
     setError(null);
     try {
       await login(data);
-      navigateTo('account');
+      router.push('/account');
     } catch (err: any) {
-      setError(err.message || 'Invalid credentials. Please try again.');
+      if (err?.errors && Array.isArray(err.errors)) {
+        err.errors.forEach((e: any) => {
+          if (e.field) {
+            setErrorField(e.field as any, { type: 'server', message: e.message });
+          }
+        });
+      }
+      setError(err?.message || 'Invalid credentials. Please try again.');
     }
   };
 
@@ -42,12 +51,12 @@ export const LoginPage: React.FC = () => {
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">Welcome Back</h2>
           <p className="mt-2 text-sm text-slate-500 font-medium">
             Don't have an account?{' '}
-            <button
-              onClick={() => navigateTo('register')}
+            <Link
+              href="/register"
               className="text-primary font-bold hover:text-primary-hover transition-colors"
             >
               Join Vyzobd today
-            </button>
+            </Link>
           </p>
         </div>
       </div>
@@ -74,13 +83,12 @@ export const LoginPage: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest">Password</label>
-                <button
-                  type="button"
-                  onClick={() => navigateTo('forgot-password')}
+                <Link
+                  href="/forgot-password"
                   className="text-[10px] font-black text-slate-400 hover:text-primary uppercase tracking-widest transition-colors"
                 >
                   Forgot password?
-                </button>
+                </Link>
               </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
@@ -142,3 +150,4 @@ export const LoginPage: React.FC = () => {
     </div>
   );
 };
+

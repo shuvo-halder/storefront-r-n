@@ -5,16 +5,23 @@ import { AccountLayout } from './AccountLayout';
 import { useAuth } from '../../context/AuthContext';
 import { ShoppingBag, Heart, Package, Clock, Star, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 import { useStorefront } from '../../context/StorefrontContext';
+import Link from 'next/link';
 
 export const AccountDashboard: React.FC = () => {
   const { user } = useAuth();
-  const { navigateTo } = useStorefront();
+  const { userOrders, wishlist, navigateTo } = useStorefront();
+
+  const activeShipmentsCount = userOrders.filter(o => 
+    ['processing', 'shipped', 'pending', 'Placed'].includes(o.orderStatus || o.status || '')
+  ).length;
+
+  const totalSpent = userOrders.reduce((sum, o) => sum + (o.totalAmount || o.total || 0), 0);
 
   const stats = [
-    { label: 'Total Orders', value: '12', icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Wishlist Items', value: '24', icon: Heart, color: 'text-primary', bg: 'bg-primary/5' },
-    { label: 'Pending Rewards', value: '$450', icon: Star, color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: 'Active Shipments', value: '2', icon: Package, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: 'Total Orders', value: userOrders.length.toString(), icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'Wishlist Items', value: wishlist.length.toString(), icon: Heart, color: 'text-primary', bg: 'bg-primary/5' },
+    { label: 'Total Spend', value: `$${totalSpent.toFixed(2)}`, icon: Star, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { label: 'Active Shipments', value: activeShipmentsCount.toString(), icon: Package, color: 'text-emerald-600', bg: 'bg-emerald-50' },
   ];
 
   return (
@@ -24,22 +31,22 @@ export const AccountDashboard: React.FC = () => {
         {/* Welcome Banner */}
         <div className="bg-white rounded-[40px] p-8 sm:p-10 shadow-2xl shadow-slate-200/50 border border-slate-100 relative overflow-hidden">
           <div className="relative z-10 max-w-lg">
-            <h1 className="text-3xl font-black text-slate-900 mb-2">Hello, {user?.fullName?.split(' ')[0]}!</h1>
+            <h1 className="text-3xl font-black text-slate-900 mb-2">Hello, {user?.fullName?.split(' ')[0] || 'Customer'}!</h1>
             <p className="text-slate-500 font-medium leading-relaxed">
-              Welcome back to your dashboard. You have <span className="text-primary font-bold">2 active shipments</span> arriving this week. 
+              Welcome back to your dashboard. You have <span className="text-primary font-bold">{activeShipmentsCount} active shipments</span> in your account. 
               Ready to explore more premium tech?
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <button 
-                onClick={() => navigateTo('shop')}
+              <Link 
+                href="/products"
                 className="px-8 py-3.5 bg-slate-900 text-white font-black text-xs uppercase tracking-widest rounded-2xl flex items-center gap-2 hover:bg-slate-800 transition-all shadow-lg"
               >
                 <span>Continue Shopping</span>
                 <ArrowRight size={16} />
-              </button>
+              </Link>
               <div className="flex items-center gap-3 px-6 py-3.5 bg-emerald-50 rounded-2xl border border-emerald-100">
                 <ShieldCheck size={20} className="text-emerald-600" />
-                <span className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Premium Member</span>
+                <span className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Verified Account</span>
               </div>
             </div>
           </div>
@@ -69,58 +76,69 @@ export const AccountDashboard: React.FC = () => {
           <div className="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm">
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-lg font-black text-slate-900">Recent Orders</h3>
-              <button onClick={() => navigateTo('orders')} className="text-xs font-bold text-primary hover:underline">View All</button>
+              <Link href="/account/orders" className="text-xs font-bold text-primary hover:underline">View All</Link>
             </div>
-            <div className="space-y-4">
-              {[
-                { id: '#ORD-88291', date: '2 days ago', total: '$1,299.00', status: 'Delivered' },
-                { id: '#ORD-88102', date: '5 days ago', total: '$149.00', status: 'Processing' },
-              ].map((order, idx) => (
-                <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400">
-                      <ShoppingBag size={18} />
+            {userOrders.length === 0 ? (
+              <div className="text-center py-8 text-slate-400 font-medium text-xs">
+                No orders placed yet.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {userOrders.slice(0, 3).map((order) => (
+                  <div key={order.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400">
+                        <ShoppingBag size={18} />
+                      </div>
+                      <div>
+                        <div className="text-xs font-black text-slate-900">#{order.orderNumber || order.id.slice(0, 8)}</div>
+                        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+                          {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'Recent'}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-xs font-black text-slate-900">{order.id}</div>
-                      <div className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{order.date}</div>
+                    <div className="text-right">
+                      <div className="text-xs font-black text-slate-900">${(order.totalAmount || order.total || 0).toFixed(2)}</div>
+                      <div className="text-[9px] font-black uppercase tracking-tighter text-emerald-500">
+                        {order.orderStatus || order.status || 'Placed'}
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-xs font-black text-slate-900">{order.total}</div>
-                    <div className={`text-[9px] font-black uppercase tracking-tighter ${order.status === 'Delivered' ? 'text-emerald-500' : 'text-amber-500'}`}>
-                      {order.status}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Activity Mini */}
           <div className="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-lg font-black text-slate-900">Notifications</h3>
-              <button onClick={() => navigateTo('notifications')} className="text-xs font-bold text-primary hover:underline">Settings</button>
+              <h3 className="text-lg font-black text-slate-900">Account Status</h3>
+              <Link href="/account/notifications" className="text-xs font-bold text-primary hover:underline">Settings</Link>
             </div>
             <div className="space-y-6">
-              {[
-                { title: 'New reward available!', time: '1 hour ago', icon: Star, color: 'text-amber-500' },
-                { title: 'Security alert: New login detected', time: 'Yesterday', icon: ShieldCheck, color: 'text-blue-500' },
-              ].map((item, idx) => (
-                <div key={idx} className="flex gap-4">
-                  <div className="mt-1">
-                    <item.icon size={16} className={item.color} />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-slate-900">{item.title}</div>
-                    <div className="text-[10px] text-slate-400 font-medium flex items-center gap-1 mt-1">
-                      <Clock size={10} />
-                      {item.time}
-                    </div>
+              <div className="flex gap-4">
+                <div className="mt-1">
+                  <ShieldCheck size={16} className="text-emerald-500" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-900">Account Authenticated</div>
+                  <div className="text-[10px] text-slate-400 font-medium flex items-center gap-1 mt-1">
+                    Logged in as {user?.email}
                   </div>
                 </div>
-              ))}
+              </div>
+              <div className="flex gap-4">
+                <div className="mt-1">
+                  <Star size={16} className="text-amber-500" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-900">Storefront Active Session</div>
+                  <div className="text-[10px] text-slate-400 font-medium flex items-center gap-1 mt-1">
+                    <Clock size={10} />
+                    Session verified
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

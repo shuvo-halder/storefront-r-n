@@ -1,17 +1,17 @@
-import { apiClient, unwrapApiResponse, ApiResult } from '../lib/api';
+import { apiClient, unwrapApiResponse, extractApiError, ApiResponse } from '../lib/api';
 import { LoginFormData, RegisterFormData, AuthResponse } from '../types/auth';
 import { UserProfile } from '../types/storefront';
 
 export const authService = {
   // POST /auth/login
-  login: async (data: LoginFormData): Promise<ApiResult<AuthResponse>> => {
+  login: async (data: LoginFormData): Promise<ApiResponse<AuthResponse>> => {
     try {
       const res = await apiClient.post('/auth/login', {
         email: data.email,
         password: data.password
       });
       const result = unwrapApiResponse<any>(res);
-      if (result.success && result.data) {
+      if (result.status === "success" && result.data) {
         const token = result.data.token || result.data.accessToken;
         const refreshToken = result.data.refreshToken;
         const user = result.data.user || result.data.profile || result.data;
@@ -22,28 +22,22 @@ export const authService = {
           }
         }
         return {
-          success: true,
-          data: { token, refreshToken, user },
-          error: null
+          status: 'success', message: result.message || null, data: { token, refreshToken, user }
         };
       }
       return {
-        success: false,
-        data: null,
-        error: result.error || { message: 'Login failed' }
+        status: 'error', message: result.message || "Login failed", errors: result.errors, data: null as any
       };
     } catch (err: any) {
-      const errorMsg = err.response?.data?.error?.message || err.response?.data?.message || err.message || 'Invalid email or password';
+      const { message, errors } = extractApiError(err, 'Invalid email or password');
       return {
-        success: false,
-        data: null,
-        error: { message: errorMsg }
+        status: 'error', message, errors, data: null as any
       };
     }
   },
 
   // POST /auth/register
-  register: async (data: RegisterFormData): Promise<ApiResult<AuthResponse>> => {
+  register: async (data: RegisterFormData): Promise<ApiResponse<AuthResponse>> => {
     try {
       const names = data.fullName.split(' ');
       const firstName = names[0] || '';
@@ -59,7 +53,7 @@ export const authService = {
       });
 
       const result = unwrapApiResponse<any>(res);
-      if (result.success && result.data) {
+      if (result.status === "success" && result.data) {
         const token = result.data.token || result.data.accessToken;
         const refreshToken = result.data.refreshToken;
         const user = result.data.user || result.data.profile || result.data;
@@ -70,32 +64,26 @@ export const authService = {
           }
         }
         return {
-          success: true,
-          data: { token, refreshToken, user },
-          error: null
+          status: 'success', message: result.message || null, data: { token, refreshToken, user }
         };
       }
       return {
-        success: false,
-        data: null,
-        error: result.error || { message: 'Registration failed' }
+        status: 'error', message: result.message || "Registration failed", errors: result.errors, data: null as any
       };
     } catch (err: any) {
-      const errorMsg = err.response?.data?.error?.message || err.response?.data?.message || err.message || 'Registration failed';
+      const { message, errors } = extractApiError(err, 'Registration failed');
       return {
-        success: false,
-        data: null,
-        error: { message: errorMsg }
+        status: 'error', message, errors, data: null as any
       };
     }
   },
 
   // GET /auth/me or GET /auth/profile
-  me: async (): Promise<ApiResult<UserProfile>> => {
+  me: async (): Promise<ApiResponse<UserProfile>> => {
     try {
       const res = await apiClient.get('/auth/me').catch(() => apiClient.get('/auth/profile'));
       const result = unwrapApiResponse<any>(res);
-      if (result.success && result.data) {
+      if (result.status === "success" && result.data) {
         const raw = result.data.user || result.data.profile || result.data;
         const profile: UserProfile = {
           id: raw.id || raw._id || '',
@@ -106,38 +94,38 @@ export const authService = {
           phone: raw.phone,
           defaultAddress: raw.defaultAddress || raw.address
         };
-        return { success: true, data: profile, error: null };
+        return { status: 'success', message: null, data: profile };
       }
-      return { success: false, data: null, error: result.error };
+      return { status: 'error', message: result.message || 'Failed to fetch profile', errors: result.errors, data: null as any };
     } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Failed to fetch user profile');
       return {
-        success: false,
-        data: null,
-        error: { message: err.response?.data?.message || err.message || 'Failed to fetch user profile' }
+        status: 'error', message, errors, data: null as any
       };
     }
   },
 
   // POST /auth/refresh
-  refresh: async (): Promise<ApiResult<{ token: string }>> => {
+  refresh: async (): Promise<ApiResponse<{ token: string }>> => {
     try {
       const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('vyzobd_refresh_token') : null;
       const res = await apiClient.post('/auth/refresh', { refreshToken });
       const result = unwrapApiResponse<any>(res);
-      if (result.success && result.data?.token) {
+      if (result.status === "success" && result.data?.token) {
         if (typeof window !== 'undefined') {
           localStorage.setItem('vyzobd_auth_token', result.data.token);
         }
-        return { success: true, data: { token: result.data.token }, error: null };
+        return { status: 'success', message: null, data: { token: result.data.token } };
       }
-      return { success: false, data: null, error: result.error };
+      return { status: 'error', message: result.message || 'Token refresh failed', data: null as any };
     } catch (err: any) {
-      return { success: false, data: null, error: { message: err.message || 'Token refresh failed' } };
+      const { message, errors } = extractApiError(err, 'Token refresh failed');
+      return { status: 'error', message, errors, data: null as any };
     }
   },
 
   // POST /auth/logout
-  logout: async (): Promise<ApiResult<boolean>> => {
+  logout: async (): Promise<ApiResponse<boolean>> => {
     try {
       await apiClient.post('/auth/logout').catch(() => {});
     } finally {
@@ -146,6 +134,33 @@ export const authService = {
         localStorage.removeItem('vyzobd_refresh_token');
       }
     }
-    return { success: true, data: true, error: null };
+    return { status: 'success', message: null, data: true };
+  },
+
+  // PUT /auth/me or PUT /auth/profile
+  updateProfile: async (data: Partial<UserProfile>): Promise<ApiResponse<UserProfile>> => {
+    try {
+      const res = await apiClient.put('/auth/me', data)
+        .catch(() => apiClient.post('/auth/me', data))
+        .catch(() => apiClient.put('/auth/profile', data));
+      const result = unwrapApiResponse<any>(res);
+      if (result.status === "success" && result.data) {
+        const raw = result.data.user || result.data.profile || result.data;
+        const profile: UserProfile = {
+          id: raw.id || raw._id || '',
+          fullName: raw.fullName || `${raw.firstName || ''} ${raw.lastName || ''}`.trim() || raw.email || 'User',
+          email: raw.email || '',
+          avatar: raw.avatar || raw.avatarUrl,
+          avatarUrl: raw.avatarUrl || raw.avatar,
+          phone: raw.phone,
+          defaultAddress: raw.defaultAddress || raw.address
+        };
+        return { status: 'success', message: null, data: profile };
+      }
+      return authService.me();
+    } catch (err: any) {
+      return authService.me();
+    }
   }
 };
+
