@@ -1,12 +1,14 @@
 import { BrandsIndexView } from '../../src/components/shop/BrandsIndexView';
+import { getBrandsIndexMetadata } from '../../src/lib/seo';
+import type { Metadata } from 'next';
 
-export const metadata = {
-  title: 'Official Brands - Vyzobd Storefront',
-  description: 'Explore hardware and audio equipment from verified technology manufacturers with 2-year official warranty.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return await getBrandsIndexMetadata();
+}
 
 export default function BrandsPage() {
   return <BrandsIndexView />;
 }
+
 
 

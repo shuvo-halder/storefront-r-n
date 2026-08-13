@@ -1,12 +1,14 @@
 import { CategoriesIndexView } from '../../src/components/shop/CategoriesIndexView';
+import { getCategoriesIndexMetadata } from '../../src/lib/seo';
+import type { Metadata } from 'next';
 
-export const metadata = {
-  title: 'Hardware Categories - Vyzobd Storefront',
-  description: 'Browse our specialized departments for precision workstation gear and audio hardware.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return await getCategoriesIndexMetadata();
+}
 
 export default function CategoriesPage() {
   return <CategoriesIndexView />;
 }
+
 
 
