@@ -124,6 +124,7 @@ function HeaderContent() {
       return;
     }
 
+    let isCurrent = true;
     setIsSearching(true);
     const timer = setTimeout(async () => {
       try {
@@ -137,6 +138,8 @@ function HeaderContent() {
           pageSize: 5,
         });
 
+        if (!isCurrent) return;
+
         setSearchResults(res.products || []);
         if (res.suggestions?.categories && res.suggestions.categories.length > 0) {
           setCategorySuggestions(res.suggestions.categories);
@@ -145,13 +148,20 @@ function HeaderContent() {
           setCategorySuggestions(matchedCats);
         }
       } catch (err) {
-        console.error('Failed to fetch search suggestions:', err);
+        if (isCurrent) {
+          console.error('Failed to fetch search suggestions:', err);
+        }
       } finally {
-        setIsSearching(false);
+        if (isCurrent) {
+          setIsSearching(false);
+        }
       }
     }, 250);
 
-    return () => clearTimeout(timer);
+    return () => {
+      isCurrent = false;
+      clearTimeout(timer);
+    };
   }, [searchInput, selectedCategory, categories]);
 
   // Click outside listener
