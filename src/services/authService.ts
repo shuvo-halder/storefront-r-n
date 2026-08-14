@@ -1,5 +1,5 @@
 import { apiClient, unwrapApiResponse, extractApiError, ApiResponse } from '../lib/api';
-import { LoginFormData, RegisterFormData, AuthResponse } from '../types/auth';
+import { LoginFormData, RegisterFormData, AuthResponse, RegisterResponse } from '../types/auth';
 import { UserProfile } from '../types/storefront';
 
 export const authService = {
@@ -12,14 +12,24 @@ export const authService = {
       });
       const result = unwrapApiResponse<any>(res);
       if (result.status === "success" && result.data) {
-        const token = result.data.token || result.data.accessToken;
+        const token = result.data.accessToken || result.data.token;
         const refreshToken = result.data.refreshToken;
-        const user = result.data.user || result.data.profile || result.data;
+        const raw = result.data.customer || result.data.user || result.data.profile || result.data;
+        const user: UserProfile = {
+          id: raw.id || raw._id || '',
+          fullName: raw.fullName || `${raw.firstName || ''} ${raw.lastName || ''}`.trim() || raw.email || 'User',
+          email: raw.email || '',
+          avatar: raw.avatar || raw.avatarUrl,
+          avatarUrl: raw.avatarUrl || raw.avatar,
+          phone: raw.phone,
+          defaultAddress: raw.defaultAddress || raw.address
+        };
         if (token && typeof window !== 'undefined') {
           localStorage.setItem('vyzobd_auth_token', token);
           if (refreshToken) {
             localStorage.setItem('vyzobd_refresh_token', refreshToken);
           }
+          localStorage.setItem('vyzobd_user_profile', JSON.stringify(user));
         }
         return {
           status: 'success', message: result.message || null, data: { token, refreshToken, user }
@@ -37,9 +47,9 @@ export const authService = {
   },
 
   // POST /auth/register
-  register: async (data: RegisterFormData): Promise<ApiResponse<AuthResponse>> => {
+  register: async (data: RegisterFormData): Promise<ApiResponse<RegisterResponse>> => {
     try {
-      const names = data.fullName.split(' ');
+      const names = data.fullName.trim().split(' ');
       const firstName = names[0] || '';
       const lastName = names.slice(1).join(' ') || '';
 
@@ -53,27 +63,30 @@ export const authService = {
       });
 
       const result = unwrapApiResponse<any>(res);
-      if (result.status === "success" && result.data) {
-        const token = result.data.token || result.data.accessToken;
-        const refreshToken = result.data.refreshToken;
-        const user = result.data.user || result.data.profile || result.data;
-        if (token && typeof window !== 'undefined') {
-          localStorage.setItem('vyzobd_auth_token', token);
-          if (refreshToken) {
-            localStorage.setItem('vyzobd_refresh_token', refreshToken);
-          }
-        }
+      if (result.status === "success") {
+        const message = result.message || 'Registration successful. Please check your email to verify your account.';
         return {
-          status: 'success', message: result.message || null, data: { token, refreshToken, user }
+          status: 'success',
+          message,
+          data: {
+            message,
+            user: result.data || null
+          }
         };
       }
       return {
-        status: 'error', message: result.message || "Registration failed", errors: result.errors, data: null as any
+        status: 'error',
+        message: result.message || "Registration failed",
+        errors: result.errors,
+        data: null as any
       };
     } catch (err: any) {
       const { message, errors } = extractApiError(err, 'Registration failed');
       return {
-        status: 'error', message, errors, data: null as any
+        status: 'error',
+        message,
+        errors,
+        data: null as any
       };
     }
   },
@@ -81,22 +94,50 @@ export const authService = {
   // GET /auth/me or GET /auth/profile
   me: async (): Promise<ApiResponse<UserProfile>> => {
     try {
-      const res = await apiClient.get('/auth/me').catch(() => apiClient.get('/auth/profile'));
-      const result = unwrapApiResponse<any>(res);
-      if (result.status === "success" && result.data) {
-        const raw = result.data.user || result.data.profile || result.data;
-        const profile: UserProfile = {
-          id: raw.id || raw._id || '',
-          fullName: raw.fullName || `${raw.firstName || ''} ${raw.lastName || ''}`.trim() || raw.email || 'User',
-          email: raw.email || '',
-          avatar: raw.avatar || raw.avatarUrl,
-          avatarUrl: raw.avatarUrl || raw.avatar,
-          phone: raw.phone,
-          defaultAddress: raw.defaultAddress || raw.address
-        };
+      const token = typeof window !== 'undefined' ? localStorage.getItem('vyzobd_auth_token') : null;
+      if (!token) {
+        return { status: 'error', message: 'No authentication token found', data: null as any };
+      }
+
+      let profile: UserProfile | null = null;
+      try {
+        const res = await apiClient.get('/auth/me').catch(() => apiClient.get('/auth/profile'));
+        const result = unwrapApiResponse<any>(res);
+        if (result.status === "success" && result.data) {
+          const raw = result.data.customer || result.data.user || result.data.profile || result.data;
+          profile = {
+            id: raw.id || raw._id || '',
+            fullName: raw.fullName || `${raw.firstName || ''} ${raw.lastName || ''}`.trim() || raw.email || 'User',
+            email: raw.email || '',
+            avatar: raw.avatar || raw.avatarUrl,
+            avatarUrl: raw.avatarUrl || raw.avatar,
+            phone: raw.phone,
+            defaultAddress: raw.defaultAddress || raw.address
+          };
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('vyzobd_user_profile', JSON.stringify(profile));
+          }
+        }
+      } catch (err) {
+        // Fallback to cached profile when server route unavailable
+      }
+
+      if (!profile && typeof window !== 'undefined') {
+        const cached = localStorage.getItem('vyzobd_user_profile');
+        if (cached) {
+          try {
+            profile = JSON.parse(cached);
+          } catch (e) {
+            profile = null;
+          }
+        }
+      }
+
+      if (profile) {
         return { status: 'success', message: null, data: profile };
       }
-      return { status: 'error', message: result.message || 'Failed to fetch profile', errors: result.errors, data: null as any };
+
+      return { status: 'error', message: 'Failed to fetch user profile', data: null as any };
     } catch (err: any) {
       const { message, errors } = extractApiError(err, 'Failed to fetch user profile');
       return {
@@ -132,6 +173,7 @@ export const authService = {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('vyzobd_auth_token');
         localStorage.removeItem('vyzobd_refresh_token');
+        localStorage.removeItem('vyzobd_user_profile');
       }
     }
     return { status: 'success', message: null, data: true };

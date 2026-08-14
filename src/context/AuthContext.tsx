@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { UserProfile } from '../types/storefront';
-import { LoginFormData, RegisterFormData, AuthResponse } from '../types/auth';
+import { LoginFormData, RegisterFormData, AuthResponse, RegisterResponse } from '../types/auth';
 import { storefrontApi } from '../services/storefrontApi';
 
 interface AuthContextType {
@@ -10,7 +10,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (data: LoginFormData) => Promise<AuthResponse>;
-  register: (data: RegisterFormData) => Promise<AuthResponse>;
+  register: (data: RegisterFormData) => Promise<RegisterResponse>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -75,18 +75,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (data: RegisterFormData): Promise<AuthResponse> => {
+  const register = async (data: RegisterFormData): Promise<RegisterResponse> => {
     setIsLoading(true);
     try {
       const response = await storefrontApi.register(data);
-      if (response.user) {
-        setUser(response.user);
-      } else {
-        await refreshUser();
-      }
       return response;
     } catch (err) {
-      setUser(null);
       throw err;
     } finally {
       setIsLoading(false);

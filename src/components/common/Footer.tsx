@@ -40,7 +40,7 @@ export const Footer: React.FC = () => {
             <img 
               src="/logowhite.svg" 
               alt="Vyzobd" 
-              className="h-9 w-auto object-contain"
+              className="h-10 lg:h-11 w-auto object-contain"
             />
           </Link>
 

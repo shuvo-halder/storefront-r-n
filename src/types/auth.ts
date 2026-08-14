@@ -41,3 +41,8 @@ export interface AuthResponse {
   token: string;
   refreshToken?: string;
 }
+
+export interface RegisterResponse {
+  message: string;
+  user?: any;
+}

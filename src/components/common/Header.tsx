@@ -442,8 +442,13 @@ function HeaderContent() {
             <Link href="/" className="flex items-center gap-2 group select-none min-w-0">
               <img 
                 src="/logo.svg" 
-                alt={publicSettings?.general?.siteName || "Vyzobd Store"} 
-                className="h-7 sm:h-8 w-auto object-contain flex-shrink-0 max-w-[110px] xs:max-w-[140px] sm:max-w-[180px]"
+                alt={publicSettings?.general?.siteName || "Vyzobd"} 
+                className="h-8 xs:h-9 sm:h-10 w-auto object-contain flex-shrink-0 max-w-[125px] sm:max-w-[155px] dark:hidden"
+              />
+              <img 
+                src="/logowhite.svg" 
+                alt={publicSettings?.general?.siteName || "Vyzobd"} 
+                className="h-8 xs:h-9 sm:h-10 w-auto object-contain flex-shrink-0 max-w-[125px] sm:max-w-[155px] hidden dark:block"
               />
             </Link>
           </div>
@@ -452,8 +457,13 @@ function HeaderContent() {
           <Link href="/" className="hidden lg:flex items-center group select-none flex-shrink-0">
             <img 
               src="/logo.svg" 
-              alt={publicSettings?.general?.siteName || "Vyzobd Flagship Store"} 
-              className="h-9 w-auto object-contain"
+              alt={publicSettings?.general?.siteName || "Vyzobd"} 
+              className="h-11 xl:h-12 w-auto max-h-[44px] xl:max-h-[48px] max-w-[165px] xl:max-w-[180px] object-contain dark:hidden"
+            />
+            <img 
+              src="/logowhite.svg" 
+              alt={publicSettings?.general?.siteName || "Vyzobd"} 
+              className="h-11 xl:h-12 w-auto max-h-[44px] xl:max-h-[48px] max-w-[165px] xl:max-w-[180px] object-contain hidden dark:block"
             />
           </Link>
 
@@ -829,7 +839,8 @@ function HeaderContent() {
           size="md"
           title={
             <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 group min-w-0">
-              <img src="/logo.svg" alt={publicSettings?.general?.siteName || "Vyzobd"} className="h-7 sm:h-8 w-auto flex-shrink-0" />
+              <img src="/logo.svg" alt={publicSettings?.general?.siteName || "Vyzobd"} className="h-8 sm:h-9 w-auto flex-shrink-0 dark:hidden" />
+              <img src="/logowhite.svg" alt={publicSettings?.general?.siteName || "Vyzobd"} className="h-8 sm:h-9 w-auto flex-shrink-0 hidden dark:block" />
               <span className="font-display font-black text-lg sm:text-xl text-primary tracking-tighter uppercase group-hover:text-accent transition-colors truncate max-w-[180px] sm:max-w-[220px]">
                 {publicSettings?.general?.siteName || "Vyzobd"}
               </span>

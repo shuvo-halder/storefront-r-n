@@ -14,7 +14,7 @@ import { contentService } from './contentService';
 import { settingsService } from './settingsService';
 import { analyticsService } from './analyticsService';
 import { normalizeCart } from '../lib/api';
-import { LoginFormData, RegisterFormData, AuthResponse } from '../types/auth';
+import { LoginFormData, RegisterFormData, AuthResponse, RegisterResponse } from '../types/auth';
 import { CheckoutFormData } from '../types/checkout';
 import { 
   AnalyticsConfig,
@@ -197,15 +197,19 @@ export const storefrontApi = {
   login: async (data: LoginFormData): Promise<AuthResponse> => {
     const res = await authService.login(data);
     if (res.status === 'error' || !res.data) {
-      throw new Error(res.message || 'Login failed');
+      const errorObj: any = new Error(res.message || 'Login failed');
+      errorObj.errors = res.errors;
+      throw errorObj;
     }
     return res.data;
   },
 
-  register: async (data: RegisterFormData): Promise<AuthResponse> => {
+  register: async (data: RegisterFormData): Promise<RegisterResponse> => {
     const res = await authService.register(data);
     if (res.status === 'error' || !res.data) {
-      throw new Error(res.message || 'Registration failed');
+      const errorObj: any = new Error(res.message || 'Registration failed');
+      errorObj.errors = res.errors;
+      throw errorObj;
     }
     return res.data;
   },
