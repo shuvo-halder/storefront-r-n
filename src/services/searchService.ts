@@ -18,10 +18,14 @@ async function getCachedCatalog(): Promise<Product[]> {
     let rawList: any[] = [];
     if (Array.isArray(unwrapped.data)) {
       rawList = unwrapped.data;
+    } else if (unwrapped.data && Array.isArray(unwrapped.data.items)) {
+      rawList = unwrapped.data.items;
     } else if (unwrapped.data && Array.isArray(unwrapped.data.products)) {
       rawList = unwrapped.data.products;
     } else if (unwrapped.data && typeof unwrapped.data === 'object') {
-      rawList = [unwrapped.data];
+      if (unwrapped.data.id || unwrapped.data.name || unwrapped.data.slug || unwrapped.data.title) {
+        rawList = [unwrapped.data];
+      }
     }
     const products = rawList.map(normalizeProduct);
     catalogCache = { products, timestamp: now };
@@ -74,7 +78,7 @@ export const searchService = {
       if (backendSearchRes) {
         const unwrapped = unwrapApiResponse<any>(backendSearchRes);
         if (unwrapped.status !== 'error' && unwrapped.data) {
-          const rawList = Array.isArray(unwrapped.data) ? unwrapped.data : (unwrapped.data.products || []);
+          const rawList = Array.isArray(unwrapped.data) ? unwrapped.data : (unwrapped.data.items || unwrapped.data.products || []);
           rawList.forEach((raw: any) => {
             const p = normalizeProduct(raw);
             if (p.id || p.slug) {

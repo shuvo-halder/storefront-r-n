@@ -51,12 +51,17 @@ export const productService = {
       if (Array.isArray(unwrapped.data)) {
         rawList = unwrapped.data;
         totalCount = unwrapped.pagination?.total || rawList.length;
+      } else if (unwrapped.data && Array.isArray(unwrapped.data.items)) {
+        rawList = unwrapped.data.items;
+        totalCount = unwrapped.pagination?.total ?? unwrapped.data.total ?? rawList.length;
       } else if (unwrapped.data && Array.isArray(unwrapped.data.products)) {
         rawList = unwrapped.data.products;
         totalCount = unwrapped.data.total ?? unwrapped.pagination?.total ?? rawList.length;
       } else if (unwrapped.data && typeof unwrapped.data === 'object') {
-        rawList = [unwrapped.data];
-        totalCount = 1;
+        if (unwrapped.data.id || unwrapped.data.name || unwrapped.data.slug || unwrapped.data.title) {
+          rawList = [unwrapped.data];
+          totalCount = 1;
+        }
       }
 
       let products = rawList.map(normalizeProduct);
