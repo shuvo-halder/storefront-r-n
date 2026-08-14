@@ -69,6 +69,10 @@ export function normalizeOrder(raw: any): Order {
 export const orderService = {
   // GET /orders
   getOrders: async (): Promise<ApiResponse<Order[]>> => {
+    // If not authenticated, return empty array locally to avoid HTTP 500 console noise
+    if (typeof window !== 'undefined' && !localStorage.getItem('vyzobd_auth_token')) {
+      return { status: 'success', message: null, data: [] };
+    }
     try {
       const res = await apiClient.get('/orders');
       const unwrapped = unwrapApiResponse<any>(res);

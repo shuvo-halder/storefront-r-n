@@ -55,7 +55,7 @@ export const categoryService = {
       if (categoriesRes.status === 'fulfilled') {
         const unwrapped = unwrapApiResponse<any>(categoriesRes.value);
         if (unwrapped.status === 'success' && unwrapped.data) {
-          rawCategories = Array.isArray(unwrapped.data) ? unwrapped.data : (unwrapped.data?.categories || []);
+          rawCategories = Array.isArray(unwrapped.data) ? unwrapped.data : (unwrapped.data?.items || unwrapped.data?.categories || []);
         }
       }
 

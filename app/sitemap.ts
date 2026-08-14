@@ -3,6 +3,16 @@ import { storefrontApi } from '../src/services/storefrontApi';
 
 const DEFAULT_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://vyzobd.com';
 
+async function fetchWithTimeout<T>(fn: () => Promise<T>, timeoutMs = 3000): Promise<T | null> {
+  try {
+    const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs));
+    const result = await Promise.race([fn(), timeoutPromise]);
+    return result;
+  } catch (e) {
+    return null;
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes: MetadataRoute.Sitemap = [
     {
@@ -44,7 +54,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const productsRes = await storefrontApi.getProducts({});
+    const productsRes = await fetchWithTimeout(() => storefrontApi.getProducts({}));
     if (productsRes?.products) {
       productsRes.products.forEach(p => {
         if (p.slug) {
@@ -63,7 +73,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
-    const categories = await storefrontApi.getCategories();
+    const categories = await fetchWithTimeout(() => storefrontApi.getCategories());
     if (Array.isArray(categories)) {
       categories.forEach(c => {
         if (c.slug) {
@@ -81,7 +91,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
-    const brands = await storefrontApi.getBrands();
+    const brands = await fetchWithTimeout(() => storefrontApi.getBrands());
     if (Array.isArray(brands)) {
       brands.forEach(b => {
         if (b.slug) {
@@ -99,7 +109,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
-    const articles = await storefrontApi.getArticles();
+    const articles = await fetchWithTimeout(() => storefrontApi.getArticles());
     if (Array.isArray(articles)) {
       articles.forEach(a => {
         if (a.slug) {

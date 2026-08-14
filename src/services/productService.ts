@@ -19,7 +19,16 @@ export const productService = {
         if (filters.maxPrice !== undefined && filters.maxPrice < 100000) params.maxPrice = filters.maxPrice;
         if (filters.ratingMin !== undefined && filters.ratingMin > 0) params.minRating = filters.ratingMin;
         if (filters.inStockOnly) params.inStock = true;
-        if (filters.sortBy) params.sort = filters.sortBy;
+        if (filters.sortBy) {
+          const s = filters.sortBy;
+          if (s === 'price_asc' || s === 'price-asc') params.sort = 'price_asc';
+          else if (s === 'price_desc' || s === 'price-desc') params.sort = 'price_desc';
+          else if (s === 'name_asc' || s === 'name-asc') params.sort = 'name_asc';
+          else if (s === 'name_desc' || s === 'name-desc') params.sort = 'name_desc';
+          else if (s === 'newest') params.sort = 'newest';
+          else if (s === 'oldest') params.sort = 'oldest';
+          // Omit unsupported sort params like 'featured', 'bestsellers', 'rating' to allow default backend ordering without 400 error
+        }
         if (filters.page) params.page = filters.page;
         // If searchQuery is present, fetch more candidates so client-side smart ranking has full view
         if (hasSearchQuery) {
@@ -67,6 +76,16 @@ export const productService = {
         });
         products = smartRes.products;
         totalCount = smartRes.total;
+      } else if (filters?.sortBy) {
+        // Apply client-side sorting for UI sort options not handled by backend
+        const s = String(filters.sortBy);
+        if (s === 'rating' || s === 'rating_desc') {
+          products.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        } else if (s === 'featured') {
+          products.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0) || (b.rating || 0) - (a.rating || 0));
+        } else if (s === 'bestsellers') {
+          products.sort((a, b) => (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0) || (b.reviewCount || 0) - (a.reviewCount || 0));
+        }
       }
 
       return {

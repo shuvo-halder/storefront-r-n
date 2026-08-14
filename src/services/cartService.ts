@@ -4,6 +4,10 @@ import { Cart } from '../types/storefront';
 export const cartService = {
   // GET /cart
   getCart: async (): Promise<ApiResponse<Cart>> => {
+    // If not authenticated, return empty cart locally to avoid HTTP 500 console noise
+    if (typeof window !== 'undefined' && !localStorage.getItem('vyzobd_auth_token')) {
+      return { status: 'success', message: null, data: normalizeCart(null) };
+    }
     try {
       const res = await apiClient.get('/cart');
       const unwrapped = unwrapApiResponse<any>(res);

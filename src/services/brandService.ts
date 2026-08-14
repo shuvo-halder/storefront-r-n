@@ -49,7 +49,7 @@ export const brandService = {
       if (brandsRes.status === 'fulfilled') {
         const unwrapped = unwrapApiResponse<any>(brandsRes.value);
         if (unwrapped.status === 'success' && unwrapped.data) {
-          rawBrands = Array.isArray(unwrapped.data) ? unwrapped.data : (unwrapped.data?.brands || []);
+          rawBrands = Array.isArray(unwrapped.data) ? unwrapped.data : (unwrapped.data?.items || unwrapped.data?.brands || []);
         }
       }
 

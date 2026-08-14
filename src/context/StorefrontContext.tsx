@@ -352,8 +352,13 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
         const brandsData = await storefrontApi.getBrands().catch(() => []);
         setBrands(brandsData);
         
-        const ordersData = await storefrontApi.getOrders().catch(() => []);
-        setUserOrders(ordersData);
+        const hasAuthToken = typeof window !== 'undefined' && Boolean(localStorage.getItem('vyzobd_auth_token'));
+        if (hasAuthToken) {
+          const ordersData = await storefrontApi.getOrders().catch(() => []);
+          setUserOrders(ordersData);
+        } else {
+          setUserOrders([]);
+        }
       } catch (err) {
         console.error('Initialization error:', err);
       } finally {
