@@ -28,6 +28,8 @@ export const checkoutSchema = z.object({
   shippingMethod: z.enum(['standard', 'express', 'overnight']),
   paymentMethod: z.enum(['cod', 'bkash', 'nagad', 'sslcommerz', 'stripe']),
   couponCode: z.string().optional(),
+  clientId: z.string().optional(),
+  sessionId: z.string().optional(),
 });
 
 export type CheckoutFormData = z.infer<typeof checkoutSchema>;

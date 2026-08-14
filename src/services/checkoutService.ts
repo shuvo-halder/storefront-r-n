@@ -1,6 +1,7 @@
 import { apiClient, unwrapApiResponse, extractApiError, ApiResponse } from '../lib/api';
 import { CheckoutFormData } from '../types/checkout';
 import { Coupon, Order } from '../types/storefront';
+import { getGA4ClientAndSessionId } from '../lib/ga4';
 
 export interface CheckoutSummary {
   subtotal: number;
@@ -76,9 +77,16 @@ export const checkoutService = {
   },
 
   // POST /checkout/complete
-  completeCheckout: async (formData: CheckoutFormData): Promise<ApiResponse<Order>> => {
+  completeCheckout: async (formData: CheckoutFormData & { [key: string]: any }): Promise<ApiResponse<Order>> => {
     try {
-      const res = await apiClient.post('/checkout/complete', formData);
+      const analyticsIds = getGA4ClientAndSessionId();
+      const payload = {
+        ...formData,
+        ...(analyticsIds.clientId ? { clientId: analyticsIds.clientId } : {}),
+        ...(analyticsIds.sessionId ? { sessionId: analyticsIds.sessionId } : {}),
+      };
+
+      const res = await apiClient.post('/checkout/complete', payload);
       const unwrapped = unwrapApiResponse<any>(res);
 
       if (unwrapped.status === 'error' || !unwrapped.data) {
@@ -88,6 +96,7 @@ export const checkoutService = {
       const rawOrder = unwrapped.data;
       const order: Order = {
         id: String(rawOrder.id || rawOrder.orderId || `ORD-${Date.now()}`),
+        orderNumber: rawOrder.orderNumber ? String(rawOrder.orderNumber) : (rawOrder.order_number ? String(rawOrder.order_number) : undefined),
         createdAt: rawOrder.createdAt || new Date().toISOString(),
         status: rawOrder.status || 'Placed',
         items: Array.isArray(rawOrder.items) ? rawOrder.items : [],

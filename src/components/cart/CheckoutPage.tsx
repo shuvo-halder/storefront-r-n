@@ -16,8 +16,7 @@ import { OrderReview } from '../checkout/OrderReview';
 import { 
   trackGA4BeginCheckout, 
   trackGA4AddShippingInfo,
-  trackGA4AddPaymentInfo,
-  trackGA4Purchase 
+  trackGA4AddPaymentInfo
 } from '../../utils/analytics';
 import { 
   CheckCircle2, 
@@ -214,8 +213,7 @@ export const CheckoutPage: React.FC = () => {
       const isCod = data.paymentMethod === 'cod';
 
       if (isCod) {
-        // Track purchase only for COD orders upon successful order creation
-        trackGA4Purchase(createdOrder, currency);
+        // Navigate to order-confirmation where the authoritative purchase event is tracked
         navigateTo('order-confirmation', { confirmedOrder: createdOrder, orderId: createdOrder.id });
       } else {
         // Online payments (bKash, Nagad, SSLCommerz, Stripe):

@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useStorefront } from '../../../context/StorefrontContext';
 import { useSettings } from '../../../context/SettingsContext';
 import { storefrontApi } from '../../../services/storefrontApi';
@@ -12,6 +12,7 @@ export const PaymentSuccess: React.FC = () => {
   const orderId = viewParams.orderId;
   const [isVerifying, setIsVerifying] = useState(true);
   const [order, setOrder] = useState<any>(null);
+  const hasTrackedPurchaseRef = useRef<boolean>(false);
 
   let currency = 'BDT';
   try {
@@ -35,15 +36,19 @@ export const PaymentSuccess: React.FC = () => {
           setOrder(fetchedOrder);
         }
 
+        // Only track purchase if payment is verified and confirmed
         if (result?.verified) {
-          confetti({
-            particleCount: 150,
-            spread: 70,
-            origin: { y: 0.6 },
-            colors: ['#101A25', '#DC2B53', '#fb7185']
-          });
+          try {
+            confetti({
+              particleCount: 150,
+              spread: 70,
+              origin: { y: 0.6 },
+              colors: ['#101A25', '#DC2B53', '#fb7185']
+            });
+          } catch {}
 
-          if (fetchedOrder) {
+          if (fetchedOrder && !hasTrackedPurchaseRef.current) {
+            hasTrackedPurchaseRef.current = true;
             trackGA4Purchase(fetchedOrder, currency);
           }
         }
@@ -65,6 +70,8 @@ export const PaymentSuccess: React.FC = () => {
     );
   }
 
+  const displayOrderIdentifier = order?.orderNumber || order?.id || orderId;
+
   return (
     <div className="bg-slate-50 min-h-screen py-20 px-4">
       <div className="max-w-md mx-auto bg-white rounded-[40px] p-10 shadow-2xl shadow-primary/5 text-center border border-slate-100">
@@ -74,13 +81,13 @@ export const PaymentSuccess: React.FC = () => {
         
         <h1 className="text-3xl font-black text-slate-900 mb-2">Payment Successful!</h1>
         <p className="text-slate-500 text-sm font-medium mb-8">
-          Thank you for your purchase. Your order <span className="text-primary font-black">#{orderId}</span> has been confirmed and is being processed.
+          Thank you for your purchase. Your order <span className="text-primary font-black">#{displayOrderIdentifier}</span> has been confirmed and is being processed.
         </p>
 
         <div className="bg-slate-50 rounded-3xl p-6 mb-8 text-left space-y-3">
           <div className="flex justify-between text-xs">
-            <span className="text-slate-400 font-bold">Transaction ID</span>
-            <span className="text-slate-900 font-mono">TXN-{Math.random().toString(36).substring(7).toUpperCase()}</span>
+            <span className="text-slate-400 font-bold">Order / Reference #</span>
+            <span className="text-slate-900 font-mono font-bold">{displayOrderIdentifier}</span>
           </div>
           <div className="flex justify-between text-xs">
             <span className="text-slate-400 font-bold">Total Amount</span>

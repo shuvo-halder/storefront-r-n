@@ -1,6 +1,7 @@
 // Centralized Analytics, DataLayer, Standalone GA4, Meta Pixel & Google Ads helper
 
 import { AnalyticsConfig, PublicSettings, StoreMarketing } from '../types/storefront';
+export { getGA4ClientAndSessionId, extractGA4ClientId, extractGA4SessionId, type GA4ClientAndSessionId } from '../lib/ga4';
 
 declare global {
   interface Window {
@@ -598,17 +599,31 @@ export const trackGA4AddPaymentInfo = (
 /**
  * purchase
  * Maps to Meta Purchase
- * Uses canonical orderNumber/id for consistent transaction_id alignment with backend Measurement Protocol
+ * Canonical Transaction ID: order.orderNumber (REQUIRED for GA4 Measurement Protocol attribution alignment)
+ * NEVER falls back to order.id. If orderNumber is missing, safely skips tracking with diagnostic log.
  */
 export const trackGA4Purchase = (order: any, currency: string = 'BDT') => {
   try {
     if (!order) return;
 
-    // Transaction ID: orderNumber is preferred as canonical identifier
-    const transactionId = String(
-      order.orderNumber || order.id || order.orderId || order.referenceNumber || order.transactionId || ''
-    );
-    if (!transactionId) return;
+    // Canonical Transaction ID: strictly order.orderNumber for alignment with backend GA4 Measurement Protocol
+    const rawOrderNumber = order.orderNumber;
+    const transactionId =
+      rawOrderNumber && typeof rawOrderNumber === 'string'
+        ? rawOrderNumber.trim()
+        : rawOrderNumber
+        ? String(rawOrderNumber).trim()
+        : '';
+
+    if (!transactionId) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(
+          '[Analytics] trackGA4Purchase skipped: canonical order.orderNumber is missing. Storefront purchase events strictly require order.orderNumber to align with backend GA4 Measurement Protocol attribution.',
+          order
+        );
+      }
+      return;
+    }
 
     // Deduplication check using sessionStorage & localStorage
     const storageKey = `purchase_tracked_${transactionId}`;
@@ -618,6 +633,9 @@ export const trackGA4Purchase = (order: any, currency: string = 'BDT') => {
           window.sessionStorage.getItem(storageKey) === 'true' ||
           window.localStorage.getItem(storageKey) === 'true'
         ) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`[Analytics] Purchase event already tracked for transaction_id ${transactionId}. Deduplicated.`);
+          }
           return; // Already tracked for this transaction
         }
       } catch (e) {
@@ -674,10 +692,10 @@ export const trackGA4Purchase = (order: any, currency: string = 'BDT') => {
       event: 'purchase',
       ecommerce: {
         transaction_id: transactionId,
-        value,
+        value: isNaN(value) ? 0 : value,
         currency: currency || 'BDT',
-        tax,
-        shipping,
+        tax: isNaN(tax) ? 0 : tax,
+        shipping: isNaN(shipping) ? 0 : shipping,
         ...(couponCode ? { coupon: String(couponCode) } : {}),
         items: formattedItems,
       },
@@ -687,7 +705,7 @@ export const trackGA4Purchase = (order: any, currency: string = 'BDT') => {
     trackMetaEvent('Purchase', {
       content_ids: formattedItems.map((i) => i.item_id),
       content_type: 'product',
-      value,
+      value: isNaN(value) ? 0 : value,
       currency: currency || 'BDT',
       num_items: formattedItems.length,
     });

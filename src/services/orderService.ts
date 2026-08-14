@@ -30,6 +30,7 @@ export function normalizeOrder(raw: any): Order {
 
   return {
     id: String(raw.id || raw.orderId || ''),
+    orderNumber: raw.orderNumber ? String(raw.orderNumber) : (raw.order_number ? String(raw.order_number) : undefined),
     createdAt: raw.createdAt || raw.created_at || new Date().toISOString(),
     status: raw.status || 'Placed',
     items: Array.isArray(raw.items) ? raw.items.map((item: any) => ({
