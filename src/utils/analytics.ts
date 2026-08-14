@@ -1,38 +1,129 @@
-// Centralized Analytics and DataLayer helper for GA4 & Google Tag Manager
+// Centralized Analytics, DataLayer, Standalone GA4, Meta Pixel & Google Ads helper
+
+import { AnalyticsConfig, PublicSettings, StoreMarketing } from '../types/storefront';
 
 declare global {
   interface Window {
     dataLayer: Record<string, any>[];
     gtag?: (...args: any[]) => void;
+    fbq?: (...args: any[]) => void;
+    _fbq?: any;
   }
 }
 
+type ConfigSource = AnalyticsConfig | PublicSettings | StoreMarketing | null | undefined;
+
+const extractMarketing = (source?: ConfigSource): any => {
+  if (!source) return null;
+  if ('enableAnalytics' in source) return source; // AnalyticsConfig
+  if ('marketing' in source && source.marketing) return source.marketing; // PublicSettings
+  return source; // StoreMarketing
+};
+
 /**
- * Get GA4 Measurement ID safely from env
+ * Get GA4 Measurement ID safely from dynamic backend settings with env fallback
+ * Priority: Backend Config > Environment Variable > empty string
  */
-export const getGA4Id = (): string => {
+export const getGA4Id = (source?: ConfigSource): string => {
+  const marketing = extractMarketing(source);
+  if (marketing) {
+    const backendId = marketing.ga4MeasurementId || marketing.ga4Id;
+    if (backendId && typeof backendId === 'string' && backendId.trim()) {
+      return backendId.trim();
+    }
+  }
   return process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() || '';
 };
 
 /**
- * Get GTM Container ID safely from env
+ * Get GTM Container ID safely from dynamic backend settings with env fallback
+ * Priority: Backend Config > Environment Variable > empty string
  */
-export const getGTMId = (): string => {
+export const getGTMId = (source?: ConfigSource): string => {
+  const marketing = extractMarketing(source);
+  if (marketing) {
+    const backendId = marketing.gtmContainerId || marketing.gtmId;
+    if (backendId && typeof backendId === 'string' && backendId.trim()) {
+      return backendId.trim();
+    }
+  }
   return process.env.NEXT_PUBLIC_GTM_ID?.trim() || '';
 };
 
 /**
- * Push an event or payload to window.dataLayer cleanly and SSR-safely.
- * Single source of truth to avoid duplicate event dispatches.
+ * Get Meta Pixel ID safely from dynamic backend settings
+ * Priority: Backend Config > empty string
+ */
+export const getMetaPixelId = (source?: ConfigSource): string => {
+  const marketing = extractMarketing(source);
+  if (marketing) {
+    const backendId = marketing.metaPixelId || marketing.pixelId;
+    if (backendId && typeof backendId === 'string' && backendId.trim()) {
+      return backendId.trim();
+    }
+  }
+  return '';
+};
+
+/**
+ * Get Google Ads ID safely from dynamic backend settings
+ * Priority: Backend Config > empty string
+ */
+export const getGoogleAdsId = (source?: ConfigSource): string => {
+  const marketing = extractMarketing(source);
+  if (marketing) {
+    const backendId = marketing.googleAdsId || marketing.adsId;
+    if (backendId && typeof backendId === 'string' && backendId.trim()) {
+      return backendId.trim();
+    }
+  }
+  return '';
+};
+
+/**
+ * Push an event or payload to window.dataLayer cleanly, GTM-compliant, and SSR-safely.
+ * 1. Pushes { ecommerce: null } prior to any ecommerce event to prevent state leakage.
+ * 2. Pushes payload to window.dataLayer (for GTM).
+ * 3. Bridges event to window.gtag (for standalone GA4) if gtag exists.
  */
 export const pushToDataLayer = (payload: Record<string, any>) => {
   if (typeof window === 'undefined') return;
 
   window.dataLayer = window.dataLayer || [];
+
+  // GTM Ecommerce Spec: Clear previous ecommerce state if this event contains ecommerce data
+  if (payload.ecommerce) {
+    window.dataLayer.push({ ecommerce: null });
+  }
+
+  // Push actual event payload to dataLayer
   window.dataLayer.push(payload);
 
+  // Standalone GA4 Event Bridge: if window.gtag exists, dispatch directly to gtag
+  if (typeof window.gtag === 'function' && payload.event) {
+    if (payload.ecommerce) {
+      window.gtag('event', payload.event, payload.ecommerce);
+    } else {
+      const { event, ...rest } = payload;
+      window.gtag('event', event, rest);
+    }
+  }
+
   if (process.env.NODE_ENV === 'development') {
-    console.log('[DataLayer Push]', payload);
+    console.log('[Analytics Dispatch]', payload);
+  }
+};
+
+/**
+ * Safely dispatch an event to Meta Pixel (fbq) if initialized.
+ */
+export const trackMetaEvent = (eventName: string, params?: Record<string, any>) => {
+  if (typeof window === 'undefined') return;
+  if (typeof window.fbq === 'function') {
+    window.fbq('track', eventName, params);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Meta Pixel Track]', eventName, params);
+    }
   }
 };
 
@@ -101,91 +192,6 @@ export const productToGA4Item = (
   }
 
   return item;
-};
-
-/**
- * 1. view_item_list
- * Structure: { event: "view_item_list", ecommerce: { item_list_id, item_list_name, items } }
- */
-export const trackGA4ViewItemList = (
-  listId: string,
-  listName: string,
-  products: any[]
-) => {
-  try {
-    if (!products || !Array.isArray(products) || products.length === 0) return;
-
-    const items = products.map((prod, idx) =>
-      productToGA4Item(prod, { index: idx + 1 })
-    );
-
-    pushToDataLayer({
-      event: 'view_item_list',
-      ecommerce: {
-        item_list_id: listId || 'product_list',
-        item_list_name: listName || 'Product List',
-        items,
-      },
-    });
-  } catch (err) {
-    console.error('[GA4 view_item_list error]', err);
-  }
-};
-
-/**
- * 2. select_item
- * Structure: { event: "select_item", ecommerce: { item_list_id, item_list_name, items } }
- */
-export const trackGA4SelectItem = (
-  listId: string,
-  listName: string,
-  product: any,
-  index?: number
-) => {
-  try {
-    if (!product) return;
-
-    const item = productToGA4Item(product, { index });
-
-    pushToDataLayer({
-      event: 'select_item',
-      ecommerce: {
-        item_list_id: listId || 'product_list',
-        item_list_name: listName || 'Product List',
-        items: [item],
-      },
-    });
-  } catch (err) {
-    console.error('[GA4 select_item error]', err);
-  }
-};
-
-/**
- * 3. view_item
- * Structure: { event: "view_item", ecommerce: { currency, value, items } }
- */
-export const trackGA4ViewItem = (
-  product: any,
-  currency: string = 'BDT'
-) => {
-  try {
-    if (!product) return;
-
-    const item = productToGA4Item(product);
-    const rawPrice = product.price ?? product.unitPrice;
-    const numericPrice = typeof rawPrice === 'number' ? rawPrice : parseFloat(rawPrice || '0');
-
-    pushToDataLayer({
-      event: 'view_item',
-      ecommerce: {
-        currency: currency || 'BDT',
-        value: !isNaN(numericPrice) ? numericPrice : 0,
-        items: [item],
-      },
-    });
-  } catch (err) {
-    console.error('[GA4 view_item error]', err);
-  }
 };
 
 export interface GA4CartItem {
@@ -259,6 +265,102 @@ export const cartItemToGA4Item = (
 };
 
 /**
+ * 1. view_item_list
+ * Structure: { event: "view_item_list", ecommerce: { item_list_id, item_list_name, items } }
+ */
+export const trackGA4ViewItemList = (
+  listId: string,
+  listName: string,
+  products: any[]
+) => {
+  try {
+    if (!products || !Array.isArray(products) || products.length === 0) return;
+
+    const items = products.map((prod, idx) =>
+      productToGA4Item(prod, { index: idx + 1 })
+    );
+
+    pushToDataLayer({
+      event: 'view_item_list',
+      ecommerce: {
+        item_list_id: listId || 'product_list',
+        item_list_name: listName || 'Product List',
+        items,
+      },
+    });
+  } catch (err) {
+    console.error('[GA4 view_item_list error]', err);
+  }
+};
+
+/**
+ * 2. select_item
+ * Structure: { event: "select_item", ecommerce: { item_list_id, item_list_name, items } }
+ */
+export const trackGA4SelectItem = (
+  listId: string,
+  listName: string,
+  product: any,
+  index?: number
+) => {
+  try {
+    if (!product) return;
+
+    const item = productToGA4Item(product, { index });
+
+    pushToDataLayer({
+      event: 'select_item',
+      ecommerce: {
+        item_list_id: listId || 'product_list',
+        item_list_name: listName || 'Product List',
+        items: [item],
+      },
+    });
+  } catch (err) {
+    console.error('[GA4 select_item error]', err);
+  }
+};
+
+/**
+ * 3. view_item
+ * Structure: { event: "view_item", ecommerce: { currency, value, items } }
+ * Maps to Meta ViewContent
+ */
+export const trackGA4ViewItem = (
+  product: any,
+  currency: string = 'BDT'
+) => {
+  try {
+    if (!product) return;
+
+    const item = productToGA4Item(product);
+    const rawPrice = product.price ?? product.unitPrice;
+    const numericPrice = typeof rawPrice === 'number' ? rawPrice : parseFloat(rawPrice || '0');
+    const val = !isNaN(numericPrice) ? numericPrice : 0;
+
+    pushToDataLayer({
+      event: 'view_item',
+      ecommerce: {
+        currency: currency || 'BDT',
+        value: val,
+        items: [item],
+      },
+    });
+
+    // Meta ViewContent mapping
+    trackMetaEvent('ViewContent', {
+      content_ids: [item.item_id],
+      content_name: item.item_name,
+      content_type: 'product',
+      value: val,
+      currency: currency || 'BDT',
+    });
+  } catch (err) {
+    console.error('[GA4 view_item error]', err);
+  }
+};
+
+/**
  * Generic event tracker delegating to pushToDataLayer.
  */
 export const trackGA4Event = (eventName: string, params?: Record<string, any>) => {
@@ -293,6 +395,10 @@ export const trackGA4ViewCart = (
   }
 };
 
+/**
+ * add_to_cart
+ * Maps to Meta AddToCart
+ */
 export const trackGA4AddToCart = (
   item: any,
   quantity: number = 1,
@@ -312,6 +418,15 @@ export const trackGA4AddToCart = (
         value: totalVal,
         items: [formattedItem],
       },
+    });
+
+    // Meta AddToCart mapping
+    trackMetaEvent('AddToCart', {
+      content_ids: [formattedItem.item_id],
+      content_name: formattedItem.item_name,
+      content_type: 'product',
+      value: totalVal,
+      currency: currency || 'BDT',
     });
   } catch (err) {
     console.error('[GA4 add_to_cart error]', err);
@@ -344,6 +459,10 @@ export const trackGA4RemoveFromCart = (
   }
 };
 
+/**
+ * add_to_wishlist
+ * Maps to Meta AddToWishlist
+ */
 export const trackGA4AddToWishlist = (
   item: any,
   currency: string = 'BDT'
@@ -362,11 +481,24 @@ export const trackGA4AddToWishlist = (
         items: [formattedItem],
       },
     });
+
+    // Meta AddToWishlist mapping
+    trackMetaEvent('AddToWishlist', {
+      content_ids: [formattedItem.item_id],
+      content_name: formattedItem.item_name,
+      content_type: 'product',
+      value: unitPrice,
+      currency: currency || 'BDT',
+    });
   } catch (err) {
     console.error('[GA4 add_to_wishlist error]', err);
   }
 };
 
+/**
+ * begin_checkout
+ * Maps to Meta InitiateCheckout
+ */
 export const trackGA4BeginCheckout = (
   items: any[],
   totalValue: number,
@@ -380,14 +512,25 @@ export const trackGA4BeginCheckout = (
       cartItemToGA4Item(item, { index: idx + 1 })
     );
 
+    const val = typeof totalValue === 'number' ? totalValue : parseFloat(totalValue || '0');
+
     pushToDataLayer({
       event: 'begin_checkout',
       ecommerce: {
         currency: currency || 'BDT',
-        value: typeof totalValue === 'number' ? totalValue : parseFloat(totalValue || '0'),
+        value: val,
         ...(coupon ? { coupon } : {}),
         items: formattedItems,
       },
+    });
+
+    // Meta InitiateCheckout mapping
+    trackMetaEvent('InitiateCheckout', {
+      content_ids: formattedItems.map((i) => i.item_id),
+      content_type: 'product',
+      value: val,
+      num_items: formattedItems.length,
+      currency: currency || 'BDT',
     });
   } catch (err) {
     console.error('[GA4 begin_checkout error]', err);
@@ -452,11 +595,19 @@ export const trackGA4AddPaymentInfo = (
   }
 };
 
+/**
+ * purchase
+ * Maps to Meta Purchase
+ * Uses canonical orderNumber/id for consistent transaction_id alignment with backend Measurement Protocol
+ */
 export const trackGA4Purchase = (order: any, currency: string = 'BDT') => {
   try {
     if (!order) return;
 
-    const transactionId = String(order.id || order.orderId || order.transactionId || '');
+    // Transaction ID: orderNumber is preferred as canonical identifier
+    const transactionId = String(
+      order.orderNumber || order.id || order.orderId || order.referenceNumber || order.transactionId || ''
+    );
     if (!transactionId) return;
 
     // Deduplication check using sessionStorage & localStorage
@@ -530,6 +681,15 @@ export const trackGA4Purchase = (order: any, currency: string = 'BDT') => {
         ...(couponCode ? { coupon: String(couponCode) } : {}),
         items: formattedItems,
       },
+    });
+
+    // Meta Purchase mapping
+    trackMetaEvent('Purchase', {
+      content_ids: formattedItems.map((i) => i.item_id),
+      content_type: 'product',
+      value,
+      currency: currency || 'BDT',
+      num_items: formattedItems.length,
     });
 
     // Mark transaction as tracked

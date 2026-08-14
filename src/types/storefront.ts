@@ -219,6 +219,25 @@ export interface StoreTax {
   pricesIncludeTax: boolean;
 }
 
+export interface StoreMarketing {
+  gtmContainerId?: string;
+  gtmId?: string;
+  ga4MeasurementId?: string;
+  ga4Id?: string;
+  metaPixelId?: string;
+  pixelId?: string;
+  googleAdsId?: string;
+  adsId?: string;
+}
+
+export interface AnalyticsConfig {
+  ga4MeasurementId: string;
+  gtmContainerId: string;
+  metaPixelId: string;
+  googleAdsId: string;
+  enableAnalytics: boolean;
+}
+
 export interface StoreGeneral {
   siteName: string;
   siteTitle: string;
@@ -235,6 +254,7 @@ export interface PublicSettings {
   shipping: StoreShipping;
   tax: StoreTax;
   general: StoreGeneral;
+  marketing?: StoreMarketing;
   // Deprecated fields kept for backward compatibility during migration
   siteName: string;
   siteTitle: string;

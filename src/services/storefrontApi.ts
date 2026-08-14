@@ -12,10 +12,12 @@ import { returnService } from './returnService';
 import { refundService } from './refundService';
 import { contentService } from './contentService';
 import { settingsService } from './settingsService';
+import { analyticsService } from './analyticsService';
 import { normalizeCart } from '../lib/api';
 import { LoginFormData, RegisterFormData, AuthResponse } from '../types/auth';
 import { CheckoutFormData } from '../types/checkout';
 import { 
+  AnalyticsConfig,
   Banner, 
   BlogArticle, 
   Brand, 
@@ -34,6 +36,12 @@ import {
 } from '../types/storefront';
 
 export const storefrontApi = {
+  // ANALYTICS & MARKETING
+  getAnalyticsConfig: async (): Promise<AnalyticsConfig> => {
+    const res = await analyticsService.getAnalyticsConfig();
+    return res.data;
+  },
+
   // SETTINGS
   getPublicSettings: async (): Promise<PublicSettings> => {
     const res = await settingsService.getPublicSettings();

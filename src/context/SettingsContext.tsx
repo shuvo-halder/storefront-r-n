@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { PublicSettings, StoreBranding, StoreGeneral, StoreSEO, StoreShipping, StoreTax } from '../types/storefront';
+import { PublicSettings, StoreBranding, StoreGeneral, StoreMarketing, StoreSEO, StoreShipping, StoreTax } from '../types/storefront';
 import { storefrontApi } from '../services/storefrontApi';
 
 interface SettingsContextType {
@@ -11,6 +11,7 @@ interface SettingsContextType {
   shipping: StoreShipping | null;
   tax: StoreTax | null;
   general: StoreGeneral | null;
+  marketing: StoreMarketing | null;
   isLoading: boolean;
   refreshSettings: () => Promise<void>;
 }
@@ -45,6 +46,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
         shipping: settings?.shipping || null,
         tax: settings?.tax || null,
         general: settings?.general || null,
+        marketing: settings?.marketing || null,
         isLoading, 
         refreshSettings: fetchSettings 
       }}

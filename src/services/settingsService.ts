@@ -29,6 +29,12 @@ const DEFAULT_SETTINGS: PublicSettings = {
     storePhone: '',
     storeEmail: 'support@vyzobd.com'
   },
+  marketing: {
+    gtmContainerId: '',
+    ga4MeasurementId: '',
+    metaPixelId: '',
+    googleAdsId: ''
+  },
   siteName: 'Vyzobd',
   siteTitle: 'Vyzobd Store',
   logoUrl: '',
@@ -84,6 +90,16 @@ export const settingsService = {
           storePhone: raw.general?.storePhone || raw.supportPhone || '',
           storeEmail: raw.general?.storeEmail || raw.supportEmail || 'support@vyzobd.com',
           storeAddress: raw.general?.storeAddress
+        },
+        marketing: {
+          gtmContainerId: raw.marketing?.gtmContainerId || raw.marketing?.gtmId || raw.gtmId || raw.gtmContainerId || '',
+          gtmId: raw.marketing?.gtmId || raw.marketing?.gtmContainerId || raw.gtmId || raw.gtmContainerId || '',
+          ga4MeasurementId: raw.marketing?.ga4MeasurementId || raw.marketing?.ga4Id || raw.ga4MeasurementId || raw.ga4Id || '',
+          ga4Id: raw.marketing?.ga4Id || raw.marketing?.ga4MeasurementId || raw.ga4Id || raw.ga4MeasurementId || '',
+          metaPixelId: raw.marketing?.metaPixelId || raw.marketing?.pixelId || raw.metaPixelId || raw.pixelId || '',
+          pixelId: raw.marketing?.pixelId || raw.marketing?.metaPixelId || raw.pixelId || raw.metaPixelId || '',
+          googleAdsId: raw.marketing?.googleAdsId || raw.marketing?.adsId || raw.googleAdsId || raw.adsId || '',
+          adsId: raw.marketing?.adsId || raw.marketing?.googleAdsId || raw.adsId || raw.googleAdsId || ''
         },
         siteName: raw.branding?.siteName || raw.siteName || 'Vyzobd',
         siteTitle: raw.branding?.siteTitle || raw.siteTitle || 'Vyzobd Store',
