@@ -20,25 +20,28 @@ export const HomePage: React.FC = () => {
   const { data: productsData, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['home_products'],
     queryFn: async () => {
-      const res = await storefrontApi.getProducts();
+      const res = await storefrontApi.getProducts({ pageSize: 50 });
       return res.products || [];
     },
   });
 
   const products = productsData || [];
 
-  // Filter products for different sections; if API returns products, slice them, otherwise fall back to all API products
-  const featuredProducts = products.filter(p => p.isFeatured).length > 0
-    ? products.filter(p => p.isFeatured)
-    : products;
+  // Filter products for different sections with priority to tagged items
+  const featuredOnly = products.filter(p => p.isFeatured);
+  const featuredProducts = featuredOnly.length >= 8 
+    ? featuredOnly 
+    : [...featuredOnly, ...products.filter(p => !p.isFeatured)];
     
-  const bestSellers = products.filter(p => p.isBestSeller || p.reviewCount > 0).length > 0
-    ? products.filter(p => p.isBestSeller || p.reviewCount > 0)
-    : products;
+  const bestSellerOnly = products.filter(p => p.isBestSeller || p.reviewCount > 0 || (p.rating && p.rating >= 4.5));
+  const bestSellers = bestSellerOnly.length >= 4
+    ? bestSellerOnly
+    : [...bestSellerOnly, ...products.filter(p => !bestSellerOnly.includes(p))];
 
-  const newArrivals = products.filter(p => p.isNew).length > 0
-    ? products.filter(p => p.isNew)
-    : products;
+  const newArrivalsOnly = products.filter(p => p.isNew);
+  const newArrivals = newArrivalsOnly.length >= 4
+    ? newArrivalsOnly
+    : [...newArrivalsOnly, ...products.filter(p => !newArrivalsOnly.includes(p))];
 
   return (
     <div className="bg-white pb-20">
