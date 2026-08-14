@@ -26,24 +26,48 @@ export const getWebsiteSchema = (general: StoreGeneral | null) => ({
   }
 });
 
-export const getProductSchema = (product: Product, currency: string = 'USD') => ({
-  '@context': 'https://schema.org',
-  '@type': 'Product',
-  'name': product.name,
-  'image': product.images[0],
-  'description': product.description,
-  'brand': {
-    '@type': 'Brand',
-    'name': product.brand
-  },
-  'offers': {
-    '@type': 'Offer',
-    'url': `${typeof window !== 'undefined' ? window.location.origin : ''}/#product-detail?id=${product.id}`,
-    'priceCurrency': currency,
-    'price': product.price,
-    'availability': product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'
+export const getProductSchema = (product: Product, currency: string = 'USD', baseUrl?: string) => {
+  const origin = baseUrl || (typeof window !== 'undefined' ? window.location.origin : 'https://vyzobd.com');
+  const schema: any = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    'name': product.name,
+    'image': product.images && product.images.length > 0 ? product.images : [`${origin}/favicon.svg`],
+    'description': product.description || product.subtitle || product.name,
+    'sku': product.variants?.[0]?.sku || `SKU-${product.id}`,
+    'offers': {
+      '@type': 'Offer',
+      'url': `${origin}/products/${product.slug}`,
+      'priceCurrency': currency,
+      'price': product.price,
+      'itemCondition': 'https://schema.org/NewCondition',
+      'availability': product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'
+    }
+  };
+
+  if (product.brand) {
+    schema.brand = {
+      '@type': 'Brand',
+      'name': product.brand
+    };
   }
-});
+
+  if (product.category) {
+    schema.category = product.category;
+  }
+
+  if (product.rating && product.rating > 0) {
+    schema.aggregateRating = {
+      '@type': 'AggregateRating',
+      'ratingValue': product.rating,
+      'reviewCount': Math.max(product.reviewCount || 1, 1),
+      'bestRating': 5,
+      'worstRating': 1
+    };
+  }
+
+  return schema;
+};
 
 export const getArticleSchema = (article: BlogArticle) => ({
   '@context': 'https://schema.org',

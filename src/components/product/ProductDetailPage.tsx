@@ -220,6 +220,7 @@ export const ProductDetailPage: React.FC = () => {
   }
 
   // Variant computation
+  const currencySymbol = publicSettings?.general?.currencySymbol || (publicSettings?.general?.currency === 'BDT' ? '৳' : '$');
   const selectedVariant = product.variants?.find(v => v.id === selectedVariantId);
   const activePrice = selectedVariant ? selectedVariant.price : product.price;
   const activeComparePrice = selectedVariant?.compareAtPrice ?? product.compareAtPrice;
@@ -312,9 +313,9 @@ export const ProductDetailPage: React.FC = () => {
         structuredData={[
           getProductSchema(product, publicSettings?.general?.currency),
           getBreadcrumbSchema([
-            { name: 'Home', url: typeof window !== 'undefined' ? window.location.origin : '' },
-            { name: 'Catalog', url: `${typeof window !== 'undefined' ? window.location.origin : ''}/#shop` },
-            { name: product.name, url: typeof window !== 'undefined' ? window.location.href : '' }
+            { name: 'Home', url: typeof window !== 'undefined' ? window.location.origin : 'https://vyzobd.com' },
+            { name: 'Products', url: `${typeof window !== 'undefined' ? window.location.origin : 'https://vyzobd.com'}/products` },
+            { name: product.name, url: typeof window !== 'undefined' ? `${window.location.origin}/products/${product.slug}` : `https://vyzobd.com/products/${product.slug}` }
           ])
         ]}
       />
@@ -505,16 +506,16 @@ export const ProductDetailPage: React.FC = () => {
               {/* Price Row */}
               <div className="flex items-baseline gap-3 pt-1">
                 <span className="text-3xl sm:text-4xl font-black text-slate-900 font-mono">
-                  ${activePrice.toFixed(2)}
+                  {currencySymbol}{activePrice.toFixed(2)}
                 </span>
                 {activeComparePrice && activeComparePrice > activePrice && (
                   <span className="text-base font-semibold text-slate-400 line-through font-mono">
-                    ${activeComparePrice.toFixed(2)}
+                    {currencySymbol}{activeComparePrice.toFixed(2)}
                   </span>
                 )}
                 {computedDiscount && (
                   <span className="px-2.5 py-0.5 bg-primary/10 text-rose-800 font-black text-xs rounded-lg uppercase">
-                    Save ${(activeComparePrice! - activePrice).toFixed(2)} ({computedDiscount}%)
+                    Save {currencySymbol}{(activeComparePrice! - activePrice).toFixed(2)} ({computedDiscount}%)
                   </span>
                 )}
               </div>
@@ -555,7 +556,7 @@ export const ProductDetailPage: React.FC = () => {
                           )}
                         </div>
                         <div className="font-mono text-slate-500 text-[11px] flex items-center justify-between">
-                          <span>${v.price}</span>
+                          <span>{currencySymbol}{v.price}</span>
                           {v.stock === 0 && <span className="text-primary text-[10px]">Out of stock</span>}
                         </div>
                       </button>
@@ -569,7 +570,7 @@ export const ProductDetailPage: React.FC = () => {
             <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center gap-3 text-xs text-slate-700">
               <Truck size={20} className="text-primary flex-shrink-0" />
               <div>
-                <span className="font-bold text-slate-900">FREE Express Delivery</span> on orders over ${publicSettings?.shipping.freeShippingThreshold || 99}.
+                <span className="font-bold text-slate-900">FREE Express Delivery</span> on orders over {currencySymbol}{publicSettings?.shipping.freeShippingThreshold || 99}.
                 <span className="block text-[11px] text-slate-500">Dispatched within 24 hours with real-time tracking code.</span>
               </div>
             </div>
@@ -723,7 +724,7 @@ export const ProductDetailPage: React.FC = () => {
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1">
                   <Truck size={20} className="text-primary mb-2" />
                   <h5 className="font-bold text-slate-900">Standard Shipping</h5>
-                  <p className="text-xs text-slate-500">3–5 Business Days. Free on all orders over $99.</p>
+                  <p className="text-xs text-slate-500">3–5 Business Days. Free on all orders over {currencySymbol}{publicSettings?.shipping.freeShippingThreshold || 99}.</p>
                 </div>
 
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1">
