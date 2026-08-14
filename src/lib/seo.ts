@@ -204,7 +204,7 @@ export async function getProductDetailMetadata(slug: string): Promise<Metadata> 
     }
 
     const rawProduct = product as any;
-    const entityTitle = rawProduct.seoTitle || product.name || 'Untitled Product';
+    const entityTitle = product.name || rawProduct.title || rawProduct.seoTitle || rawProduct.productName || (product.slug ? product.slug.replace(/[-_]/g, ' ') : 'Product');
     const pageTitle = `${entityTitle} | ${siteName}`;
     const description = rawProduct.seoDescription || product.description || product.subtitle || `Buy ${entityTitle} at ${siteName}. High performance tech hardware and audio equipment.`;
     const image = rawProduct.ogImage || (product.images && product.images.length > 0 ? product.images[0] : rawProduct.thumbnail) || `${DEFAULT_BASE_URL}/favicon.svg`;

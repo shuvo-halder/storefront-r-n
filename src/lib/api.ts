@@ -241,18 +241,81 @@ export function normalizeProduct(raw: any): Product {
     };
   }
 
-  const categoryName = typeof raw.category === 'string' ? raw.category : (raw.category?.name || '');
-  const categoryId = typeof raw.category === 'object' ? (raw.category?.id || raw.category?.slug || '') : (raw.categoryId || '');
-  const brandName = typeof raw.brand === 'string' ? raw.brand : (raw.brand?.name || '');
-  const brandId = typeof raw.brand === 'object' ? (raw.brand?.id || raw.brand?.slug || '') : (raw.brandId || '');
+  const categoryName = typeof raw.category === 'string' 
+    ? raw.category 
+    : (raw.category?.name || raw.category?.title || raw.categoryName || raw.category_name || (Array.isArray(raw.categories) && (raw.categories[0]?.name || raw.categories[0]?.title)) || '');
+  const categoryId = typeof raw.category === 'object' 
+    ? (raw.category?.id || raw.category?.slug || '') 
+    : (raw.categoryId || raw.category_id || (Array.isArray(raw.categories) && (raw.categories[0]?.id || raw.categories[0]?.slug)) || '');
+  const brandName = typeof raw.brand === 'string' 
+    ? raw.brand 
+    : (raw.brand?.name || raw.brand?.title || raw.brandName || raw.brand_name || '');
+  const brandId = typeof raw.brand === 'object' 
+    ? (raw.brand?.id || raw.brand?.slug || '') 
+    : (raw.brandId || raw.brand_id || '');
 
-  const rawImages = Array.isArray(raw.images) && raw.images.length > 0
-    ? raw.images.map((img: any) => typeof img === 'string' ? img : (img.url || img.src || ''))
-    : (raw.imageUrl || raw.primaryImage?.url || raw.thumbnail ? [raw.imageUrl || raw.primaryImage?.url || raw.thumbnail] : []);
+  let rawImages: string[] = [];
+  const candidateList = raw.images || raw.gallery || raw.photos || raw.pictures;
+  if (Array.isArray(candidateList) && candidateList.length > 0) {
+    rawImages = candidateList.map((img: any) => {
+      if (typeof img === 'string') return img;
+      if (!img) return '';
+      return img.url || img.src || img.imageUrl || img.image_url || img.path || img.originalUrl || '';
+    }).filter(Boolean);
+  } else {
+    const singleImg = 
+      raw.imageUrl || 
+      raw.image_url || 
+      raw.image || 
+      raw.primaryImage?.url || 
+      raw.primaryImage?.src || 
+      (typeof raw.primaryImage === 'string' ? raw.primaryImage : '') ||
+      raw.thumbnail?.url || 
+      raw.thumbnail?.src || 
+      (typeof raw.thumbnail === 'string' ? raw.thumbnail : '') ||
+      raw.featuredImage?.url || 
+      raw.featuredImage?.src || 
+      (typeof raw.featuredImage === 'string' ? raw.featuredImage : '') ||
+      raw.photo || 
+      raw.picture;
+      
+    if (typeof singleImg === 'string' && singleImg.trim() !== '') {
+      rawImages = [singleImg.trim()];
+    } else if (singleImg && typeof singleImg === 'object' && (singleImg.url || singleImg.src)) {
+      rawImages = [singleImg.url || singleImg.src];
+    }
+  }
+
+  const id = String(raw.id || raw._id || raw.productId || raw.product_id || raw.sku || '');
+  const slug = String(raw.slug || raw.handle || raw.url_slug || raw.urlSlug || id);
+
+  const productName = 
+    raw.name || 
+    raw.title || 
+    raw.productName || 
+    raw.product_name || 
+    raw.title_en || 
+    raw.name_en || 
+    raw.heading || 
+    raw.label || 
+    raw.seoTitle || 
+    (slug ? slug.replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : '');
+
+  const rawPrice = raw.price ?? raw.regularPrice ?? raw.regular_price ?? raw.unit_price ?? raw.unitPrice ?? raw.sale_price ?? raw.salePrice ?? raw.amount ?? raw.cost;
+  const price = (rawPrice !== undefined && rawPrice !== null && !isNaN(Number(rawPrice))) ? Number(rawPrice) : 0;
+
+  const rawCompare = raw.compareAtPrice ?? raw.compare_at_price ?? raw.originalPrice ?? raw.original_price ?? raw.mrp ?? raw.old_price ?? raw.oldPrice ?? raw.listPrice ?? raw.list_price;
+  const compareAtPrice = (rawCompare !== undefined && rawCompare !== null && !isNaN(Number(rawCompare)) && Number(rawCompare) > price) ? Number(rawCompare) : undefined;
+
+  const rawDiscount = raw.discountPercent ?? raw.discount_percent ?? raw.discount_percentage ?? raw.discount;
+  let discountPercent: number | undefined = (rawDiscount !== undefined && rawDiscount !== null && !isNaN(Number(rawDiscount))) ? Number(rawDiscount) : undefined;
+  if (discountPercent === undefined && compareAtPrice && compareAtPrice > price && price > 0) {
+    discountPercent = Math.round(((compareAtPrice - price) / compareAtPrice) * 100);
+  }
 
   const variants: ProductVariant[] = Array.isArray(raw.variants) ? raw.variants.map((v: any) => {
-    const vInStock = v.inStock ?? v.in_stock ?? v.is_in_stock ?? v.isAvailable;
-    const rawVStock = v.stock ?? v.quantity ?? v.inventory ?? v.stock_quantity ?? v.inventory_quantity;
+    const vInStock = v.inStock ?? v.in_stock ?? v.is_in_stock ?? v.isAvailable ?? v.is_available;
+    const rawVStock = v.stock ?? v.quantity ?? v.inventory ?? v.stock_quantity ?? v.inventory_quantity ?? v.stockQuantity ?? v.inventoryQuantity;
     let vStock = 0;
     if (rawVStock !== undefined && rawVStock !== null && !isNaN(Number(rawVStock))) {
       vStock = Number(rawVStock);
@@ -261,21 +324,24 @@ export function normalizeProduct(raw: any): Product {
     } else if (vInStock === true) {
       vStock = 10;
     }
+    const vName = v.name || v.title || v.variant_name || v.variantName || v.sku || 'Variant';
+    const vPrice = Number(v.price ?? v.unit_price ?? v.regular_price ?? price ?? 0);
+    const vImg = v.image ? (typeof v.image === 'string' ? v.image : (v.image.url || v.image.src || v.image.imageUrl)) : undefined;
     return {
-      id: String(v.id || v.sku || ''),
-      name: String(v.name || v.sku || 'Variant'),
+      id: String(v.id || v._id || v.sku || ''),
+      name: String(vName),
       sku: String(v.sku || ''),
-      price: Number(v.price ?? raw.price ?? 0),
-      compareAtPrice: v.compareAtPrice ? Number(v.compareAtPrice) : undefined,
+      price: vPrice,
+      compareAtPrice: (v.compareAtPrice || v.compare_at_price || v.originalPrice) ? Number(v.compareAtPrice || v.compare_at_price || v.originalPrice) : undefined,
       stock: vStock,
-      image: v.image ? (typeof v.image === 'string' ? v.image : (v.image.url || v.image.src)) : undefined,
-      colorHex: v.colorHex || undefined
+      image: vImg,
+      colorHex: v.colorHex || v.color_hex || v.hex || undefined
     };
   }) : [];
 
   // Determine product-level stock from raw fields & variants
-  const rawStock = raw.stock ?? raw.quantity ?? raw.inventory ?? raw.stock_quantity ?? raw.inventory_quantity;
-  const rawInStock = raw.inStock ?? raw.in_stock ?? raw.is_in_stock ?? raw.isAvailable;
+  const rawStock = raw.stock ?? raw.quantity ?? raw.inventory ?? raw.stock_quantity ?? raw.inventory_quantity ?? raw.stockQuantity ?? raw.inventoryQuantity;
+  const rawInStock = raw.inStock ?? raw.in_stock ?? raw.is_in_stock ?? raw.isAvailable ?? raw.is_available;
 
   let stock = 0;
 
@@ -291,29 +357,29 @@ export function normalizeProduct(raw: any): Product {
   }
 
   return {
-    id: String(raw.id || raw._id || ''),
-    slug: String(raw.slug || raw.id || ''),
-    name: String(raw.name || 'Untitled Product'),
-    subtitle: raw.subtitle || raw.shortDescription || undefined,
+    id,
+    slug,
+    name: String(productName),
+    subtitle: raw.subtitle || raw.shortDescription || raw.short_description || raw.subheading || raw.summary || undefined,
     brand: brandName,
     brandId: brandId || undefined,
     category: categoryName,
     categoryId: categoryId,
-    price: Number(raw.price ?? 0),
-    compareAtPrice: raw.compareAtPrice ? Number(raw.compareAtPrice) : undefined,
-    discountPercent: raw.discountPercent ? Number(raw.discountPercent) : undefined,
-    rating: Number(raw.rating ?? 5),
-    reviewCount: Number(raw.reviewCount ?? 0),
+    price,
+    compareAtPrice,
+    discountPercent,
+    rating: Number(raw.rating ?? raw.average_rating ?? raw.avg_rating ?? 5),
+    reviewCount: Number(raw.reviewCount ?? raw.reviews_count ?? raw.review_count ?? 0),
     images: rawImages.filter(Boolean),
-    description: String(raw.description || raw.shortDescription || ''),
+    description: String(raw.description || raw.details || raw.shortDescription || raw.short_description || raw.body || raw.content || ''),
     features: Array.isArray(raw.features) ? raw.features : [],
     specifications: Array.isArray(raw.specifications) ? raw.specifications : [],
     stock,
-    isNew: Boolean(raw.isNew),
-    isFeatured: Boolean(raw.isFeatured),
-    isBestSeller: Boolean(raw.isBestSeller),
-    isDealOfDay: Boolean(raw.isDealOfDay),
-    dealEndTime: raw.dealEndTime || undefined,
+    isNew: Boolean(raw.isNew || raw.is_new),
+    isFeatured: Boolean(raw.isFeatured || raw.is_featured),
+    isBestSeller: Boolean(raw.isBestSeller || raw.is_best_seller || raw.isBestseller),
+    isDealOfDay: Boolean(raw.isDealOfDay || raw.is_deal_of_day || raw.isDeal),
+    dealEndTime: raw.dealEndTime || raw.deal_end_time || undefined,
     variants,
     reviews: Array.isArray(raw.reviews) ? raw.reviews : [],
     tags: Array.isArray(raw.tags) ? raw.tags : []
