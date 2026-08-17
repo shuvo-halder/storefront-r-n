@@ -59,12 +59,12 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
   }, [isLoading, displayedProducts, title, activeTabId]);
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12">
       {/* Section Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-        <div className="space-y-1.5">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 mb-5 sm:mb-6">
+        <div className="space-y-1">
           {badge && (
-            <div className="inline-flex items-center gap-1.5 text-[#DC2B53] font-semibold text-xs uppercase tracking-wider mb-1">
+            <div className="inline-flex items-center gap-1.5 text-[#DC2B53] font-semibold text-xs uppercase tracking-wider mb-0.5">
               {icon || <Sparkles size={14} />}
               <span>{badge}</span>
             </div>
@@ -73,7 +73,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
             {title}
           </h2>
           {subtitle && (
-            <p className="text-sm text-[#6B7280] max-w-2xl font-normal leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#6B7280] max-w-2xl font-normal leading-relaxed">
               {subtitle}
             </p>
           )}
@@ -102,7 +102,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
           {viewAllAction && (
             <button
               onClick={viewAllAction}
-              className="text-xs font-semibold text-[#DC2B53] hover:text-[#C52247] flex items-center gap-1 transition-colors cursor-pointer"
+              className="text-xs font-semibold text-[#DC2B53] hover:text-[#C52247] flex items-center gap-1 transition-colors cursor-pointer min-h-[32px]"
             >
               <span>{viewAllText}</span>
               <ArrowRight size={14} />
@@ -113,18 +113,18 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
 
       {/* Loading Skeleton Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5">
           {Array.from({ length: limit }).map((_, i) => (
-            <div key={i} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
-              <Skeleton className="h-48 w-full rounded-xl bg-slate-200" />
-              <Skeleton className="h-4 w-1/3 rounded-md bg-slate-200" />
-              <Skeleton className="h-5 w-full rounded-md bg-slate-200" />
-              <Skeleton className="h-6 w-1/2 rounded-md bg-slate-200" />
+            <div key={i} className="bg-white border border-[#E5E7EB] rounded-xl p-3 space-y-2">
+              <Skeleton className="aspect-square w-full rounded-lg bg-slate-200" />
+              <Skeleton className="h-3.5 w-1/3 rounded-md bg-slate-200" />
+              <Skeleton className="h-4 w-full rounded-md bg-slate-200" />
+              <Skeleton className="h-5 w-1/2 rounded-md bg-slate-200" />
             </div>
           ))}
         </div>
       ) : displayedProducts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5">
           {displayedProducts.map((product, idx) => (
             <ProductCard 
               key={product.id} 
@@ -136,8 +136,8 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
           ))}
         </div>
       ) : (
-        <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-12 text-center text-slate-500">
-          <p className="text-sm font-semibold">No products found in this section.</p>
+        <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-8 text-center text-[#6B7280]">
+          <p className="text-xs font-semibold">No products found in this section.</p>
         </div>
       )}
     </section>

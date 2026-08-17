@@ -117,6 +117,26 @@ export interface ShippingAddress {
   country: string;
 }
 
+export interface CustomerAddress {
+  id: string;
+  customerId?: string;
+  label?: string | null;
+  fullName: string;
+  email?: string;
+  phone: string;
+  address1: string;
+  address2?: string | null;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  isDefault?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type AddressFormData = Omit<CustomerAddress, 'id' | 'customerId' | 'createdAt' | 'updatedAt'>;
+
 export type OrderStatus = 'Placed' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
 
 export interface OrderTrackingStep {

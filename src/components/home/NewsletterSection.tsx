@@ -23,18 +23,18 @@ export const NewsletterSection: React.FC = () => {
     setIsSubscribed(true);
     addToast({
       title: 'Subscription Confirmed!',
-      description: 'Your 10% discount promo code TECH20 has been activated.',
+      description: 'Your 10% discount promo code WELCOME10 has been activated.',
       type: 'success',
     });
     setEmail('');
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl p-8 sm:p-14 text-center relative overflow-hidden shadow-xs">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl p-6 sm:p-10 text-center relative overflow-hidden shadow-2xs">
         
-        <div className="relative z-10 max-w-xl mx-auto space-y-6">
-          <div className="space-y-3">
+        <div className="relative z-10 max-w-xl mx-auto space-y-5">
+          <div className="space-y-2.5">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#E5E7EB] text-xs font-semibold text-[#DC2B53]">
               <Mail size={13} className="text-[#DC2B53]" />
               <span>Newsletter</span>
@@ -44,8 +44,8 @@ export const NewsletterSection: React.FC = () => {
               Subscribe for Deals & Updates
             </h2>
 
-            <p className="text-sm text-[#6B7280] font-normal leading-relaxed">
-              Get exclusive access to new product drops, firmware releases, and private discounts directly in your inbox.
+            <p className="text-xs sm:text-sm text-[#6B7280] font-normal leading-relaxed">
+              Get exclusive access to new arrivals, special promotions, and private discounts directly in your inbox.
             </p>
           </div>
 

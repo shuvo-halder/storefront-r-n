@@ -36,7 +36,7 @@ import { Product } from '../../types/storefront';
 import { Badge } from '../ui/Badge';
 import { Drawer } from '../ui/Drawer';
 import { MegaMenu } from './MegaMenu';
-import { AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 function HeaderContent() {
   const router = useRouter();
@@ -60,12 +60,24 @@ function HeaderContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>('All Categories');
   const [searchInput, setSearchInput] = useState<string>('');
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState<boolean>(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState<boolean>(false);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState<boolean>(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState<boolean>(true);
 
   const lastScrollYRef = useRef<number>(0);
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null);
+
+  // Focus mobile search input when opened
+  useEffect(() => {
+    if (isMobileSearchOpen) {
+      const timer = setTimeout(() => {
+        mobileSearchInputRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isMobileSearchOpen]);
 
   // Header scroll-direction listener (scroll down hides, scroll up shows, top visible)
   useEffect(() => {
@@ -93,6 +105,7 @@ function HeaderContent() {
     setIsMobileMenuOpen(false);
     setIsAccountMenuOpen(false);
     setIsSearchFocused(false);
+    setIsMobileSearchOpen(false);
   }, [pathname, searchParams]);
 
   // Search suggestion state
@@ -529,6 +542,21 @@ function HeaderContent() {
           {/* Action Controls: User Account, Wishlist, Cart */}
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             
+            {/* Mobile Search Toggle Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setIsMobileSearchOpen(!isMobileSearchOpen);
+                if (!isMobileSearchOpen) {
+                  setIsSearchFocused(true);
+                }
+              }}
+              className="p-2 text-[#111827] hover:text-[#DC2B53] hover:bg-gray-50 rounded-lg transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center lg:hidden"
+              aria-label="Search products"
+            >
+              <Search size={20} />
+            </button>
+
             {/* User Account Button & Dropdown */}
             <div className="relative" ref={accountMenuRef}>
               <button
@@ -799,37 +827,66 @@ function HeaderContent() {
           </AnimatePresence>
         </div>
 
-        {/* Mobile Search Row */}
-        <div className="lg:hidden px-4 pb-3">
-          <div ref={mobileSearchContainerRef} className="relative w-full">
-            <form 
-              onSubmit={handleSearchSubmit} 
-              className="relative flex items-center w-full"
+        {/* Mobile Search Expandable / Overlay UI */}
+        <AnimatePresence>
+          {isMobileSearchOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="lg:hidden px-4 pb-3 pt-1 border-t border-[#E5E7EB] bg-white shadow-xs"
             >
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onFocus={() => setIsSearchFocused(true)}
-                className="w-full py-2.5 pl-9 pr-9 text-sm bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg focus:outline-none focus:bg-white focus:border-[#DC2B53] focus:ring-1 focus:ring-[#DC2B53] font-normal transition-colors"
-              />
-              <Search size={16} className="absolute left-3 text-[#6B7280] pointer-events-none" />
-              {searchInput && (
-                <button
-                  type="button"
-                  onClick={() => setSearchInput('')}
-                  className="absolute right-3 text-[#6B7280] hover:text-[#111827] transition-colors cursor-pointer p-1"
+              <div ref={mobileSearchContainerRef} className="relative w-full">
+                <form 
+                  onSubmit={(e) => {
+                    handleSearchSubmit(e);
+                    setIsMobileSearchOpen(false);
+                  }} 
+                  className="relative flex items-center w-full"
                 >
-                  <X size={16} />
-                </button>
-              )}
-            </form>
+                  <input
+                    ref={mobileSearchInputRef}
+                    type="text"
+                    placeholder="Search products, categories..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onKeyDown={handleKeyDown}
+                    className="w-full py-2 pl-9 pr-16 text-sm bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg focus:outline-none focus:bg-white focus:border-[#DC2B53] focus:ring-1 focus:ring-[#DC2B53] font-normal transition-colors"
+                  />
+                  <Search size={16} className="absolute left-3 text-[#6B7280] pointer-events-none" />
+                  <div className="absolute right-2 flex items-center gap-1">
+                    {searchInput && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchInput('')}
+                        className="text-[#6B7280] hover:text-[#111827] transition-colors cursor-pointer p-1"
+                        aria-label="Clear search input"
+                      >
+                        <X size={15} />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMobileSearchOpen(false);
+                        setIsSearchFocused(false);
+                      }}
+                      className="text-xs font-medium text-[#6B7280] hover:text-[#111827] px-1.5 py-1 rounded cursor-pointer"
+                      aria-label="Close search"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
 
-            {/* Mobile Search Autocomplete Dropdown */}
-            {isSearchFocused && renderSearchDropdown()}
-          </div>
-        </div>
+                {/* Mobile Search Autocomplete Dropdown */}
+                {isSearchFocused && renderSearchDropdown()}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Mobile Slide-out Drawer */}
         <Drawer
@@ -839,50 +896,50 @@ function HeaderContent() {
           size="md"
           title={
             <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 group min-w-0">
-              <img src="/logo.svg" alt={publicSettings?.general?.siteName || "Vyzobd"} className="h-8 w-auto flex-shrink-0 dark:hidden" />
-              <img src="/logowhite.svg" alt={publicSettings?.general?.siteName || "Vyzobd"} className="h-8 w-auto flex-shrink-0 hidden dark:block" />
+              <img src="/logo.svg" alt={publicSettings?.general?.siteName || "Vyzobd"} className="h-7 w-auto flex-shrink-0 dark:hidden" />
+              <img src="/logowhite.svg" alt={publicSettings?.general?.siteName || "Vyzobd"} className="h-7 w-auto flex-shrink-0 hidden dark:block" />
             </Link>
           }
           footer={
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               <div className="grid grid-cols-2 gap-2">
-                <button className="flex flex-col items-center justify-center p-2.5 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] hover:border-[#DC2B53] transition-colors group">
-                  <ShieldCheck size={18} className="text-[#111827] group-hover:text-[#DC2B53] mb-1" />
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">Warranty</span>
+                <button className="flex items-center justify-center gap-1.5 p-2 rounded-lg bg-white border border-[#E5E7EB] hover:border-[#DC2B53] transition-colors group cursor-pointer">
+                  <ShieldCheck size={15} className="text-[#111827] group-hover:text-[#DC2B53]" />
+                  <span className="text-[11px] font-semibold text-[#6B7280] group-hover:text-[#111827]">Warranty</span>
                 </button>
-                <button className="flex flex-col items-center justify-center p-2.5 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] hover:border-[#DC2B53] transition-colors group">
-                  <Truck size={18} className="text-[#111827] group-hover:text-[#DC2B53] mb-1" />
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">Track</span>
+                <button className="flex items-center justify-center gap-1.5 p-2 rounded-lg bg-white border border-[#E5E7EB] hover:border-[#DC2B53] transition-colors group cursor-pointer">
+                  <Truck size={15} className="text-[#111827] group-hover:text-[#DC2B53]" />
+                  <span className="text-[11px] font-semibold text-[#6B7280] group-hover:text-[#111827]">Track Order</span>
                 </button>
               </div>
-              <div className="flex items-center justify-center gap-1.5 text-xs text-[#6B7280]">
-                <HelpCircle size={14} />
+              <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#6B7280]">
+                <HelpCircle size={13} />
                 <span>Support Available 24/7</span>
               </div>
             </div>
           }
         >
-          <div className="space-y-6 overflow-x-hidden">
+          <div className="space-y-4 overflow-x-hidden">
             {/* User Profile Summary */}
-            <div className="relative overflow-hidden rounded-xl bg-[#111827] p-5 text-white shadow-sm">
-              <div className="relative z-10 flex items-center gap-3">
-                <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center text-lg font-bold">
-                  {user ? user.fullName.charAt(0).toUpperCase() : <User size={24} />}
+            <div className="relative overflow-hidden rounded-xl bg-[#111827] p-3.5 text-white shadow-xs">
+              <div className="relative z-10 flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                  {user ? user.fullName.charAt(0).toUpperCase() : <User size={18} />}
                 </div>
-                <div>
-                  <h3 className="font-bold text-base leading-tight">
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-bold text-xs sm:text-sm leading-tight truncate">
                     {user ? `Hello, ${user.fullName.split(' ')[0]}` : 'Welcome to Vyzobd'}
                   </h3>
-                  <p className="text-gray-300 text-xs mt-0.5">
+                  <p className="text-gray-300 text-[11px] mt-0.5 truncate">
                     {user ? user.email : 'Sign in to manage orders'}
                   </p>
                 </div>
               </div>
-              <div className="mt-4 flex gap-2 relative z-10">
+              <div className="mt-3 flex gap-2 relative z-10">
                 <Link
                   href={user ? '/account/profile' : '/login'}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex-1 py-2.5 px-3 bg-[#DC2B53] hover:bg-[#C52247] text-white font-semibold text-xs rounded-lg text-center block transition-colors"
+                  className="flex-1 py-1.5 px-3 bg-[#DC2B53] hover:bg-[#C52247] text-white font-semibold text-xs rounded-lg text-center block transition-colors"
                 >
                   {user ? 'My Dashboard' : 'Sign In / Register'}
                 </Link>
@@ -893,17 +950,18 @@ function HeaderContent() {
                       setIsMobileMenuOpen(false);
                       router.push('/');
                     }}
-                    className="p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors cursor-pointer"
+                    className="p-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors cursor-pointer"
+                    aria-label="Sign out"
                   >
-                    <LogOut size={16} />
+                    <LogOut size={15} />
                   </button>
                 )}
               </div>
             </div>
 
             {/* Main Navigation Links */}
-            <div className="space-y-1">
-              <div className="px-3 text-[10px] font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Navigation</div>
+            <div className="space-y-0.5">
+              <div className="px-2 text-[10px] font-semibold text-[#6B7280] uppercase tracking-wider mb-1">Navigation</div>
               {[
                 { label: 'Shop All Products', href: '/products', icon: LayoutGrid },
                 { label: 'Deals & Offers', href: '/products?deals=true', icon: Zap, isHot: true },
@@ -916,26 +974,26 @@ function HeaderContent() {
                   key={item.label}
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors group ${
+                  className={`w-full flex items-center justify-between py-2 px-2.5 rounded-lg transition-colors group min-h-[40px] ${
                     item.isHot ? 'bg-[#FDF0F3] text-[#DC2B53]' : 'hover:bg-[#F9FAFB] text-[#111827]'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-md ${
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className={`p-1.5 rounded-md flex-shrink-0 ${
                       item.isHot ? 'bg-[#DC2B53]/10 text-[#DC2B53]' : 'bg-gray-100 text-[#111827]'
                     }`}>
-                      <item.icon size={16} />
+                      <item.icon size={15} />
                     </div>
-                    <span className="text-sm font-medium">{item.label}</span>
+                    <span className="text-xs font-semibold truncate">{item.label}</span>
                   </div>
-                  <ChevronRight size={16} className={item.isHot ? 'text-[#DC2B53]' : 'text-gray-400'} />
+                  <ChevronRight size={15} className={`flex-shrink-0 ${item.isHot ? 'text-[#DC2B53]' : 'text-gray-400'}`} />
                 </Link>
               ))}
             </div>
 
             {/* Product Categories Section */}
             <div>
-              <div className="px-3 flex items-center justify-between mb-3">
+              <div className="px-2 flex items-center justify-between mb-2">
                 <span className="text-[10px] font-semibold text-[#6B7280] uppercase tracking-wider">Categories</span>
                 <Link 
                   href="/categories" 
@@ -945,15 +1003,15 @@ function HeaderContent() {
                   View All
                 </Link>
               </div>
-              <div className="grid grid-cols-2 gap-2 px-1">
+              <div className="grid grid-cols-2 gap-2 px-0.5">
                 {categories.slice(0, 4).map((cat) => (
                   <Link
                     key={cat.id}
                     href={`/categories/${cat.slug}`}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex flex-col p-2.5 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] hover:border-[#DC2B53] transition-colors group"
+                    className="flex items-center gap-2 p-2 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] hover:border-[#DC2B53] transition-colors group min-h-[48px]"
                   >
-                    <div className="aspect-square rounded-md overflow-hidden mb-2">
+                    <div className="w-10 h-10 rounded-md overflow-hidden relative flex-shrink-0 bg-gray-100">
                       <SmartImage 
                         src={cat.image} 
                         alt={cat.name} 
@@ -963,16 +1021,18 @@ function HeaderContent() {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
                       />
                     </div>
-                    <span className="text-xs font-semibold text-[#111827] truncate">{cat.name}</span>
-                    <span className="text-[10px] text-[#6B7280] mt-0.5">{cat.itemCount || 0} Items</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold text-[#111827] truncate">{cat.name}</div>
+                      <div className="text-[10px] text-[#6B7280]">{cat.itemCount || 0} Items</div>
+                    </div>
                   </Link>
                 ))}
               </div>
             </div>
 
             {/* Support & Links */}
-            <div className="pt-3 border-t border-[#E5E7EB]">
-              <div className="grid grid-cols-2 gap-y-1">
+            <div className="pt-2 border-t border-[#E5E7EB]">
+              <div className="grid grid-cols-2 gap-y-0.5">
                 {[
                   { label: 'About Us', href: '/pages/about' },
                   { label: 'Help & FAQ', href: '/faq' },
@@ -983,7 +1043,7 @@ function HeaderContent() {
                     key={item.label}
                     href={item.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-left px-3 py-1.5 text-xs font-medium text-[#6B7280] hover:text-[#DC2B53] transition-colors block"
+                    className="text-left px-2 py-1 text-xs font-medium text-[#6B7280] hover:text-[#DC2B53] transition-colors block truncate"
                   >
                     {item.label}
                   </Link>

@@ -34,15 +34,14 @@ export const BlogSection: React.FC = () => {
 
   if (loading) {
     return (
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <Skeleton className="h-6 w-36 mb-6 bg-slate-200" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <Skeleton className="h-5 w-32 mb-4 bg-slate-200" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="space-y-3 bg-white p-4 rounded-2xl border border-slate-200">
-              <Skeleton className="h-40 w-full rounded-xl bg-slate-200" />
-              <Skeleton className="h-4 w-1/3 rounded-md bg-slate-200" />
-              <Skeleton className="h-6 w-full rounded-md bg-slate-200" />
-              <Skeleton className="h-10 w-full rounded-md bg-slate-200" />
+            <div key={i} className="space-y-3 bg-white p-3.5 rounded-xl border border-[#E5E7EB]">
+              <Skeleton className="h-36 w-full rounded-lg bg-slate-200" />
+              <Skeleton className="h-3.5 w-1/3 rounded-md bg-slate-200" />
+              <Skeleton className="h-5 w-full rounded-md bg-slate-200" />
             </div>
           ))}
         </div>
@@ -53,23 +52,23 @@ export const BlogSection: React.FC = () => {
   if (articles.length === 0) return null;
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5">
         <div>
-          <div className="flex items-center gap-2 text-primary font-extrabold text-xs uppercase tracking-wider mb-1">
+          <div className="flex items-center gap-2 text-[#DC2B53] font-semibold text-xs uppercase tracking-wider mb-0.5">
             <BookOpen size={14} />
-            <span>Tech Insights & Deep Dives</span>
+            <span>Articles & Insights</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Latest Hardware News
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#111827] tracking-tight">
+            Latest Stories & Guides
           </h2>
         </div>
 
         <button
           onClick={() => navigateTo('blog')}
-          className="text-xs font-bold text-primary hover:text-primary flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto"
+          className="text-xs font-semibold text-[#DC2B53] hover:text-[#C52247] flex items-center gap-1 transition-colors cursor-pointer self-start sm:self-auto min-h-[32px]"
         >
           <span>Read All Articles</span>
           <ArrowRight size={14} />
@@ -77,15 +76,15 @@ export const BlogSection: React.FC = () => {
       </div>
 
       {/* Articles Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
         {articles.map((article) => (
           <article
             key={article.id}
             onClick={() => navigateTo('article-detail', { articleSlug: article.slug })}
-            className="group bg-white border border-slate-200/80 rounded-2xl overflow-hidden hover:border-rose-300 transition-all duration-300 hover:shadow-xl cursor-pointer flex flex-col justify-between"
+            className="group bg-white border border-[#E5E7EB] rounded-xl overflow-hidden hover:border-gray-300 transition-all duration-200 cursor-pointer flex flex-col justify-between shadow-2xs"
           >
             <div>
-              <div className="h-48 overflow-hidden bg-slate-100 relative">
+              <div className="h-40 sm:h-44 overflow-hidden bg-[#F9FAFB] relative">
                 <SmartImage 
                   src={article.coverImage} 
                   alt={article.title} 
@@ -94,15 +93,15 @@ export const BlogSection: React.FC = () => {
                   fallbackLabel={article.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                 />
-                <div className="absolute top-3 left-3">
-                  <Badge variant="primary" size="sm" className="bg-slate-900/90 text-white font-bold backdrop-blur-xs">
+                <div className="absolute top-2.5 left-2.5">
+                  <span className="px-2 py-0.5 rounded-md bg-[#111827]/90 text-white font-medium text-[10px] backdrop-blur-xs">
                     {article.category}
-                  </Badge>
+                  </span>
                 </div>
               </div>
 
-              <div className="p-5 space-y-2">
-                <div className="flex items-center gap-3 text-[11px] text-slate-400 font-semibold">
+              <div className="p-4 space-y-1.5">
+                <div className="flex items-center gap-2.5 text-[11px] text-[#6B7280]">
                   <span className="flex items-center gap-1">
                     <User size={12} />
                     {article.author}
@@ -114,19 +113,19 @@ export const BlogSection: React.FC = () => {
                   </span>
                 </div>
 
-                <h3 className="font-extrabold text-base text-slate-900 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                <h3 className="font-semibold text-sm sm:text-base text-[#111827] group-hover:text-[#DC2B53] transition-colors line-clamp-2 leading-snug">
                   {article.title}
                 </h3>
 
-                <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-[#6B7280] line-clamp-2 leading-relaxed">
                   {article.excerpt}
                 </p>
               </div>
             </div>
 
-            <div className="p-5 pt-0 flex items-center gap-1 text-xs font-bold text-primary group-hover:translate-x-1 transition-transform">
-              <span>Read Deep Dive</span>
-              <ArrowRight size={14} />
+            <div className="p-4 pt-1 flex items-center gap-1 text-xs font-semibold text-[#DC2B53] group-hover:translate-x-1 transition-transform">
+              <span>Read Article</span>
+              <ArrowRight size={13} />
             </div>
           </article>
         ))}

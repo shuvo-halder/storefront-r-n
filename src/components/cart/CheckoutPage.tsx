@@ -108,6 +108,29 @@ export const CheckoutPage: React.FC = () => {
   const sameAsShipping = watch('billingAddress.sameAsShipping');
   const shippingAddress = watch('shippingAddress');
 
+  // Auto-fill saved default address for authenticated users
+  useEffect(() => {
+    if (user) {
+      storefrontApi.getAddresses().then((addresses) => {
+        if (addresses && addresses.length > 0) {
+          const defaultAddr = addresses.find(a => a.isDefault) || addresses[0];
+          if (defaultAddr) {
+            setValue('shippingAddress.fullName', defaultAddr.fullName || user.fullName || '');
+            if (defaultAddr.email || user.email) setValue('shippingAddress.email', defaultAddr.email || user.email || '');
+            if (defaultAddr.phone || user.phone) setValue('shippingAddress.phone', defaultAddr.phone || user.phone || '');
+            if (defaultAddr.address1) setValue('shippingAddress.addressLine1', defaultAddr.address1);
+            if (defaultAddr.city) setValue('shippingAddress.city', defaultAddr.city);
+            if (defaultAddr.state) setValue('shippingAddress.state', defaultAddr.state);
+            if (defaultAddr.postalCode) setValue('shippingAddress.postalCode', defaultAddr.postalCode);
+            if (defaultAddr.country) setValue('shippingAddress.country', defaultAddr.country);
+          }
+        }
+      }).catch(() => {
+        // Silent error handling
+      });
+    }
+  }, [user, setValue]);
+
   useEffect(() => {
     if (sameAsShipping) {
       setValue('billingAddress.fullName', shippingAddress.fullName);

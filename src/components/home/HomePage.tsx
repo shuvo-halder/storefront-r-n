@@ -44,7 +44,7 @@ export const HomePage: React.FC = () => {
     : [...newArrivalsOnly, ...products.filter(p => !newArrivalsOnly.includes(p))];
 
   return (
-    <div className="bg-white pb-20">
+    <div className="bg-white pb-12 sm:pb-16">
       
       {/* 1. HERO SECTION & PROMOTIONAL CARDS */}
       <HeroSection />
@@ -76,9 +76,9 @@ export const HomePage: React.FC = () => {
       {/* 4. FEATURED PRODUCTS */}
       <ProductSection
         title="Featured Products"
-        subtitle="Handpicked hardware essentials for your digital lifestyle."
+        subtitle="Handpicked quality items curated just for you."
         badge="CURATED COLLECTION"
-        icon={<Sparkles size={14} className="text-accent" />}
+        icon={<Sparkles size={14} className="text-[#DC2B53]" />}
         products={featuredProducts}
         isLoading={isLoading}
         viewAllText="View All Products"
@@ -86,23 +86,23 @@ export const HomePage: React.FC = () => {
           setFilters(prev => ({ ...prev, sortBy: 'featured' }));
           navigateTo('shop');
         }}
-        limit={8}
+        limit={10}
       />
 
-      {/* 5. BEST SELLERS */}
+      {/* 5. POPULAR PRODUCTS */}
       <ProductSection
-        title="Best Sellers"
-        subtitle="Most popular picks from our tech community."
+        title="Popular Products"
+        subtitle="Most popular picks loved by our customers."
         badge="MOST POPULAR"
-        icon={<Flame size={14} className="text-accent" />}
+        icon={<Flame size={14} className="text-[#DC2B53]" />}
         products={bestSellers}
         isLoading={isLoading}
-        viewAllText="View All Best Sellers"
+        viewAllText="View All Popular Products"
         viewAllAction={() => {
           setFilters(prev => ({ ...prev, sortBy: 'rating' }));
           navigateTo('shop');
         }}
-        limit={4}
+        limit={5}
       />
 
       {/* 6. PROMOTIONAL BANNER */}
@@ -111,9 +111,9 @@ export const HomePage: React.FC = () => {
       {/* 7. NEW ARRIVALS */}
       <ProductSection
         title="New Arrivals"
-        subtitle="The latest drops in high-performance hardware."
+        subtitle="Explore the latest additions to our store."
         badge="JUST RELEASED"
-        icon={<Zap size={14} className="text-accent" />}
+        icon={<Zap size={14} className="text-[#DC2B53]" />}
         products={newArrivals}
         isLoading={isLoading}
         viewAllText="View All New Arrivals"
@@ -121,7 +121,7 @@ export const HomePage: React.FC = () => {
           setFilters(prev => ({ ...prev, sortBy: 'newest' }));
           navigateTo('shop');
         }}
-        limit={4}
+        limit={5}
       />
 
       {/* 8. BRANDS */}

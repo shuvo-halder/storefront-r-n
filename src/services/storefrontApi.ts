@@ -10,6 +10,7 @@ import { paymentService } from './paymentService';
 import { orderService } from './orderService';
 import { returnService } from './returnService';
 import { refundService } from './refundService';
+import { addressService } from './addressService';
 import { contentService } from './contentService';
 import { settingsService } from './settingsService';
 import { analyticsService } from './analyticsService';
@@ -24,6 +25,8 @@ import {
   Cart, 
   Category, 
   CMSPage, 
+  CustomerAddress,
+  AddressFormData,
   Order, 
   Product, 
   ProductFilterState, 
@@ -302,5 +305,43 @@ export const storefrontApi = {
     const res = await refundService.getRefunds();
     if (!res.data) return null;
     return res.data.find(r => r.orderId === orderId) || null;
+  },
+
+  // CUSTOMER ADDRESSES
+  getAddresses: async (): Promise<CustomerAddress[]> => {
+    const res = await addressService.getAddresses();
+    return res.data || [];
+  },
+
+  createAddress: async (data: AddressFormData): Promise<CustomerAddress> => {
+    const res = await addressService.createAddress(data);
+    if (res.status === 'error' || !res.data) {
+      throw new Error(res.message || 'Unable to save address');
+    }
+    return res.data;
+  },
+
+  updateAddress: async (id: string, data: Partial<AddressFormData>): Promise<CustomerAddress> => {
+    const res = await addressService.updateAddress(id, data);
+    if (res.status === 'error' || !res.data) {
+      throw new Error(res.message || 'Unable to update address');
+    }
+    return res.data;
+  },
+
+  deleteAddress: async (id: string): Promise<boolean> => {
+    const res = await addressService.deleteAddress(id);
+    if (res.status === 'error') {
+      throw new Error(res.message || 'Unable to delete address');
+    }
+    return res.data;
+  },
+
+  setDefaultAddress: async (id: string, currentAddress: CustomerAddress): Promise<CustomerAddress> => {
+    const res = await addressService.setDefaultAddress(id, currentAddress);
+    if (res.status === 'error' || !res.data) {
+      throw new Error(res.message || 'Unable to set default address');
+    }
+    return res.data;
   }
 };
