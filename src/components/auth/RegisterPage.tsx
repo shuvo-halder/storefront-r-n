@@ -78,27 +78,27 @@ export const RegisterPage: React.FC = () => {
 
   if (successMessage) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-[#F9FAFB] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-10 px-8 shadow-2xl shadow-slate-200/50 rounded-[40px] border border-slate-100 mx-4 sm:mx-0 text-center space-y-6">
-            <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto text-emerald-600 border border-emerald-100">
-              <CheckCircle2 size={36} />
+          <div className="bg-white py-8 px-6 sm:px-8 shadow-xs rounded-xl border border-[#E5E7EB] text-center space-y-5">
+            <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-600 border border-emerald-200">
+              <CheckCircle2 size={24} />
             </div>
             
-            <div className="space-y-2">
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Account Created!</h2>
-              <p className="text-sm text-slate-600 leading-relaxed font-medium">
+            <div className="space-y-1.5">
+              <h2 className="text-xl font-bold text-[#111827]">Account Created!</h2>
+              <p className="text-xs text-[#6B7280] leading-relaxed">
                 {successMessage}
               </p>
             </div>
 
-            <div className="pt-2 space-y-3">
+            <div className="pt-2">
               <Link
                 href="/login"
-                className="w-full flex items-center justify-center gap-2 py-4 px-6 bg-primary hover:bg-primary-hover text-white text-xs font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 transition-all cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#DC2B53] hover:bg-[#C52247] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
               >
                 <span>Continue to Sign In</span>
-                <ArrowRight size={18} />
+                <ArrowRight size={16} />
               </Link>
             </div>
           </div>
@@ -108,31 +108,29 @@ export const RegisterPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="text-center">
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Create Account</h2>
-          <p className="mt-2 text-sm text-slate-500 font-medium">
-            Already have an account?{' '}
-            <Link
-              href="/login"
-              className="text-primary font-bold hover:text-primary-hover transition-colors"
-            >
-              Sign in here
-            </Link>
-          </p>
-        </div>
+    <div className="min-h-screen bg-[#F9FAFB] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
+        <h2 className="text-xl font-bold text-[#111827]">Create Account</h2>
+        <p className="mt-1 text-xs text-[#6B7280]">
+          Already have an account?{' '}
+          <Link
+            href="/login"
+            className="text-[#DC2B53] font-semibold hover:text-[#C52247] transition-colors"
+          >
+            Sign in here
+          </Link>
+        </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
-        <div className="bg-white py-10 px-8 shadow-2xl shadow-slate-200/50 sm:rounded-[40px] border border-slate-100 mx-4 sm:mx-0">
+      <div className="sm:mx-auto sm:w-full sm:max-w-lg">
+        <div className="bg-white py-8 px-6 sm:px-8 shadow-xs rounded-xl border border-[#E5E7EB]">
           
           {/* Social Registration Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-5">
             <button
               type="button"
               onClick={() => handleSocialClick('Google')}
-              className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold rounded-2xl transition-all cursor-pointer active:scale-98"
+              className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-white hover:bg-[#F9FAFB] border border-[#E5E7EB] text-[#111827] text-xs font-semibold rounded-lg transition-colors cursor-pointer"
             >
               <GoogleIcon />
               <span>Continue with Google</span>
@@ -141,141 +139,141 @@ export const RegisterPage: React.FC = () => {
             <button
               type="button"
               onClick={() => handleSocialClick('Facebook')}
-              className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold rounded-2xl transition-all cursor-pointer active:scale-98"
+              className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-white hover:bg-[#F9FAFB] border border-[#E5E7EB] text-[#111827] text-xs font-semibold rounded-lg transition-colors cursor-pointer"
             >
               <FacebookIcon />
               <span>Continue with Facebook</span>
             </button>
           </div>
 
-          <div className="relative my-6 text-center">
+          <div className="relative my-5 text-center">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200"></div>
+              <div className="w-full border-t border-[#E5E7EB]"></div>
             </div>
-            <span className="relative bg-white px-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <span className="relative bg-white px-3 text-[11px] font-medium text-[#6B7280]">
               Or register with email
             </span>
           </div>
 
           {socialNotice && (
-            <div className="p-4 mb-6 bg-amber-50 border border-amber-200/80 rounded-2xl text-xs font-medium text-amber-800 flex items-start gap-3 shadow-sm">
-              <Info size={18} className="text-amber-600 shrink-0 mt-0.5" />
+            <div className="p-3 mb-5 bg-amber-50 border border-amber-200 rounded-lg text-xs font-medium text-amber-800 flex items-start gap-2.5">
+              <Info size={16} className="text-amber-600 shrink-0 mt-0.5" />
               <span>{socialNotice}</span>
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Full Name</label>
+                <label className="block text-xs font-semibold text-[#111827] mb-1">Full Name</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                    <User size={18} />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                    <User size={16} />
                   </div>
                   <input
                     {...register('fullName')}
-                    className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                    className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
                     placeholder="Full Name"
                   />
                 </div>
-                {errors.fullName && <p className="mt-1.5 text-[10px] font-black text-primary uppercase tracking-tighter">{errors.fullName.message}</p>}
+                {errors.fullName && <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{errors.fullName.message}</p>}
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Email Address</label>
+                <label className="block text-xs font-semibold text-[#111827] mb-1">Email Address</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                    <Mail size={18} />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                    <Mail size={16} />
                   </div>
                   <input
                     {...register('email')}
                     type="email"
-                    className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                    className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
                     placeholder="name@example.com"
                   />
                 </div>
-                {errors.email && <p className="mt-1.5 text-[10px] font-black text-primary uppercase tracking-tighter">{errors.email.message}</p>}
+                {errors.email && <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{errors.email.message}</p>}
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Phone Number</label>
+                <label className="block text-xs font-semibold text-[#111827] mb-1">Phone Number</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                    <Phone size={18} />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                    <Phone size={16} />
                   </div>
                   <input
                     {...register('phone')}
-                    className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                    className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
                     placeholder="+8801..."
                   />
                 </div>
-                {errors.phone && <p className="mt-1.5 text-[10px] font-black text-primary uppercase tracking-tighter">{errors.phone.message}</p>}
+                {errors.phone && <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{errors.phone.message}</p>}
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Password</label>
+                <label className="block text-xs font-semibold text-[#111827] mb-1">Password</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                    <Lock size={18} />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                    <Lock size={16} />
                   </div>
                   <input
                     {...register('password')}
                     type="password"
-                    className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                    className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
                     placeholder="••••••••"
                   />
                 </div>
-                {errors.password && <p className="mt-1.5 text-[10px] font-black text-primary uppercase tracking-tighter">{errors.password.message}</p>}
+                {errors.password && <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{errors.password.message}</p>}
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Confirm Password</label>
+                <label className="block text-xs font-semibold text-[#111827] mb-1">Confirm Password</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                    <CheckCircle2 size={18} />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                    <CheckCircle2 size={16} />
                   </div>
                   <input
                     {...register('confirmPassword')}
                     type="password"
-                    className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                    className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
                     placeholder="••••••••"
                   />
                 </div>
-                {errors.confirmPassword && <p className="mt-1.5 text-[10px] font-black text-primary uppercase tracking-tighter">{errors.confirmPassword.message}</p>}
+                {errors.confirmPassword && <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{errors.confirmPassword.message}</p>}
               </div>
             </div>
 
-            <div className="flex items-start">
+            <div className="flex items-start pt-1">
               <div className="flex items-center h-5">
                 <input
                   {...register('agreeTerms')}
                   id="agree-terms"
                   type="checkbox"
-                  className="h-4 w-4 text-primary focus:ring-primary border-slate-300 rounded-lg"
+                  className="h-4 w-4 text-[#DC2B53] focus:ring-[#DC2B53] border-[#E5E7EB] rounded accent-[#DC2B53]"
                 />
               </div>
-              <div className="ml-3 text-xs">
-                <label htmlFor="agree-terms" className="font-bold text-slate-700">
-                  I agree to the <Link href="/pages/terms" className="text-primary hover:underline">Terms of Service</Link> and <Link href="/pages/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+              <div className="ml-2.5 text-xs">
+                <label htmlFor="agree-terms" className="font-medium text-[#6B7280]">
+                  I agree to the <Link href="/pages/terms" className="text-[#DC2B53] hover:underline font-semibold">Terms of Service</Link> and <Link href="/pages/privacy" className="text-[#DC2B53] hover:underline font-semibold">Privacy Policy</Link>
                 </label>
-                {errors.agreeTerms && <p className="mt-1 text-[10px] font-black text-primary uppercase tracking-tighter">{errors.agreeTerms.message}</p>}
+                {errors.agreeTerms && <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{errors.agreeTerms.message}</p>}
               </div>
             </div>
 
             {error && (
-              <div className="p-4 bg-primary/5 border border-primary/10 rounded-2xl text-[11px] font-bold text-primary flex items-center gap-3">
-                <ShieldCheck size={18} className="rotate-180" />
-                {error}
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs font-medium text-[#DC2626] flex items-center gap-2">
+                <ShieldCheck size={16} className="rotate-180 flex-shrink-0" />
+                <span>{error}</span>
               </div>
             )}
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 py-4 px-6 bg-primary hover:bg-primary-hover disabled:bg-slate-300 text-white text-xs font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-95 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#DC2B53] hover:bg-[#C52247] disabled:bg-gray-300 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
             >
-              {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} />}
-              <span>{isSubmitting ? 'Creating Account...' : 'Get Started Now'}</span>
+              {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
+              <span>{isSubmitting ? 'Creating Account...' : 'Create Account'}</span>
             </button>
           </form>
         </div>

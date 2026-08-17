@@ -61,19 +61,19 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
       {/* Section Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-        <div className="space-y-3">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+        <div className="space-y-1.5">
           {badge && (
-            <div className="inline-flex items-center gap-2 text-accent font-black text-[10px] uppercase tracking-[0.3em] mb-1">
+            <div className="inline-flex items-center gap-1.5 text-[#DC2B53] font-semibold text-xs uppercase tracking-wider mb-1">
               {icon || <Sparkles size={14} />}
               <span>{badge}</span>
             </div>
           )}
-          <h2 className="text-3xl sm:text-5xl font-display font-black text-[#101A25] tracking-tighter uppercase leading-none">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#111827] tracking-tight">
             {title}
           </h2>
           {subtitle && (
-            <p className="text-sm text-slate-500 max-w-2xl font-medium leading-relaxed">
+            <p className="text-sm text-[#6B7280] max-w-2xl font-normal leading-relaxed">
               {subtitle}
             </p>
           )}
@@ -82,15 +82,15 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
         {/* Tab Filters or Action Button */}
         <div className="flex flex-wrap items-center gap-3">
           {tabs && tabs.length > 0 && (
-            <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200/80">
+            <div className="flex items-center gap-1 bg-[#F9FAFB] p-1 rounded-lg border border-[#E5E7EB]">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => onTabChange && onTabChange(tab.id)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
                     activeTabId === tab.id
-                      ? 'bg-white text-primary shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white text-[#111827] shadow-xs border border-[#E5E7EB]'
+                      : 'text-[#6B7280] hover:text-[#111827]'
                   }`}
                 >
                   {tab.label}
@@ -102,7 +102,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
           {viewAllAction && (
             <button
               onClick={viewAllAction}
-              className="text-xs font-bold text-primary hover:text-accent flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="text-xs font-semibold text-[#DC2B53] hover:text-[#C52247] flex items-center gap-1 transition-colors cursor-pointer"
             >
               <span>{viewAllText}</span>
               <ArrowRight size={14} />

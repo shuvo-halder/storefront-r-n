@@ -13,7 +13,7 @@ export const DisplayHeading: React.FC<TypographyProps> = ({
   ...props
 }) => (
   <Component
-    className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-none ${className}`}
+    className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-[#111827] tracking-tight leading-none ${className}`}
     {...props}
   >
     {children}
@@ -27,7 +27,7 @@ export const H1: React.FC<TypographyProps> = ({
   ...props
 }) => (
   <Component
-    className={`text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight ${className}`}
+    className={`text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#111827] tracking-tight leading-tight ${className}`}
     {...props}
   >
     {children}
@@ -41,7 +41,7 @@ export const H2: React.FC<TypographyProps> = ({
   ...props
 }) => (
   <Component
-    className={`text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight leading-snug ${className}`}
+    className={`text-xl sm:text-2xl lg:text-3xl font-bold text-[#111827] tracking-tight leading-snug ${className}`}
     {...props}
   >
     {children}
@@ -55,7 +55,7 @@ export const H3: React.FC<TypographyProps> = ({
   ...props
 }) => (
   <Component
-    className={`text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-snug ${className}`}
+    className={`text-lg sm:text-xl font-bold text-[#111827] tracking-tight leading-snug ${className}`}
     {...props}
   >
     {children}
@@ -69,7 +69,7 @@ export const H4: React.FC<TypographyProps> = ({
   ...props
 }) => (
   <Component
-    className={`text-base font-bold text-slate-900 tracking-tight leading-snug ${className}`}
+    className={`text-base font-bold text-[#111827] tracking-tight leading-snug ${className}`}
     {...props}
   >
     {children}
@@ -83,7 +83,7 @@ export const TextBody: React.FC<TypographyProps> = ({
   ...props
 }) => (
   <Component
-    className={`text-sm sm:text-base text-slate-600 leading-relaxed ${className}`}
+    className={`text-sm sm:text-base text-[#111827] leading-relaxed ${className}`}
     {...props}
   >
     {children}
@@ -97,7 +97,7 @@ export const TextSmall: React.FC<TypographyProps> = ({
   ...props
 }) => (
   <Component
-    className={`text-xs sm:text-sm text-slate-600 font-medium leading-normal ${className}`}
+    className={`text-xs sm:text-sm text-[#6B7280] font-medium leading-normal ${className}`}
     {...props}
   >
     {children}
@@ -111,7 +111,7 @@ export const TextCaption: React.FC<TypographyProps> = ({
   ...props
 }) => (
   <Component
-    className={`text-xs text-slate-400 font-normal leading-tight ${className}`}
+    className={`text-xs text-[#6B7280] font-normal leading-tight ${className}`}
     {...props}
   >
     {children}

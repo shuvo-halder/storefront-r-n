@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { storefrontApi } from '../services/storefrontApi';
 import { Cart } from '../types/storefront';
 import { useSettings } from '../context/SettingsContext';
+import { useStorefront } from '../context/StorefrontContext';
 import { 
   trackGA4AddToCart, 
   trackGA4RemoveFromCart, 
@@ -14,6 +15,8 @@ export const CART_QUERY_KEY = ['cart'];
 
 export function useCart() {
   const queryClient = useQueryClient();
+  const { notifyAddToCart, notifyInfo, notifySuccess, notifyError, setIsCartOpen } = useStorefront();
+
   let currency = 'BDT';
   try {
     const { settings } = useSettings();
@@ -55,8 +58,25 @@ export function useCart() {
       const addedItem = updated.items.find(i => i.productId === productId);
       if (addedItem) {
         trackGA4AddToCart(addedItem, quantity, currency);
+        notifyAddToCart({
+          productName: addedItem.product.name,
+          image: addedItem.selectedVariant?.image || addedItem.product.images?.[0],
+          quantity: quantity,
+          onViewCart: () => setIsCartOpen(true),
+        });
+      } else {
+        notifySuccess('Added to Cart', `${quantity}× item added to your shopping bag.`, {
+          badge: 'Cart',
+          action: {
+            label: 'View Cart',
+            onClick: () => setIsCartOpen(true),
+          }
+        });
       }
     },
+    onError: (err) => {
+      notifyError(err, 'Could Not Add to Cart', 'We were unable to add this item to your cart. Please check stock availability.');
+    }
   });
 
   // PUT /cart/items/:itemId
@@ -81,6 +101,9 @@ export function useCart() {
         }
       }
     },
+    onError: (err) => {
+      notifyError(err, 'Quantity Update Failed', 'Unable to adjust item quantity. The maximum available stock may have been reached.');
+    }
   });
 
   // DELETE /cart/items/:itemId
@@ -96,8 +119,17 @@ export function useCart() {
       queryClient.setQueryData<Cart>(CART_QUERY_KEY, updated);
       if (targetItem) {
         trackGA4RemoveFromCart(targetItem, targetItem.quantity, currency);
+        notifyInfo('Item Removed', `${targetItem.product.name} was removed from your cart.`, {
+          badge: 'Cart',
+          image: targetItem.selectedVariant?.image || targetItem.product.images?.[0]
+        });
+      } else {
+        notifyInfo('Item Removed', 'Product was removed from your cart.');
       }
     },
+    onError: (err) => {
+      notifyError(err, 'Remove Failed', 'Unable to remove item from cart. Please refresh and try again.');
+    }
   });
 
   // DELETE /cart
@@ -113,18 +145,32 @@ export function useCart() {
       previousItems.forEach(item => {
         trackGA4RemoveFromCart(item, item.quantity, currency);
       });
+      notifyInfo('Cart Cleared', 'All items have been removed from your shopping bag.');
     },
+    onError: (err) => {
+      notifyError(err, 'Clear Cart Failed', 'Unable to clear cart.');
+    }
   });
 
   // POST /cart/coupons
   const applyCouponMutation = useMutation({
     mutationFn: async (code: string) => {
-      const updated = await storefrontApi.applyCoupon(code);
-      return updated;
+      const coupon = await storefrontApi.applyCoupon(code);
+      const updatedCart = await storefrontApi.getCart();
+      return { coupon, updatedCart, code };
     },
-    onSuccess: () => {
+    onSuccess: ({ coupon, updatedCart, code }) => {
+      queryClient.setQueryData<Cart>(CART_QUERY_KEY, updatedCart);
       queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
+      const discountVal = coupon?.discountAmount || updatedCart.discount || 0;
+      const discountFormatted = discountVal > 0 ? `$${discountVal.toFixed(2)}` : 'promo';
+      notifySuccess('Coupon Applied!', `Code "${code.toUpperCase()}" has been applied. You saved ${discountFormatted}.`, {
+        badge: 'Coupon'
+      });
     },
+    onError: (err) => {
+      notifyError(err, 'Invalid Coupon Code', 'The entered promo code is invalid, expired, or does not meet minimum order requirements.');
+    }
   });
 
   // Helper getters

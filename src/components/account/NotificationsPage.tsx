@@ -13,42 +13,42 @@ export const NotificationsPage: React.FC = () => {
 
   return (
     <AccountLayout activeTab="notifications">
-      <div className="bg-white rounded-[40px] p-8 sm:p-10 border border-slate-100 shadow-2xl shadow-slate-200/50 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="mb-10">
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Notification Preferences</h1>
-          <p className="text-slate-500 text-sm font-medium mt-1">Control how you want to be notified about your account activity.</p>
+      <div className="bg-white rounded-xl p-6 sm:p-8 border border-gray-200 shadow-xs space-y-6">
+        <div className="border-b border-gray-100 pb-6">
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Notification Preferences</h1>
+          <p className="text-gray-500 text-sm font-medium mt-1">Control how you want to be notified about your account activity.</p>
         </div>
 
-        <div className="space-y-10">
+        <div className="space-y-6">
           {preferences.map((pref) => (
-            <div key={pref.id} className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-10 border-b border-slate-100 last:border-0 last:pb-0">
+            <div key={pref.id} className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-gray-100 last:border-0 last:pb-0">
               <div className="max-w-md">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-slate-50 text-slate-400 rounded-xl">
-                    <pref.icon size={18} />
+                <div className="flex items-center gap-3 mb-1.5">
+                  <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 text-gray-500 flex items-center justify-center">
+                    <pref.icon size={16} />
                   </div>
-                  <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">{pref.label}</h3>
+                  <h3 className="text-sm font-bold text-gray-900">{pref.label}</h3>
                 </div>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">{pref.desc}</p>
+                <p className="text-xs text-gray-500 font-normal leading-relaxed">{pref.desc}</p>
               </div>
 
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-5">
                 {[
                   { key: 'email', icon: Mail, label: 'Email' },
                   { key: 'push', icon: Bell, label: 'Push' },
                   { key: 'sms', icon: Smartphone, label: 'SMS' },
                 ].map((channel) => (
-                  <label key={channel.key} className="flex flex-col items-center gap-2 cursor-pointer group">
+                  <label key={channel.key} className="flex flex-col items-center gap-1.5 cursor-pointer group">
                     <div className="relative">
                       <input 
                         type="checkbox" 
                         defaultChecked={(pref as any)[channel.key]} 
                         className="peer hidden" 
                       />
-                      <div className="w-12 h-6 bg-slate-200 rounded-full peer-checked:bg-primary transition-colors duration-300"></div>
-                      <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-sm peer-checked:translate-x-6 transition-transform duration-300"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-checked:bg-primary rounded-full transition-colors duration-200"></div>
+                      <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-xs peer-checked:translate-x-5 transition-transform duration-200"></div>
                     </div>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-slate-600 transition-colors">
+                    <span className="text-[11px] font-semibold text-gray-500 group-hover:text-gray-900 transition-colors">
                       {channel.label}
                     </span>
                   </label>
@@ -58,8 +58,8 @@ export const NotificationsPage: React.FC = () => {
           ))}
         </div>
 
-        <div className="mt-12 pt-8 border-t border-slate-100 flex justify-end">
-          <button className="px-8 py-3.5 bg-slate-900 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-800 transition-all shadow-lg">
+        <div className="pt-6 border-t border-gray-100 flex justify-end">
+          <button className="btn-primary text-xs cursor-pointer">
             Save Preferences
           </button>
         </div>

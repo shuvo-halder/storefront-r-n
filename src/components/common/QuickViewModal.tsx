@@ -127,18 +127,9 @@ export const QuickViewModal: React.FC = () => {
     setIsAddingLocal(true);
     try {
       await addToCart(currentProduct.id, quantity, selectedVariantId);
-      addToast({
-        title: 'Added to Cart!',
-        description: `${quantity}x ${currentProduct.name} added to your shopping bag.`,
-        type: 'success',
-      });
       closeQuickView();
-    } catch (err: any) {
-      addToast({
-        title: 'Add to Cart Failed',
-        description: err?.message || 'Could not add item to cart.',
-        type: 'error'
-      });
+    } catch {
+      // Handled centrally in useCart
     } finally {
       setIsAddingLocal(false);
     }

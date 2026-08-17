@@ -55,10 +55,10 @@ export const ProductCard = React.memo(({
 
   if (viewMode === 'list') {
     return (
-      <div className="group bg-white border border-border-default rounded-[2rem] p-5 shadow-premium hover:shadow-xl hover:border-accent/20 transition-all duration-300 flex flex-col sm:flex-row items-stretch gap-6 relative overflow-hidden">
+      <div className="group bg-white border border-[#E5E7EB] rounded-xl p-4 shadow-xs hover:border-gray-300 transition-colors flex flex-col sm:flex-row items-stretch gap-5 relative overflow-hidden">
         {/* Badges */}
         {product.discountPercent && (
-          <div className="absolute top-4 left-4 bg-accent text-white font-black text-[10px] px-3 py-1 rounded-full shadow-accent z-10">
+          <div className="absolute top-3 left-3 bg-[#DC2B53] text-white font-semibold text-[10px] px-2 py-0.5 rounded-md z-10">
             -{product.discountPercent}%
           </div>
         )}
@@ -66,7 +66,7 @@ export const ProductCard = React.memo(({
         {/* Thumbnail */}
         <div 
           onClick={handleCardClick}
-          className="w-full sm:w-56 h-56 bg-surface rounded-2xl overflow-hidden relative flex-shrink-0 cursor-pointer"
+          className="w-full sm:w-48 h-48 bg-[#F9FAFB] rounded-lg overflow-hidden relative flex-shrink-0 cursor-pointer"
         >
           <SmartImage 
             src={product.images[0]} 
@@ -74,7 +74,7 @@ export const ProductCard = React.memo(({
             fill
             fallbackType="product"
             fallbackLabel={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
           />
         </div>
 
@@ -82,7 +82,7 @@ export const ProductCard = React.memo(({
         <div className="flex-1 flex flex-col justify-between py-1">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-widest text-accent">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#DC2B53]">
                 {product.brand}
               </span>
               <RatingStars rating={product.rating} count={product.reviewCount} />
@@ -90,23 +90,23 @@ export const ProductCard = React.memo(({
 
             <h3 
               onClick={handleCardClick}
-              className="font-display font-bold text-xl text-primary group-hover:text-accent transition-colors cursor-pointer mt-2"
+              className="font-semibold text-lg text-[#111827] group-hover:text-[#DC2B53] transition-colors cursor-pointer mt-1.5"
             >
               {product.name}
             </h3>
 
-            <p className="text-sm text-slate-500 line-clamp-2 mt-2 leading-relaxed">
+            <p className="text-sm text-[#6B7280] line-clamp-2 mt-1.5 leading-relaxed">
               {product.description}
             </p>
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-border-default mt-4">
+          <div className="flex items-center justify-between pt-3 border-t border-[#E5E7EB] mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-primary">
+              <span className="text-xl font-bold text-[#111827]">
                 ${product.price.toFixed(2)}
               </span>
               {product.compareAtPrice && (
-                <span className="text-sm text-slate-400 line-through">
+                <span className="text-xs text-[#6B7280] line-through">
                   ${product.compareAtPrice.toFixed(2)}
                 </span>
               )}
@@ -115,24 +115,24 @@ export const ProductCard = React.memo(({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => openQuickView(product)}
-                className="p-3 bg-surface hover:bg-slate-200 text-primary rounded-xl transition-colors cursor-pointer"
+                className="p-2 bg-[#F9FAFB] hover:bg-gray-100 text-[#111827] rounded-lg transition-colors cursor-pointer border border-[#E5E7EB]"
                 title="Quick View"
               >
-                <Eye size={18} />
+                <Eye size={16} />
               </button>
               <button
                 onClick={() => toggleWishlist(product)}
-                className={`p-3 rounded-xl border transition-all cursor-pointer ${
-                  inWishlist ? 'bg-accent-muted border-accent/20 text-accent' : 'bg-surface border-transparent text-slate-600 hover:text-accent'
+                className={`p-2 rounded-lg border transition-colors cursor-pointer ${
+                  inWishlist ? 'bg-[#FDF0F3] border-[#DC2B53]/20 text-[#DC2B53]' : 'bg-[#F9FAFB] border-[#E5E7EB] text-[#6B7280] hover:text-[#DC2B53]'
                 }`}
                 title="Wishlist"
               >
-                <Heart size={18} fill={inWishlist ? '#DC2B53' : 'none'} />
+                <Heart size={16} fill={inWishlist ? '#DC2B53' : 'none'} />
               </button>
               <button
                 onClick={onAddToCart}
                 disabled={isLocalAdding || isAddingToCart}
-                className="py-3 px-6 bg-primary hover:bg-accent text-white font-bold text-sm rounded-xl shadow-premium transition-all flex items-center gap-2 cursor-pointer disabled:opacity-70"
+                className="py-2 px-4 bg-[#DC2B53] hover:bg-[#C52247] text-white font-semibold text-sm rounded-lg transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-70 shadow-xs"
               >
                 {isLocalAdding ? <Loader2 size={16} className="animate-spin" /> : <ShoppingCart size={16} />}
                 <span>{isLocalAdding ? 'Adding...' : 'Add to Cart'}</span>
@@ -145,17 +145,17 @@ export const ProductCard = React.memo(({
   }
 
   return (
-    <div className="group bg-white border border-slate-100 rounded-[2rem] p-4 shadow-premium hover:shadow-2xl hover:border-accent/10 transition-all duration-500 flex flex-col justify-between relative overflow-hidden">
+    <div className="group bg-white border border-[#E5E7EB] rounded-xl p-3.5 shadow-xs hover:border-gray-300 transition-colors flex flex-col justify-between relative overflow-hidden">
       
       {/* Badges Top Left */}
-      <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5 items-start">
+      <div className="absolute top-3 left-3 z-10 flex flex-col gap-1 items-start">
         {product.discountPercent && (
-          <span className="bg-accent text-white font-black text-[9px] px-3 py-1 rounded-full shadow-lg shadow-accent/20 tracking-widest uppercase">
+          <span className="bg-[#DC2B53] text-white font-semibold text-[10px] px-2 py-0.5 rounded-md">
             -{product.discountPercent}%
           </span>
         )}
         {product.isNew && (
-          <span className="bg-[#101A25] text-white font-black text-[9px] uppercase px-3 py-1 rounded-full shadow-lg tracking-widest">
+          <span className="bg-[#111827] text-white font-semibold text-[10px] px-2 py-0.5 rounded-md">
             NEW
           </span>
         )}
@@ -164,20 +164,20 @@ export const ProductCard = React.memo(({
       {/* Wishlist Button Top Right */}
       <button
         onClick={() => toggleWishlist(product)}
-        className={`absolute top-4 right-4 z-10 p-2.5 rounded-full backdrop-blur-md transition-all shadow-premium cursor-pointer ${
+        className={`absolute top-3 right-3 z-10 p-2 rounded-full border transition-colors cursor-pointer ${
           inWishlist 
-            ? 'bg-white/90 text-accent shadow-accent scale-110' 
-            : 'bg-white/80 text-slate-400 hover:text-accent hover:bg-white'
+            ? 'bg-[#FDF0F3] text-[#DC2B53] border-[#DC2B53]/20' 
+            : 'bg-white/90 text-[#6B7280] border-[#E5E7EB] hover:text-[#DC2B53] hover:bg-white'
         }`}
         aria-label="Wishlist"
       >
-        <Heart size={18} fill={inWishlist ? '#DC2B53' : 'none'} />
+        <Heart size={16} fill={inWishlist ? '#DC2B53' : 'none'} />
       </button>
 
       {/* Image Gallery Stage with Quick View Overlay */}
       <div 
         onClick={handleCardClick}
-        className="relative aspect-square bg-surface rounded-2xl overflow-hidden cursor-pointer group/img mb-4"
+        className="relative aspect-square bg-[#F9FAFB] rounded-lg overflow-hidden cursor-pointer group/img mb-3"
       >
         <SmartImage 
           src={product.images[0]} 
@@ -199,31 +199,31 @@ export const ProductCard = React.memo(({
         )}
 
         {/* Quick View Hover Trigger */}
-        <div className="absolute inset-x-4 bottom-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+        <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <button
             onClick={(e) => {
               e.stopPropagation();
               openQuickView(product);
             }}
-            className="w-full py-3 px-4 bg-white/95 hover:bg-white text-primary font-bold text-xs rounded-xl shadow-xl flex items-center justify-center gap-2 transition-colors cursor-pointer backdrop-blur-md"
+            className="w-full py-2 px-3 bg-white/95 hover:bg-white text-[#111827] font-semibold text-xs rounded-lg shadow-sm border border-[#E5E7EB] flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
-            <Eye size={16} className="text-accent" />
+            <Eye size={14} className="text-[#DC2B53]" />
             <span>Quick View</span>
           </button>
         </div>
       </div>
 
       {/* Product Information */}
-      <div className="space-y-2 flex-1 flex flex-col justify-between">
+      <div className="space-y-1.5 flex-1 flex flex-col justify-between">
         <div>
-          <div className="flex items-center justify-between text-[11px] font-bold text-slate-400">
-            <span className="text-accent uppercase tracking-widest">{product.brand}</span>
+          <div className="flex items-center justify-between text-[11px] font-medium text-[#6B7280]">
+            <span className="text-[#DC2B53] font-semibold uppercase tracking-wider">{product.brand}</span>
             <RatingStars rating={product.rating} count={product.reviewCount} showNumber={false} />
           </div>
 
           <h3 
             onClick={handleCardClick}
-            className="font-bold text-sm sm:text-base text-primary group-hover:text-accent transition-colors cursor-pointer line-clamp-2 mt-1.5 leading-snug"
+            className="font-medium text-sm text-[#111827] group-hover:text-[#DC2B53] transition-colors cursor-pointer line-clamp-2 mt-1 leading-snug"
           >
             {product.name}
           </h3>
@@ -231,17 +231,17 @@ export const ProductCard = React.memo(({
 
         {/* Color variants indication */}
         {product.variants && (
-          <div className="flex items-center gap-1.5 pt-1">
+          <div className="flex items-center gap-1 pt-0.5">
             {product.variants.slice(0, 3).map((v) => (
               <span 
                 key={v.id} 
-                className="w-3 h-3 rounded-full border border-border-default shadow-sm" 
+                className="w-2.5 h-2.5 rounded-full border border-gray-300" 
                 style={{ backgroundColor: v.colorHex || '#94a3b8' }} 
                 title={v.name}
               />
             ))}
             {product.variants.length > 3 && (
-              <span className="text-[10px] text-slate-400 font-bold pl-0.5">
+              <span className="text-[10px] text-[#6B7280] font-medium pl-0.5">
                 +{product.variants.length - 3}
               </span>
             )}
@@ -249,14 +249,14 @@ export const ProductCard = React.memo(({
         )}
 
         {/* Price and Cart Row */}
-        <div className="pt-4 flex items-center justify-between mt-auto border-t border-slate-50">
+        <div className="pt-2.5 flex items-center justify-between mt-auto border-t border-[#E5E7EB]">
           <div className="flex flex-col">
             {product.compareAtPrice && (
-              <span className="text-[10px] text-slate-400 line-through font-bold">
+              <span className="text-[10px] text-[#6B7280] line-through font-medium">
                 ${product.compareAtPrice.toFixed(2)}
               </span>
             )}
-            <span className="text-lg font-display font-black text-[#101A25]">
+            <span className="text-base font-bold text-[#111827]">
               ${product.price.toFixed(2)}
             </span>
           </div>
@@ -264,13 +264,13 @@ export const ProductCard = React.memo(({
           <button
             onClick={onAddToCart}
             disabled={isLocalAdding || isAddingToCart}
-            className="w-10 h-10 bg-[#101A25] hover:bg-accent text-white rounded-xl shadow-xl transition-all cursor-pointer group/btn disabled:opacity-70 flex items-center justify-center"
+            className="w-9 h-9 bg-[#DC2B53] hover:bg-[#C52247] text-white rounded-lg shadow-xs transition-colors cursor-pointer disabled:opacity-70 flex items-center justify-center"
             title="Add to Cart"
           >
             {isLocalAdding ? (
-              <Loader2 size={16} className="animate-spin" />
+              <Loader2 size={15} className="animate-spin" />
             ) : (
-              <ShoppingCart size={16} className="group-hover/btn:scale-110 transition-transform" />
+              <ShoppingCart size={15} />
             )}
           </button>
         </div>

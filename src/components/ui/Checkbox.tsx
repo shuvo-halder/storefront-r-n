@@ -21,8 +21,8 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
             className="peer sr-only"
             {...props}
           />
-          <div className="w-4 h-4 rounded-md border border-slate-300 bg-white peer-checked:bg-primary peer-checked:border-primary group-hover:border-slate-400 transition-all flex items-center justify-center peer-focus-visible:ring-2 peer-focus-visible:ring-primary/30">
-            <Check size={12} className="text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+          <div className="w-4 h-4 rounded border border-[#E5E7EB] bg-white peer-checked:bg-[#DC2B53] peer-checked:border-[#DC2B53] group-hover:border-gray-400 transition-colors flex items-center justify-center peer-focus-visible:ring-2 peer-focus-visible:ring-[#DC2B53]/20">
+            <Check size={12} className="text-white opacity-0 peer-checked:opacity-100 transition-opacity stroke-[3]" />
           </div>
         </div>
 
@@ -31,13 +31,13 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
             {label && (
               <label
                 htmlFor={generatedId}
-                className="font-semibold text-slate-800 group-hover:text-slate-900 cursor-pointer"
+                className="font-medium text-[#111827] group-hover:text-black cursor-pointer"
               >
                 {label}
               </label>
             )}
             {description && (
-              <p className="text-slate-500 mt-0.5">{description}</p>
+              <p className="text-[#6B7280] mt-0.5">{description}</p>
             )}
           </div>
         )}

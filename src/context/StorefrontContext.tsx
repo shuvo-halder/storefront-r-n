@@ -12,9 +12,13 @@ import {
   Category,
   Brand
 } from '../types/storefront';
+import { ToastMessage, ToastOptions, ToastVariant, ToastAction } from '../types/feedback';
+import { createToastPayload, sanitizeErrorMessage } from '../utils/feedback';
 import { storefrontApi } from '../services/storefrontApi';
 import { trackGA4AddToWishlist } from '../utils/analytics';
 import confetti from 'canvas-confetti';
+
+export type { ToastMessage, ToastOptions, ToastVariant, ToastAction };
 
 export type AppView = 
   | 'home' 
@@ -59,14 +63,6 @@ export interface ViewParams {
   searchQuery?: string;
   orderId?: string;
   method?: string;
-}
-
-export interface ToastMessage {
-  id: string;
-  title: string;
-  description?: string;
-  type?: 'success' | 'error' | 'info';
-  image?: string;
 }
 
 const DEFAULT_FILTERS: ProductFilterState = {
@@ -127,10 +123,17 @@ interface StorefrontContextType {
   userOrders: Order[];
   refreshOrders: () => Promise<void>;
 
-  // Toasts
+  // Centralized Toasts & Feedback System
   toasts: ToastMessage[];
-  addToast: (toast: Omit<ToastMessage, 'id'>) => void;
+  addToast: (toast: (Partial<ToastMessage> & { title: string }) | Omit<ToastMessage, 'id' | 'timestamp'>) => void;
   removeToast: (id: string) => void;
+  clearAllToasts: () => void;
+  notifySuccess: (title: string, description?: string, options?: ToastOptions) => void;
+  notifyError: (error: unknown, fallbackTitle?: string, fallbackMessage?: string, options?: ToastOptions) => void;
+  notifyWarning: (title: string, description?: string, options?: ToastOptions) => void;
+  notifyInfo: (title: string, description?: string, options?: ToastOptions) => void;
+  notifyAddToCart: (payload: { productName: string; image?: string; quantity?: number; onViewCart?: () => void }) => void;
+  notifyWishlist: (payload: { productName: string; image?: string; action: 'added' | 'removed'; onViewWishlist?: () => void }) => void;
   
   // Global loading
   isLoading: boolean;
@@ -326,19 +329,95 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
     } catch {}
   };
 
-  // Toast Notification
-  const addToast = (toast: Omit<ToastMessage, 'id'>) => {
-    const id = Math.random().toString(36).substring(2, 9);
-    const newToast = { ...toast, id };
-    setToasts(prev => [newToast, ...prev].slice(0, 5));
-
-    setTimeout(() => {
-      removeToast(id);
-    }, 4000);
+  // Toast Notification & Centralized Feedback Engine
+  const addToast = (toast: (Partial<ToastMessage> & { title: string }) | Omit<ToastMessage, 'id' | 'timestamp'>) => {
+    const payload = createToastPayload(
+      toast.type || 'info',
+      toast.title,
+      toast.description || toast.message,
+      toast as ToastOptions
+    );
+    setToasts(prev => [payload, ...prev].slice(0, 6));
   };
 
   const removeToast = (id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
+  };
+
+  const clearAllToasts = () => {
+    setToasts([]);
+  };
+
+  const notifySuccess = (title: string, description?: string, options?: ToastOptions) => {
+    const payload = createToastPayload('success', title, description, options);
+    setToasts(prev => [payload, ...prev].slice(0, 6));
+  };
+
+  const notifyError = (error: unknown, fallbackTitle: string = 'Action Failed', fallbackMessage?: string, options?: ToastOptions) => {
+    const sanitized = sanitizeErrorMessage(error, fallbackTitle, fallbackMessage);
+    const payload = createToastPayload('error', sanitized.title, sanitized.message, {
+      ...options,
+      badge: options?.badge || 'Notice',
+    });
+    setToasts(prev => [payload, ...prev].slice(0, 6));
+  };
+
+  const notifyWarning = (title: string, description?: string, options?: ToastOptions) => {
+    const payload = createToastPayload('warning', title, description, options);
+    setToasts(prev => [payload, ...prev].slice(0, 6));
+  };
+
+  const notifyInfo = (title: string, description?: string, options?: ToastOptions) => {
+    const payload = createToastPayload('info', title, description, options);
+    setToasts(prev => [payload, ...prev].slice(0, 6));
+  };
+
+  const notifyAddToCart = (payload: { productName: string; image?: string; quantity?: number; onViewCart?: () => void }) => {
+    const qty = payload.quantity || 1;
+    const toast = createToastPayload(
+      'success',
+      'Added to Cart',
+      `${qty}× ${payload.productName} added to your bag.`,
+      {
+        image: payload.image,
+        badge: 'Cart',
+        action: {
+          label: 'View Cart',
+          onClick: () => {
+            if (payload.onViewCart) {
+              payload.onViewCart();
+            } else {
+              setIsCartOpen(true);
+            }
+          }
+        }
+      }
+    );
+    setToasts(prev => [toast, ...prev].slice(0, 6));
+  };
+
+  const notifyWishlist = (payload: { productName: string; image?: string; action: 'added' | 'removed'; onViewWishlist?: () => void }) => {
+    const isAdded = payload.action === 'added';
+    const toast = createToastPayload(
+      isAdded ? 'success' : 'info',
+      isAdded ? 'Saved to Wishlist' : 'Removed from Wishlist',
+      isAdded ? `${payload.productName} has been saved to your wishlist.` : `${payload.productName} was removed from your wishlist.`,
+      {
+        image: payload.image,
+        badge: 'Wishlist',
+        action: isAdded ? {
+          label: 'View Wishlist',
+          onClick: () => {
+            if (payload.onViewWishlist) {
+              payload.onViewWishlist();
+            } else {
+              navigateTo('wishlist');
+            }
+          }
+        } : undefined
+      }
+    );
+    setToasts(prev => [toast, ...prev].slice(0, 6));
   };
 
   // Initial Data Load
@@ -423,14 +502,21 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
   // Wishlist
   const toggleWishlist = (productOrId: string | Product) => {
     const productId = typeof productOrId === 'string' ? productOrId : productOrId.id;
+    const productName = typeof productOrId === 'string' ? 'Product' : productOrId.name;
+    const productImage = typeof productOrId === 'string' ? undefined : (productOrId.images?.[0] || undefined);
+
     setWishlist(prev => {
       const exists = prev.includes(productId);
       const updated = exists ? prev.filter(id => id !== productId) : [...prev, productId];
-      localStorage.setItem('vyzobd_wishlist', JSON.stringify(updated));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('vyzobd_wishlist', JSON.stringify(updated));
+      }
       
-      addToast({
-        title: exists ? 'Removed from Wishlist' : 'Saved to Wishlist',
-        type: 'info',
+      notifyWishlist({
+        productName: productName || 'Product',
+        image: productImage,
+        action: exists ? 'removed' : 'added',
+        onViewWishlist: () => navigateTo('wishlist'),
       });
 
       if (!exists) {
@@ -533,6 +619,13 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
     toasts,
     addToast,
     removeToast,
+    clearAllToasts,
+    notifySuccess,
+    notifyError,
+    notifyWarning,
+    notifyInfo,
+    notifyAddToCart,
+    notifyWishlist,
     isLoading,
   }), [
     currentView,

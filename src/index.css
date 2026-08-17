@@ -1,72 +1,98 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap');
 @import "tailwindcss";
 
 @layer base {
   :root {
-    /* Core Vyzobd Brand Palette */
-    --color-primary: #101A25;          /* Navy Dark */
-    --color-accent: #DC2B53;           /* Primary Accent */
-    --color-accent-hover: #C0264A;     /* Slightly darker for hover */
-    --color-accent-muted: rgba(220, 43, 83, 0.1);
+    /* Brand Color System */
+    --color-primary: #DC2B53;
+    --color-primary-hover: #C52247;
+    --color-primary-light: #FDF0F3;
     
+    --color-accent: #DC2B53;
+    --color-accent-hover: #C52247;
+    --color-accent-muted: #FDF0F3;
+
     /* Neutrals & Surfaces */
-    --color-bg-app: #FFFFFF;
-    --color-surface: #F8FAFC;
-    --color-border: #E2E8F0;
-    --color-text-base: #1E293B;
-    --color-text-muted: #64748B;
-    --color-text-inverse: #FFFFFF;
+    --color-text-main: #111827;
+    --color-text-muted: #6B7280;
+    --color-border: #E5E7EB;
+    --color-bg-page: #FFFFFF;
+    --color-bg-subtle: #F9FAFB;
+    --color-dark: #111827;
+
+    /* Feedback Colors */
+    --color-success: #16A34A;
+    --color-warning: #D97706;
+    --color-error: #DC2626;
 
     /* Spacing & Layout Tokens */
     --spacing-page: 1.5rem;
     --max-width-container: 1440px;
 
-    /* Shadow System */
-    --shadow-premium: 0 10px 30px -10px rgba(16, 26, 37, 0.08);
-    --shadow-accent: 0 10px 25px -5px rgba(220, 43, 83, 0.15);
+    /* Minimal Shadow System */
+    --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+    --shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
   }
 
   body {
-    background-color: var(--color-bg-app);
-    color: var(--color-text-base);
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--color-bg-page);
+    color: var(--color-text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     -webkit-font-smoothing: antialiased;
-    line-height: 1.6;
+    line-height: 1.5;
   }
 
-  h1, h2, h3, h4, .font-display {
-    font-family: 'Playfair Display', serif;
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     font-weight: 700;
+    color: var(--color-text-main);
   }
 
   /* Smooth Entry Transitions */
   .page-transition {
-    @apply transition-all duration-500 ease-out;
+    @apply transition-all duration-300 ease-out;
   }
 }
 
 @theme {
+  /* System Font Stack */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
   /* Brand Colors */
-  --color-primary: var(--color-primary);
-  --color-accent: var(--color-accent);
-  --color-accent-hover: var(--color-accent-hover);
-  --color-accent-muted: var(--color-accent-muted);
+  --color-primary: #DC2B53;
+  --color-primary-hover: #C52247;
+  --color-primary-light: #FDF0F3;
+  
+  --color-secondary: #111827;
+  --color-secondary-hover: #1f2937;
+  
+  --color-accent: #DC2B53;
+  --color-accent-hover: #C52247;
+  --color-accent-muted: #FDF0F3;
   
   /* Backgrounds */
-  --color-bg-app: var(--color-bg-app);
-  --color-surface: var(--color-surface);
+  --color-bg-app: #FFFFFF;
+  --color-surface: #F9FAFB;
+  --color-surface-subtle: #F9FAFB;
   
-  /* Borders */
-  --color-border-default: var(--color-border);
+  /* Text & Borders */
+  --color-text-main: #111827;
+  --color-text-muted: #6B7280;
+  --color-border-default: #E5E7EB;
+  --color-border-subtle: #E5E7EB;
+
+  /* Status Colors */
+  --color-success: #16A34A;
+  --color-warning: #D97706;
+  --color-error: #DC2626;
+  --color-footer-dark: #111827;
   
   /* Shadows */
-  --shadow-premium: var(--shadow-premium);
-  --shadow-accent: var(--shadow-accent);
+  --shadow-premium: var(--shadow-card);
+  --shadow-accent: 0 4px 12px -2px rgba(220, 43, 83, 0.2);
 
-  /* Typography */
-  --font-sans: 'Plus Jakarta Sans', sans-serif;
-  --font-display: 'Playfair Display', serif;
-  
   /* Custom Spacing */
   --spacing-container: var(--spacing-page);
 }
@@ -77,19 +103,19 @@
   }
 
   .btn-primary {
-    @apply px-8 py-3 bg-primary text-white font-bold rounded-xl hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/10;
+    @apply px-6 py-2.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors shadow-xs focus:ring-2 focus:ring-primary/20 focus:outline-none cursor-pointer;
   }
 
   .btn-accent {
-    @apply px-8 py-3 bg-accent text-white font-bold rounded-xl hover:bg-accent-hover transition-all active:scale-95 shadow-accent;
+    @apply px-6 py-2.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors shadow-xs focus:ring-2 focus:ring-primary/20 focus:outline-none cursor-pointer;
   }
 
   .card-vyzobd {
-    @apply bg-white border border-border-default rounded-3xl p-6 shadow-premium hover:shadow-xl transition-all duration-300;
+    @apply bg-white border border-[#E5E7EB] rounded-xl p-5 shadow-xs hover:border-gray-300 transition-colors;
   }
 
   .input-vyzobd {
-    @apply w-full px-5 py-3.5 bg-surface border border-border-default rounded-2xl text-sm focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all outline-none;
+    @apply w-full px-4 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-sm text-[#111827] placeholder:text-[#6B7280] focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors outline-none;
   }
 }
 
@@ -101,6 +127,9 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-primary);
-  border-radius: 10px;
+  background: #E5E7EB;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #6B7280;
 }

@@ -96,7 +96,7 @@ export const HeroSection: React.FC = () => {
         
         {/* Main Hero Slider Area */}
         {activeHero && (
-          <div className={`${displayedPromos.length > 0 ? 'lg:col-span-8' : 'lg:col-span-12'} relative rounded-[40px] overflow-hidden bg-[#101A25] text-white border border-slate-800 shadow-2xl flex flex-col justify-between min-h-[500px] lg:min-h-[560px] p-8 sm:p-14 group`}>
+          <div className={`${displayedPromos.length > 0 ? 'lg:col-span-8' : 'lg:col-span-12'} relative rounded-2xl overflow-hidden bg-[#111827] text-white border border-gray-800 shadow-sm flex flex-col justify-between min-h-[460px] lg:min-h-[500px] p-6 sm:p-10 group`}>
             
             {/* Dynamic Background Image (Desktop & Mobile) */}
             <div className="absolute inset-0 z-0">
@@ -109,7 +109,7 @@ export const HeroSection: React.FC = () => {
                   fill
                   fallbackType="banner"
                   fallbackLabel={activeHero.title}
-                  className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-all duration-1000 ease-out" 
+                  className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-all duration-700 ease-out" 
                 />
               </div>
               {/* Desktop Image */}
@@ -121,17 +121,17 @@ export const HeroSection: React.FC = () => {
                   fill
                   fallbackType="banner"
                   fallbackLabel={activeHero.title}
-                  className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-all duration-1000 ease-out" 
+                  className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-all duration-700 ease-out" 
                 />
               </div>
-              <div className={`absolute inset-0 bg-gradient-to-r ${activeHero.bgColor || 'from-[#101A25] via-[#101A25]/80 to-transparent'}`} />
+              <div className={`absolute inset-0 bg-gradient-to-r ${activeHero.bgColor || 'from-[#111827] via-[#111827]/80 to-transparent'}`} />
             </div>
 
             {/* Top Row: Badge & Navigation Arrows */}
             <div className="relative z-10 flex items-center justify-between gap-4">
               {activeHero.badge ? (
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/20 border border-accent/30 text-white text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-md shadow-lg shadow-accent/10">
-                  <Sparkles size={14} className="text-accent animate-pulse" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#DC2B53]/20 border border-[#DC2B53]/30 text-white text-xs font-semibold backdrop-blur-xs">
+                  <Sparkles size={13} className="text-[#DC2B53]" />
                   {activeHero.badge}
                 </span>
               ) : <div />}
@@ -141,49 +141,49 @@ export const HeroSection: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentSlide((prev) => (prev === 0 ? heroBanners.length - 1 : prev - 1))}
-                    className="w-9 h-9 rounded-full bg-slate-900/80 hover:bg-primary text-white border border-slate-700/80 flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+                    className="w-8 h-8 rounded-full bg-black/40 hover:bg-[#DC2B53] text-white border border-white/20 flex items-center justify-center transition-colors cursor-pointer"
                     aria-label="Previous Slide"
                   >
-                    <ChevronLeft size={18} />
+                    <ChevronLeft size={16} />
                   </button>
                   <button
                     onClick={() => setCurrentSlide((prev) => (prev + 1) % heroBanners.length)}
-                    className="w-9 h-9 rounded-full bg-slate-900/80 hover:bg-primary text-white border border-slate-700/80 flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+                    className="w-8 h-8 rounded-full bg-black/40 hover:bg-[#DC2B53] text-white border border-white/20 flex items-center justify-center transition-colors cursor-pointer"
                     aria-label="Next Slide"
                   >
-                    <ChevronRight size={18} />
+                    <ChevronRight size={16} />
                   </button>
                 </div>
               )}
             </div>
 
             {/* Hero Content Body */}
-            <div className="relative z-10 my-auto space-y-6 max-w-2xl py-8">
-              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-display font-black text-white tracking-tighter leading-[0.95] uppercase">
+            <div className="relative z-10 my-auto space-y-4 max-w-2xl py-6">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
                 {activeHero.title}
               </h1>
               
               {(activeHero.subtitle || activeHero.description) && (
-                <p className="text-sm sm:text-base text-slate-300 font-medium leading-relaxed max-w-lg">
+                <p className="text-sm sm:text-base text-gray-300 font-normal leading-relaxed max-w-lg">
                   {activeHero.subtitle || activeHero.description}
                 </p>
               )}
 
               {/* Price Tag & Discount */}
               {(activeHero.price || activeHero.comparePrice || activeHero.discount) && (
-                <div className="flex items-center gap-4 pt-2">
+                <div className="flex items-center gap-3 pt-1">
                   {activeHero.price && (
-                    <span className="text-3xl sm:text-4xl font-display font-black text-white">
+                    <span className="text-2xl sm:text-3xl font-bold text-white">
                       {activeHero.price}
                     </span>
                   )}
                   {activeHero.comparePrice && (
-                    <span className="text-lg font-bold text-slate-500 line-through">
+                    <span className="text-sm font-medium text-gray-400 line-through">
                       {activeHero.comparePrice}
                     </span>
                   )}
                   {activeHero.discount && (
-                    <span className="px-3 py-1 bg-accent text-white text-[11px] font-black rounded-lg uppercase tracking-widest shadow-lg shadow-accent/20">
+                    <span className="px-2.5 py-0.5 bg-[#DC2B53] text-white text-xs font-semibold rounded-md">
                       {activeHero.discount}
                     </span>
                   )}
@@ -192,29 +192,29 @@ export const HeroSection: React.FC = () => {
 
               {/* CTAs */}
               {heroCtaText && (
-                <div className="flex flex-wrap items-center gap-4 pt-6">
+                <div className="flex flex-wrap items-center gap-4 pt-3">
                   <button
                     onClick={() => handleBannerClick(activeHero)}
-                    className="px-8 py-4 bg-accent hover:bg-accent/90 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-2xl shadow-accent/40 transition-all hover:-translate-y-1 active:scale-95 flex items-center gap-3 cursor-pointer"
+                    className="px-6 py-2.5 bg-[#DC2B53] hover:bg-[#C52247] text-white font-semibold text-sm rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
                   >
                     <span>{heroCtaText}</span>
-                    <ArrowRight size={18} />
+                    <ArrowRight size={16} />
                   </button>
                 </div>
               )}
             </div>
 
             {/* Bottom Bar: Indicators & Trust Tags */}
-            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-slate-800/80">
+            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-gray-800">
               {/* Indicators */}
               {heroBanners.length > 1 ? (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   {heroBanners.map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCurrentSlide(idx)}
-                      className={`h-2 rounded-full transition-all cursor-pointer ${
-                        currentSlide === idx ? 'w-8 bg-accent' : 'w-2 bg-slate-700 hover:bg-slate-500'
+                      className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                        currentSlide === idx ? 'w-6 bg-[#DC2B53]' : 'w-2 bg-gray-600 hover:bg-gray-400'
                       }`}
                       aria-label={`Go to slide ${idx + 1}`}
                     />
@@ -223,7 +223,7 @@ export const HeroSection: React.FC = () => {
               ) : <div />}
 
               {/* Feature Pills */}
-              <div className="flex items-center gap-4 text-[11px] font-semibold text-slate-400">
+              <div className="flex items-center gap-4 text-xs font-medium text-gray-400">
                 <span className="flex items-center gap-1">
                   <ShieldCheck size={14} className="text-emerald-400" />
                   2-Year Warranty

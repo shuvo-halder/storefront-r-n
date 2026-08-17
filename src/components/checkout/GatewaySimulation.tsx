@@ -39,42 +39,40 @@ export const GatewaySimulation: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center p-6 text-center">
-      <div className="max-w-sm w-full space-y-8">
+    <div className="fixed inset-0 bg-[#F9FAFB] z-[9999] flex flex-col items-center justify-center p-6 text-center">
+      <div className="max-w-sm w-full bg-white border border-[#E5E7EB] rounded-xl p-8 shadow-xs space-y-6">
         <div className="flex flex-col items-center">
-          <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center mb-4 border border-slate-100 shadow-sm relative overflow-hidden">
-             <Landmark className="text-slate-900" size={32} />
-             <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent"></div>
+          <div className="w-14 h-14 bg-[#FDF0F3] rounded-full flex items-center justify-center mb-3 border border-[#DC2B53]/20">
+             <Landmark className="text-[#DC2B53]" size={26} />
           </div>
-          <h1 className="text-xl font-black text-slate-900 mb-1">{methodNames[method as string] || 'Secure Payment Gateway'}</h1>
-          <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Processing Transaction #{orderId}</p>
+          <h1 className="text-base font-bold text-[#111827] mb-1">{methodNames[method as string] || 'Secure Payment Gateway'}</h1>
+          <p className="text-xs text-[#6B7280]">Processing Transaction #{orderId}</p>
         </div>
 
-        <div className="space-y-4">
-          <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+        <div className="space-y-2.5">
+          <div className="w-full h-2 bg-[#F9FAFB] rounded-full overflow-hidden border border-[#E5E7EB]">
             <div 
-              className="h-full bg-primary transition-all duration-300 ease-out" 
+              className="h-full bg-[#DC2B53] transition-all duration-300 ease-out" 
               style={{ width: `${progress}%` }}
             ></div>
           </div>
-          <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          <div className="flex justify-between items-center text-[11px] font-medium text-[#6B7280]">
             <span>Verifying Details</span>
-            <span>{progress}%</span>
+            <span className="font-semibold text-[#111827]">{progress}%</span>
           </div>
         </div>
 
-        <div className="pt-8 space-y-4 border-t border-slate-100">
-          <div className="flex items-center justify-center gap-2 text-emerald-600">
-            <ShieldCheck size={18} />
-            <span className="text-xs font-bold">Bank-Grade Encryption Active</span>
+        <div className="pt-6 space-y-3 border-t border-[#E5E7EB]">
+          <div className="flex items-center justify-center gap-1.5 text-emerald-600">
+            <ShieldCheck size={16} />
+            <span className="text-xs font-semibold">Bank-Grade Encryption Active</span>
           </div>
-          <p className="text-[10px] text-slate-400 font-medium max-w-[250px] mx-auto">
+          <p className="text-[11px] text-[#6B7280] leading-relaxed max-w-[260px] mx-auto">
             Please do not close this window or press the back button while your payment is being processed.
           </p>
-          <div className="flex items-center justify-center gap-4 opacity-30">
-            <Lock size={16} />
-            <div className="w-px h-4 bg-slate-300"></div>
-            <span className="text-[10px] font-black uppercase tracking-widest">PCI DSS Compliant</span>
+          <div className="flex items-center justify-center gap-2 pt-2 text-[#6B7280] text-[10px] font-medium">
+            <Lock size={12} />
+            <span>PCI DSS Compliant</span>
           </div>
         </div>
       </div>

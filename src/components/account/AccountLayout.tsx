@@ -38,7 +38,7 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
   if (isLoading || !user) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -61,20 +61,19 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
   };
 
   return (
-    <div className="bg-slate-50 min-h-screen pt-24 pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+    <div className="bg-[#F9FAFB] min-h-screen pt-24 pb-16">
+      <div className="container-vyzobd">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Sidebar */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-[40px] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden sticky top-28">
+            <div className="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden sticky top-28">
               
               {/* User Brief */}
-              <div className="p-8 bg-slate-900 text-white relative overflow-hidden">
+              <div className="p-6 bg-[#111827] text-white relative overflow-hidden">
                 <div className="relative z-10">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 relative overflow-hidden">
+                  <div className="flex items-center gap-3.5 mb-3">
+                    <div className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center border border-white/20 relative overflow-hidden flex-shrink-0">
                       {user?.avatar ? (
                         <SmartImage 
                           src={user.avatar} 
@@ -84,24 +83,23 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
                           className="w-full h-full object-cover" 
                         />
                       ) : (
-                        <User size={32} className="text-white/40" />
+                        <User size={28} className="text-white/60" />
                       )}
                     </div>
-                    <div>
-                      <h3 className="font-black text-lg leading-tight truncate max-w-[140px]">{user?.fullName || 'Account User'}</h3>
-                      <div className="flex items-center gap-1.5 text-rose-400">
-                        <ShieldCheck size={12} />
-                        <span className="text-[9px] font-black uppercase tracking-widest">Verified Member</span>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-base text-white truncate">{user?.fullName || 'Account User'}</h3>
+                      <div className="flex items-center gap-1.5 text-primary-light text-xs mt-0.5">
+                        <ShieldCheck size={13} className="text-primary" />
+                        <span className="text-[11px] font-semibold text-gray-300">Verified Member</span>
                       </div>
                     </div>
                   </div>
-                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest">{user?.email || 'user@example.com'}</div>
+                  <div className="text-xs text-gray-400 font-medium truncate">{user?.email || 'user@example.com'}</div>
                 </div>
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
               </div>
 
               {/* Navigation */}
-              <nav className="p-4">
+              <nav className="p-3">
                 <div className="space-y-1">
                   {menuItems.map((item) => {
                     const Icon = item.icon;
@@ -112,41 +110,36 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
                         key={item.id}
                         href={item.href}
                         className={`
-                          w-full flex items-center justify-between p-3.5 rounded-2xl transition-all duration-300 group
-                          ${isActive ? 'bg-primary/5 text-primary shadow-sm font-bold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}
+                          w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-sm transition-colors group
+                          ${isActive 
+                            ? 'bg-primary-light text-primary font-semibold' 
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-medium'}
                         `}
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`
-                            p-2 rounded-xl transition-colors
-                            ${isActive ? 'bg-primary text-white' : 'bg-slate-50 text-slate-400 group-hover:bg-white group-hover:text-slate-600'}
-                          `}>
-                            <Icon size={18} />
-                          </div>
-                          <span className="text-sm font-bold">{item.label}</span>
+                          <Icon size={18} className={isActive ? 'text-primary' : 'text-gray-400 group-hover:text-gray-600'} />
+                          <span>{item.label}</span>
                         </div>
-                        <ChevronRight size={14} className={`transition-transform duration-300 ${isActive ? 'translate-x-1 opacity-100' : 'opacity-0 -translate-x-2'}`} />
+                        <ChevronRight size={14} className={`transition-transform duration-200 ${isActive ? 'text-primary translate-x-0.5' : 'opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 text-gray-400'}`} />
                       </Link>
                     );
                   })}
                 </div>
 
-                <div className="mt-8 pt-4 border-t border-slate-100">
+                <div className="mt-4 pt-3 border-t border-gray-100">
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 p-3.5 text-primary hover:bg-primary/5 rounded-2xl transition-all font-bold text-sm cursor-pointer"
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 text-gray-600 hover:text-primary hover:bg-primary-light rounded-lg transition-colors font-medium text-sm cursor-pointer"
                   >
-                    <div className="p-2 bg-primary/10 rounded-xl">
-                      <LogOut size={18} />
-                    </div>
+                    <LogOut size={18} />
                     <span>Sign Out</span>
                   </button>
                 </div>
               </nav>
 
-              <div className="p-6 bg-slate-50 border-t border-slate-100">
-                <div className="flex items-center gap-3 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                  <Settings size={14} />
+              <div className="px-5 py-3.5 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 font-medium">
+                <div className="flex items-center gap-2">
+                  <Settings size={14} className="text-gray-400" />
                   <span>Account Settings</span>
                 </div>
               </div>

@@ -50,37 +50,37 @@ export const PromoCard: React.FC<PromoCardProps> = ({ banner, variant = 'vertica
     return (
       <div 
         onClick={handleClick}
-        className="group relative overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 p-5 text-white flex items-center justify-between gap-4 cursor-pointer hover:border-accent/50 transition-all duration-300 shadow-md"
+        className="group relative overflow-hidden rounded-xl bg-[#111827] border border-gray-800 p-4 text-white flex items-center justify-between gap-4 cursor-pointer hover:border-gray-700 transition-colors shadow-xs"
       >
-        <div className="relative z-10 space-y-1.5 flex-1 min-w-0">
+        <div className="relative z-10 space-y-1 flex-1 min-w-0">
           {banner.badge && (
-            <span className="inline-block text-[10px] font-black uppercase tracking-wider text-accent bg-accent/10 px-2 py-0.5 rounded-md border border-accent/20">
+            <span className="inline-block text-[10px] font-semibold uppercase tracking-wider text-[#DC2B53] bg-[#DC2B53]/10 px-2 py-0.5 rounded-md border border-[#DC2B53]/20">
               {banner.badge}
             </span>
           )}
-          <h4 className="font-extrabold text-sm sm:text-base leading-snug text-white group-hover:text-accent transition-colors truncate">
+          <h4 className="font-semibold text-sm sm:text-base leading-snug text-white group-hover:text-[#DC2B53] transition-colors truncate">
             {banner.title}
           </h4>
           {descriptionText && (
-            <p className="text-xs text-slate-300 line-clamp-1 font-normal">
+            <p className="text-xs text-gray-300 line-clamp-1 font-normal">
               {descriptionText}
             </p>
           )}
           {banner.price && (
-            <div className="text-xs font-bold text-accent pt-1">
+            <div className="text-xs font-semibold text-[#DC2B53] pt-0.5">
               {banner.price}
             </div>
           )}
         </div>
 
-        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-slate-800 flex-shrink-0 border border-slate-700/60 relative">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray-800 flex-shrink-0 border border-gray-700 relative">
           <SmartImage 
             src={desktopImg} 
             alt={banner.title} 
             fill
             fallbackType="banner"
             fallbackLabel={banner.title}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
           />
         </div>
       </div>
@@ -90,7 +90,7 @@ export const PromoCard: React.FC<PromoCardProps> = ({ banner, variant = 'vertica
   return (
     <div 
       onClick={handleClick}
-      className="group relative overflow-hidden rounded-[32px] bg-[#101A25] border border-slate-800 text-white p-8 flex flex-col justify-between cursor-pointer hover:border-accent/40 transition-all duration-500 shadow-premium min-h-[260px]"
+      className="group relative overflow-hidden rounded-xl bg-[#111827] border border-gray-800 text-white p-6 flex flex-col justify-between cursor-pointer hover:border-gray-700 transition-colors shadow-xs min-h-[220px]"
     >
       {/* Background Image with Dark Gradient overlay */}
       <div className="absolute inset-0 z-0">
@@ -101,7 +101,7 @@ export const PromoCard: React.FC<PromoCardProps> = ({ banner, variant = 'vertica
             fill
             fallbackType="banner"
             fallbackLabel={banner.title}
-            className="w-full h-full object-cover object-center opacity-30 group-hover:opacity-40 group-hover:scale-110 transition-all duration-1000 ease-out" 
+            className="w-full h-full object-cover object-center opacity-30 group-hover:opacity-40 group-hover:scale-105 transition-all duration-700 ease-out" 
           />
         </div>
         <div className="hidden sm:block absolute inset-0">
@@ -111,47 +111,47 @@ export const PromoCard: React.FC<PromoCardProps> = ({ banner, variant = 'vertica
             fill
             fallbackType="banner"
             fallbackLabel={banner.title}
-            className="w-full h-full object-cover object-center opacity-30 group-hover:opacity-40 group-hover:scale-110 transition-all duration-1000 ease-out" 
+            className="w-full h-full object-cover object-center opacity-30 group-hover:opacity-40 group-hover:scale-105 transition-all duration-700 ease-out" 
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#101A25] via-[#101A25]/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#111827] via-[#111827]/60 to-transparent" />
       </div>
 
       {/* Top Badge */}
       <div className="relative z-10 flex items-center justify-between">
         {banner.badge ? (
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/20 border border-accent/30 text-white text-[9px] font-black uppercase tracking-widest backdrop-blur-md">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-[#DC2B53]/20 border border-[#DC2B53]/30 text-white text-[10px] font-semibold tracking-wide backdrop-blur-xs">
             {banner.badge}
           </span>
         ) : <div />}
         {banner.discount && (
-          <span className="px-3 py-1 bg-accent text-white font-black text-[9px] rounded-lg uppercase tracking-widest shadow-lg shadow-accent/20">
+          <span className="px-2 py-0.5 bg-[#DC2B53] text-white font-semibold text-[10px] rounded-md tracking-wide">
             {banner.discount}
           </span>
         )}
       </div>
 
       {/* Center/Bottom Content */}
-      <div className="relative z-10 mt-8 space-y-3">
-        <h3 className="font-display font-black text-xl sm:text-2xl text-white group-hover:text-accent transition-colors leading-none uppercase tracking-tighter">
+      <div className="relative z-10 mt-6 space-y-2">
+        <h3 className="font-semibold text-lg text-white group-hover:text-[#DC2B53] transition-colors leading-tight">
           {banner.title}
         </h3>
         {descriptionText && (
-          <p className="text-xs text-slate-400 leading-relaxed line-clamp-2 font-medium">
+          <p className="text-xs text-gray-300 leading-relaxed line-clamp-2 font-normal">
             {descriptionText}
           </p>
         )}
 
-        <div className="pt-2 flex items-center justify-between">
+        <div className="pt-1 flex items-center justify-between">
           {banner.price && (
-            <span className="text-lg font-display font-black text-white">
+            <span className="text-base font-bold text-white">
               {banner.price}
             </span>
           )}
           {ctaText && (
-            <span className="inline-flex items-center gap-2 text-[10px] font-black text-accent uppercase tracking-widest group-hover:translate-x-1 transition-transform">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#DC2B53] group-hover:translate-x-0.5 transition-transform">
               <span>{ctaText}</span>
-              <ArrowRight size={14} />
+              <ArrowRight size={13} />
             </span>
           )}
         </div>

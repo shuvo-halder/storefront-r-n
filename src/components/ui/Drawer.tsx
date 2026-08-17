@@ -55,7 +55,7 @@ export const Drawer: React.FC<DrawerProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-[#111827]/50 backdrop-blur-xs transition-opacity"
           />
 
           {/* Drawer Container */}
@@ -66,16 +66,16 @@ export const Drawer: React.FC<DrawerProps> = ({
               animate="visible"
               exit="hidden"
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className={`w-screen ${sizeClasses[size]} bg-white shadow-2xl flex flex-col justify-between z-10 ${position === 'right' ? 'border-l' : 'border-r'} border-slate-100`}
+              className={`w-screen ${sizeClasses[size]} bg-white shadow-xl flex flex-col justify-between z-10 ${position === 'right' ? 'border-l' : 'border-r'} border-[#E5E7EB]`}
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                <div className="font-extrabold text-base sm:text-lg text-slate-900 min-w-0 flex-1 pr-2">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-[#E5E7EB]">
+                <div className="font-bold text-base sm:text-lg text-[#111827] min-w-0 flex-1 pr-2">
                   {title}
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                  className="p-2 text-[#6B7280] hover:text-[#111827] hover:bg-[#F9FAFB] rounded-lg transition-colors cursor-pointer"
                   aria-label="Close drawer"
                 >
                   <X size={20} />
@@ -87,7 +87,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 
               {/* Footer */}
               {footer && (
-                <div className="p-6 border-t border-slate-100 bg-slate-50/80">
+                <div className="p-6 border-t border-[#E5E7EB] bg-[#F9FAFB]">
                   {footer}
                 </div>
               )}

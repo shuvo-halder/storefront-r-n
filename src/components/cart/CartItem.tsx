@@ -22,11 +22,11 @@ export const CartItem = React.memo<CartItemProps>(({
   onNavigateToProduct
 }) => {
   return (
-    <div className="py-4 flex items-start gap-4">
+    <div className="py-3.5 flex items-start gap-3.5">
       {/* Product Image */}
       <div 
         onClick={() => onNavigateToProduct(item.product.slug)}
-        className="w-20 h-20 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden flex-shrink-0 cursor-pointer group relative"
+        className="w-18 h-18 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg overflow-hidden shrink-0 cursor-pointer group relative"
       >
         <SmartImage 
           src={item.selectedVariant?.image || item.product.images[0]} 
@@ -34,7 +34,7 @@ export const CartItem = React.memo<CartItemProps>(({
           fill
           fallbackType="product"
           fallbackLabel={item.product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" 
         />
       </div>
 
@@ -44,16 +44,16 @@ export const CartItem = React.memo<CartItemProps>(({
           <div>
             <h4 
               onClick={() => onNavigateToProduct(item.product.slug)}
-              className="text-sm font-bold text-slate-900 hover:text-primary cursor-pointer transition-colors line-clamp-1"
+              className="text-xs sm:text-sm font-semibold text-[#111827] hover:text-[#DC2B53] cursor-pointer transition-colors line-clamp-1"
             >
               {item.product.name}
             </h4>
-            <div className="text-[11px] text-slate-500 font-medium">
+            <div className="text-[11px] text-[#6B7280] font-normal">
               Brand: {item.product.brand}
             </div>
             {item.selectedVariant && (
               <div className="mt-1">
-                <span className="text-[10px] font-bold text-primary bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10 uppercase">
+                <span className="text-[10px] font-semibold text-[#DC2B53] bg-[#FDF0F3] px-1.5 py-0.5 rounded border border-[#DC2B53]/20">
                   {item.selectedVariant.name}
                 </span>
               </div>
@@ -63,15 +63,15 @@ export const CartItem = React.memo<CartItemProps>(({
           <button
             onClick={() => onRemove(item.id)}
             disabled={isRemoving}
-            className="text-slate-400 hover:text-primary p-1.5 transition-colors disabled:opacity-40"
+            className="text-[#6B7280] hover:text-[#DC2B53] p-1 transition-colors disabled:opacity-40 cursor-pointer"
             title="Remove from cart"
           >
-            <Trash2 size={16} />
+            <Trash2 size={15} />
           </button>
         </div>
 
         {/* Bottom Row: Quantity & Price */}
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-2.5 flex items-center justify-between">
           <QuantitySelector
             quantity={item.quantity}
             onUpdate={(q) => onUpdateQuantity(item.id, q)}
@@ -80,11 +80,11 @@ export const CartItem = React.memo<CartItemProps>(({
           />
           
           <div className="text-right">
-            <div className="text-sm font-black text-slate-900">
+            <div className="text-sm font-bold text-[#111827]">
               ${item.totalPrice.toFixed(2)}
             </div>
             {item.quantity > 1 && (
-              <div className="text-[10px] text-slate-400 font-medium">
+              <div className="text-[10px] text-[#6B7280] font-normal">
                 ${item.unitPrice.toFixed(2)} / unit
               </div>
             )}

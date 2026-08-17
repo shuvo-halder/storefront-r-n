@@ -8,40 +8,40 @@ export const PaymentFailed: React.FC = () => {
   const orderId = viewParams.orderId;
 
   return (
-    <div className="bg-slate-50 min-h-screen py-20 px-4">
-      <div className="max-w-md mx-auto bg-white rounded-[40px] p-10 shadow-2xl shadow-primary/5 text-center border border-slate-100">
-        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 text-primary">
-          <XCircle size={40} />
+    <div className="bg-[#F9FAFB] min-h-screen py-16 px-4">
+      <div className="max-w-md mx-auto bg-white rounded-xl p-8 shadow-xs text-center border border-[#E5E7EB]">
+        <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 text-[#DC2626] border border-red-200">
+          <XCircle size={28} />
         </div>
         
-        <h1 className="text-3xl font-black text-slate-900 mb-2">Payment Failed</h1>
-        <p className="text-slate-500 text-sm font-medium mb-8">
-          We couldn't process your payment for order <span className="text-primary font-black">#{orderId}</span>. No funds were captured.
+        <h1 className="text-xl font-bold text-[#111827] mb-1.5">Payment Failed</h1>
+        <p className="text-[#6B7280] text-xs font-normal mb-6">
+          We couldn't process your payment for order <span className="text-[#111827] font-semibold">#{orderId}</span>. No funds were captured.
         </p>
 
-        <div className="bg-primary/5 rounded-3xl p-6 mb-8 text-left">
-          <h4 className="text-xs font-black text-slate-900 mb-2 uppercase tracking-tight">Possible Reasons:</h4>
-          <ul className="text-[11px] text-slate-600 space-y-1 font-medium list-disc pl-4">
+        <div className="bg-[#F9FAFB] rounded-lg p-4 mb-6 text-left border border-[#E5E7EB]">
+          <h4 className="text-xs font-bold text-[#111827] mb-2">Possible Reasons</h4>
+          <ul className="text-xs text-[#6B7280] space-y-1.5 list-disc pl-4">
             <li>Insufficient balance in your account</li>
             <li>Incorrect card details or expired card</li>
             <li>Transaction was declined by your bank</li>
-            <li>Connection lost during processing</li>
+            <li>Connection interrupted during processing</li>
           </ul>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           <button
             onClick={() => navigateTo('checkout')}
-            className="w-full py-4 bg-primary text-white font-black text-xs uppercase tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-primary-hover transition-colors cursor-pointer shadow-lg shadow-primary/20"
+            className="w-full py-3 bg-[#DC2B53] text-white font-bold text-xs rounded-lg flex items-center justify-center gap-2 hover:bg-[#C52247] transition-colors cursor-pointer shadow-xs"
           >
-            <RefreshCw size={16} />
+            <RefreshCw size={14} />
             <span>Retry Payment</span>
           </button>
           <button
             onClick={() => navigateTo('cart')}
-            className="w-full py-4 bg-white border border-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors cursor-pointer"
+            className="w-full py-3 bg-white border border-[#E5E7EB] text-[#111827] font-semibold text-xs rounded-lg flex items-center justify-center gap-2 hover:bg-[#F9FAFB] transition-colors cursor-pointer"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={14} />
             <span>Return to Cart</span>
           </button>
         </div>

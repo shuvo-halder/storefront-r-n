@@ -33,28 +33,28 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     // Size variants
     const sizeClasses = {
-      sm: 'text-xs px-3 py-1.5 rounded-lg gap-1.5',
-      md: 'text-xs sm:text-sm px-4 py-2.5 rounded-xl gap-2',
-      lg: 'text-sm sm:text-base px-6 py-3.5 rounded-xl gap-2.5',
-      icon: 'p-2.5 rounded-xl justify-center',
+      sm: 'text-xs px-3 py-1.5 rounded-lg gap-1.5 font-medium',
+      md: 'text-xs sm:text-sm px-4 py-2.5 rounded-lg gap-2 font-semibold',
+      lg: 'text-sm sm:text-base px-6 py-3 rounded-lg gap-2.5 font-semibold',
+      icon: 'p-2.5 rounded-lg justify-center',
     };
 
     // Style variants
     const variantClasses = {
       primary:
-        'bg-primary hover:bg-opacity-90 text-white shadow-lg shadow-primary/10 focus:ring-2 focus:ring-primary/30',
+        'bg-[#DC2B53] hover:bg-[#C52247] text-white shadow-xs focus:ring-2 focus:ring-[#DC2B53]/20',
       secondary:
-        'bg-slate-900 hover:bg-slate-800 text-white shadow-lg shadow-slate-900/10 focus:ring-2 focus:ring-slate-900/30',
+        'bg-[#111827] hover:bg-[#1f2937] text-white shadow-xs focus:ring-2 focus:ring-[#111827]/20',
       accent:
-        'bg-accent hover:bg-accent-hover text-white shadow-accent focus:ring-2 focus:ring-accent/30',
+        'bg-[#DC2B53] hover:bg-[#C52247] text-white shadow-xs focus:ring-2 focus:ring-[#DC2B53]/20',
       outline:
-        'bg-white hover:bg-slate-50 text-primary border border-border-default hover:border-slate-300 focus:ring-2 focus:ring-slate-200',
+        'bg-white hover:bg-[#F9FAFB] text-[#111827] border border-[#E5E7EB] hover:border-gray-300 focus:ring-2 focus:ring-[#DC2B53]/20',
       ghost:
-        'bg-transparent hover:bg-slate-100 text-slate-700 hover:text-slate-900 focus:ring-2 focus:ring-slate-100',
+        'bg-transparent hover:bg-[#F9FAFB] text-[#111827] hover:text-[#DC2B53] focus:ring-2 focus:ring-gray-100',
       danger:
-        'bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/10 focus:ring-2 focus:ring-red-500/30',
+        'bg-[#DC2626] hover:bg-[#B91C1C] text-white shadow-xs focus:ring-2 focus:ring-[#DC2626]/20',
       subtle:
-        'bg-accent-muted hover:bg-accent/20 text-accent font-semibold focus:ring-2 focus:ring-accent/20',
+        'bg-[#FDF0F3] hover:bg-rose-100 text-[#DC2B53] font-semibold focus:ring-2 focus:ring-[#DC2B53]/20',
     };
 
     const widthClass = fullWidth ? 'w-full' : '';

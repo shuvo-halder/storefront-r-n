@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, LoginFormData } from '../../types/auth';
 import { useAuth } from '../../context/AuthContext';
+import { useStorefront } from '../../context/StorefrontContext';
 import { Loader2, Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight, Info } from 'lucide-react';
 
 const GoogleIcon = () => (
@@ -39,6 +40,7 @@ const FacebookIcon = () => (
 export const LoginPage: React.FC = () => {
   const router = useRouter();
   const { login } = useAuth();
+  const { notifySuccess, notifyError, notifyInfo } = useStorefront();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [socialNotice, setSocialNotice] = useState<string | null>(null);
@@ -57,6 +59,7 @@ export const LoginPage: React.FC = () => {
     setSocialNotice(null);
     try {
       await login(data);
+      notifySuccess('Welcome Back!', 'Signed in successfully.');
       router.push('/account');
     } catch (err: any) {
       if (err?.errors && Array.isArray(err.errors)) {
@@ -66,44 +69,46 @@ export const LoginPage: React.FC = () => {
           }
         });
       }
-      setError(err?.message || 'Invalid credentials. Please try again.');
+      const msg = err?.message || 'Invalid credentials. Please check your email and password.';
+      setError(msg);
+      notifyError(err, 'Sign In Failed', msg);
     }
   };
 
   const handleSocialClick = (provider: string) => {
     setError(null);
-    setSocialNotice(`Continue with ${provider} is currently coming soon. Please log in using your email address and password.`);
+    const notice = `Continue with ${provider} is coming soon. Please log in using your email and password.`;
+    setSocialNotice(notice);
+    notifyInfo(`${provider} Sign In`, notice);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-white shadow-xl shadow-slate-200/50 mb-6 border border-slate-100">
-            <ShieldCheck size={32} className="text-primary" />
-          </div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Welcome Back</h2>
-          <p className="mt-2 text-sm text-slate-500 font-medium">
-            Don't have an account?{' '}
-            <Link
-              href="/register"
-              className="text-primary font-bold hover:text-primary-hover transition-colors"
-            >
-              Join Vyzobd today
-            </Link>
-          </p>
+    <div className="min-h-screen bg-[#F9FAFB] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#FDF0F3] mb-4 border border-[#DC2B53]/20">
+          <ShieldCheck size={24} className="text-[#DC2B53]" />
         </div>
+        <h2 className="text-xl font-bold text-[#111827]">Welcome Back</h2>
+        <p className="mt-1 text-xs text-[#6B7280]">
+          Don't have an account?{' '}
+          <Link
+            href="/register"
+            className="text-[#DC2B53] font-semibold hover:text-[#C52247] transition-colors"
+          >
+            Join Vyzobd today
+          </Link>
+        </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-10 px-8 shadow-2xl shadow-slate-200/50 sm:rounded-[40px] border border-slate-100 mx-4 sm:mx-0">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-6 sm:px-8 shadow-xs rounded-xl border border-[#E5E7EB]">
           
           {/* Social Login Section */}
-          <div className="space-y-3 mb-6">
+          <div className="space-y-2.5 mb-5">
             <button
               type="button"
               onClick={() => handleSocialClick('Google')}
-              className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold rounded-2xl transition-all cursor-pointer active:scale-98"
+              className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-white hover:bg-[#F9FAFB] border border-[#E5E7EB] text-[#111827] text-xs font-semibold rounded-lg transition-colors cursor-pointer"
             >
               <GoogleIcon />
               <span>Continue with Google</span>
@@ -112,75 +117,75 @@ export const LoginPage: React.FC = () => {
             <button
               type="button"
               onClick={() => handleSocialClick('Facebook')}
-              className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold rounded-2xl transition-all cursor-pointer active:scale-98"
+              className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-white hover:bg-[#F9FAFB] border border-[#E5E7EB] text-[#111827] text-xs font-semibold rounded-lg transition-colors cursor-pointer"
             >
               <FacebookIcon />
               <span>Continue with Facebook</span>
             </button>
           </div>
 
-          <div className="relative my-6 text-center">
+          <div className="relative my-5 text-center">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200"></div>
+              <div className="w-full border-t border-[#E5E7EB]"></div>
             </div>
-            <span className="relative bg-white px-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <span className="relative bg-white px-3 text-[11px] font-medium text-[#6B7280]">
               Or continue with email
             </span>
           </div>
 
           {socialNotice && (
-            <div className="p-4 mb-6 bg-amber-50 border border-amber-200/80 rounded-2xl text-xs font-medium text-amber-800 flex items-start gap-3 shadow-sm">
-              <Info size={18} className="text-amber-600 shrink-0 mt-0.5" />
+            <div className="p-3 mb-5 bg-amber-50 border border-amber-200 rounded-lg text-xs font-medium text-amber-800 flex items-start gap-2.5">
+              <Info size={16} className="text-amber-600 shrink-0 mt-0.5" />
               <span>{socialNotice}</span>
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Email Address</label>
+              <label className="block text-xs font-semibold text-[#111827] mb-1">Email Address</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                  <Mail size={18} />
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                  <Mail size={16} />
                 </div>
                 <input
                   {...register('email')}
                   type="email"
-                  className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                  className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
                   placeholder="name@example.com"
                 />
               </div>
-              {errors.email && <p className="mt-1.5 text-[10px] font-black text-primary uppercase tracking-tighter">{errors.email.message}</p>}
+              {errors.email && <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{errors.email.message}</p>}
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest">Password</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-[#111827]">Password</label>
                 <Link
                   href="/forgot-password"
-                  className="text-[10px] font-black text-slate-400 hover:text-primary uppercase tracking-widest transition-colors"
+                  className="text-[11px] font-medium text-[#6B7280] hover:text-[#DC2B53] transition-colors"
                 >
                   Forgot password?
                 </Link>
               </div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                  <Lock size={18} />
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                  <Lock size={16} />
                 </div>
                 <input
                   {...register('password')}
                   type={showPassword ? 'text' : 'password'}
-                  className="block w-full pl-11 pr-12 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                  className="block w-full pl-10 pr-10 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#6B7280] hover:text-[#111827] transition-colors"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              {errors.password && <p className="mt-1.5 text-[10px] font-black text-primary uppercase tracking-tighter">{errors.password.message}</p>}
+              {errors.password && <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{errors.password.message}</p>}
             </div>
 
             <div className="flex items-center">
@@ -188,32 +193,32 @@ export const LoginPage: React.FC = () => {
                 {...register('rememberMe')}
                 id="remember-me"
                 type="checkbox"
-                className="h-4 w-4 text-primary focus:ring-primary border-slate-300 rounded-lg"
+                className="h-4 w-4 text-[#DC2B53] focus:ring-[#DC2B53] border-[#E5E7EB] rounded accent-[#DC2B53]"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-xs font-bold text-slate-600">
-                Remember me for 30 days
+              <label htmlFor="remember-me" className="ml-2 block text-xs font-medium text-[#6B7280]">
+                Remember me on this device
               </label>
             </div>
 
             {error && (
-              <div className="p-4 bg-primary/5 border border-primary/10 rounded-2xl text-[11px] font-bold text-primary flex items-center gap-3">
-                <ShieldCheck size={18} className="rotate-180" />
-                {error}
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs font-medium text-[#DC2626] flex items-center gap-2">
+                <ShieldCheck size={16} className="rotate-180 flex-shrink-0" />
+                <span>{error}</span>
               </div>
             )}
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 py-4 px-6 bg-primary hover:bg-primary-hover disabled:bg-slate-300 text-white text-xs font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-95 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#DC2B53] hover:bg-[#C52247] disabled:bg-gray-300 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
             >
-              {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} />}
-              <span>{isSubmitting ? 'Verifying...' : 'Sign In To Account'}</span>
+              {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
+              <span>{isSubmitting ? 'Verifying...' : 'Sign In'}</span>
             </button>
           </form>
 
-          <div className="mt-8 pt-8 border-t border-slate-100">
-            <p className="text-[10px] text-center text-slate-400 font-bold uppercase tracking-widest">
+          <div className="mt-6 pt-5 border-t border-[#E5E7EB]">
+            <p className="text-[11px] text-center text-[#6B7280]">
               Secure authentication powered by Vyzobd Security
             </p>
           </div>

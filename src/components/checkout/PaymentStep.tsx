@@ -1,7 +1,7 @@
 import React from 'react';
 import { UseFormRegister, FieldErrors, UseFormWatch } from 'react-hook-form';
 import { CheckoutFormData } from '../../types/checkout';
-import { CreditCard, Truck, Wallet, ShieldCheck, Landmark } from 'lucide-react';
+import { CreditCard, Truck, Wallet, ShieldCheck } from 'lucide-react';
 
 interface PaymentStepProps {
   register: UseFormRegister<CheckoutFormData>;
@@ -22,10 +22,12 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({ register, watch }) => 
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-bold text-slate-900">Payment Method</h3>
-      <p className="text-xs text-slate-500 font-medium">Select your preferred way to pay securely.</p>
+      <div>
+        <h3 className="text-base font-bold text-[#111827]">Payment Method</h3>
+        <p className="text-xs text-[#6B7280]">Select your preferred way to pay securely.</p>
+      </div>
       
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {methods.map((method) => {
           const Icon = method.icon;
           const isActive = selectedPayment === method.id;
@@ -34,8 +36,8 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({ register, watch }) => 
             <label 
               key={method.id}
               className={`
-                flex items-center gap-4 p-4 rounded-2xl border-2 transition-all cursor-pointer
-                ${isActive ? 'border-primary bg-primary/5/30 ring-1 ring-primary' : 'border-slate-100 bg-slate-50 hover:border-slate-200'}
+                flex items-center gap-3.5 p-3.5 rounded-lg border transition-colors cursor-pointer
+                ${isActive ? 'border-[#DC2B53] bg-[#FDF0F3] ring-1 ring-[#DC2B53]' : 'border-[#E5E7EB] bg-white hover:border-[#111827]'}
               `}
             >
               <input
@@ -44,15 +46,15 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({ register, watch }) => 
                 {...register('paymentMethod')}
                 className="hidden"
               />
-              <div className={`p-2.5 rounded-xl ${isActive ? 'bg-primary text-white' : 'bg-white text-slate-400'}`}>
-                <Icon size={20} />
+              <div className={`p-2 rounded-md ${isActive ? 'bg-[#DC2B53] text-white' : 'bg-[#F9FAFB] text-[#6B7280] border border-[#E5E7EB]'}`}>
+                <Icon size={18} />
               </div>
               <div className="flex-1">
-                <div className="text-sm font-bold text-slate-900">{method.name}</div>
-                <div className="text-[10px] text-slate-500 font-medium">{method.description}</div>
+                <div className="text-xs font-bold text-[#111827]">{method.name}</div>
+                <div className="text-[11px] text-[#6B7280]">{method.description}</div>
               </div>
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isActive ? 'border-primary' : 'border-slate-300'}`}>
-                {isActive && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+              <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${isActive ? 'border-[#DC2B53]' : 'border-[#E5E7EB]'}`}>
+                {isActive && <div className="w-2 h-2 rounded-full bg-[#DC2B53]" />}
               </div>
             </label>
           );

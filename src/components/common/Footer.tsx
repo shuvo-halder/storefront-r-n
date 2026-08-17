@@ -26,13 +26,13 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-[#101A25] text-slate-400 pt-20 pb-10">
+    <footer className="bg-[#111827] text-gray-400 pt-16 pb-10">
       
       {/* Main Footer Links & Newsletter */}
-      <div className="container-vyzobd grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 pb-16 border-b border-slate-800/60">
+      <div className="container-vyzobd grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-gray-800">
         
         {/* Col 1: Brand Info */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-6">
           <Link 
             href="/" 
             className="cursor-pointer flex items-center group inline-block"
@@ -40,25 +40,25 @@ export const Footer: React.FC = () => {
             <img 
               src="/logowhite.svg" 
               alt="Vyzobd" 
-              className="h-10 lg:h-11 w-auto object-contain"
+              className="h-9 lg:h-10 w-auto object-contain"
             />
           </Link>
 
-          <p className="text-sm text-slate-400 leading-relaxed max-w-sm font-medium">
+          <p className="text-sm text-gray-400 leading-relaxed max-w-sm font-normal">
             {publicSettings?.seo.metaDescription || 'Engineers of next-generation audio equipment and high-performance workstation peripherals for the modern professional.'}
           </p>
 
-          <div className="space-y-4 text-[13px] font-bold text-slate-300 pt-2 uppercase tracking-widest">
+          <div className="space-y-3 text-xs font-medium text-gray-300 pt-1">
             <div className="flex items-center gap-3">
-              <Phone size={16} className="text-accent" />
+              <Phone size={15} className="text-primary" />
               <span>{publicSettings?.general.storePhone || '+880 1700 000000'}</span>
             </div>
             <div className="flex items-center gap-3">
-              <Mail size={16} className="text-accent" />
+              <Mail size={15} className="text-primary" />
               <span className="lowercase">{publicSettings?.general.storeEmail || 'support@vyzobd.com'}</span>
             </div>
             <div className="flex items-center gap-3">
-              <MapPin size={16} className="text-accent" />
+              <MapPin size={15} className="text-primary" />
               <span className="capitalize">{publicSettings?.general.storeAddress || 'Dhaka, Bangladesh'}</span>
             </div>
           </div>
@@ -66,10 +66,10 @@ export const Footer: React.FC = () => {
 
         {/* Col 2: Shop */}
         <div>
-          <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em] mb-8">
+          <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-5">
             Shop
           </h4>
-          <ul className="space-y-4 text-xs font-bold uppercase tracking-widest">
+          <ul className="space-y-3 text-sm text-gray-400">
             {[
               { label: 'All Products', href: '/products' },
               { label: 'Featured Gear', href: '/products' },
@@ -80,7 +80,7 @@ export const Footer: React.FC = () => {
               <li key={idx}>
                 <Link
                   href={link.href}
-                  className="hover:text-accent transition-colors text-slate-400 block"
+                  className="hover:text-primary transition-colors text-gray-400 block"
                 >
                   {link.label}
                 </Link>
@@ -91,10 +91,10 @@ export const Footer: React.FC = () => {
 
         {/* Col 3: Customer Service */}
         <div>
-          <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em] mb-8">
+          <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-5">
             Service
           </h4>
-          <ul className="space-y-4 text-xs font-bold uppercase tracking-widest">
+          <ul className="space-y-3 text-sm text-gray-400">
             {[
               { label: 'Track Order', href: '/account/orders' },
               { label: 'Shipping Info', href: '/pages/shipping' },
@@ -105,7 +105,7 @@ export const Footer: React.FC = () => {
               <li key={idx}>
                 <Link
                   href={link.href}
-                  className="hover:text-accent transition-colors text-slate-400 block"
+                  className="hover:text-primary transition-colors text-gray-400 block"
                 >
                   {link.label}
                 </Link>
@@ -116,10 +116,10 @@ export const Footer: React.FC = () => {
 
         {/* Col 4: Information */}
         <div>
-          <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em] mb-8">
+          <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-5">
             Information
           </h4>
-          <ul className="space-y-4 text-xs font-bold uppercase tracking-widest">
+          <ul className="space-y-3 text-sm text-gray-400">
             {[
               { label: 'About Vyzobd', href: '/pages/about' },
               { label: 'Our Story', href: '/pages/about' },
@@ -130,7 +130,7 @@ export const Footer: React.FC = () => {
               <li key={idx}>
                 <Link
                   href={link.href}
-                  className="hover:text-accent transition-colors text-slate-400 block"
+                  className="hover:text-primary transition-colors text-gray-400 block"
                 >
                   {link.label}
                 </Link>
@@ -142,17 +142,19 @@ export const Footer: React.FC = () => {
       </div>
 
       {/* Bottom Copyright & Payment Icons */}
-      <div className="container-vyzobd pt-10 flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+      <div className="container-vyzobd pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-400">
         <div>
           © {new Date().getFullYear()} Vyzobd. All rights reserved.
         </div>
 
         {/* Payment Badges */}
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-slate-400 opacity-30 grayscale">
-             <span className="font-black italic">VISA</span>
-             <span className="font-black italic">MASTERCARD</span>
-             <span className="font-black italic">PAYPAL</span>
+          <div className="flex items-center gap-3 text-gray-400 opacity-60">
+             <span className="font-semibold tracking-wider">VISA</span>
+             <span>•</span>
+             <span className="font-semibold tracking-wider">MASTERCARD</span>
+             <span>•</span>
+             <span className="font-semibold tracking-wider">PAYPAL</span>
           </div>
         </div>
       </div>

@@ -31,7 +31,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={generatedId}
-            className="block text-xs font-bold text-slate-700 tracking-wide"
+            className="block text-xs font-semibold text-[#111827] tracking-wide"
           >
             {label}
           </label>
@@ -39,7 +39,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
         <div className="relative flex items-center">
           {leftIcon && (
-            <div className="absolute left-3.5 pointer-events-none text-slate-400">
+            <div className="absolute left-3.5 pointer-events-none text-[#6B7280]">
               {leftIcon}
             </div>
           )}
@@ -47,12 +47,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             id={generatedId}
-            className={`w-full bg-surface text-primary text-sm rounded-2xl border transition-all duration-200 placeholder:text-slate-400 focus:outline-none ${
-              leftIcon ? 'pl-11' : 'pl-4'
-            } ${rightElement ? 'pr-11' : 'pr-4'} py-3.5 ${
+            className={`w-full bg-white text-[#111827] text-sm rounded-lg border transition-colors placeholder:text-gray-400 focus:outline-none ${
+              leftIcon ? 'pl-10' : 'pl-3.5'
+            } ${rightElement ? 'pr-10' : 'pr-3.5'} py-2.5 ${
               error
-                ? 'border-red-500 focus:border-red-600 focus:ring-2 focus:ring-red-100'
-                : 'border-border-default hover:border-slate-300 focus:border-accent focus:ring-2 focus:ring-accent/10'
+                ? 'border-[#DC2626] focus:border-[#DC2626] focus:ring-2 focus:ring-red-100'
+                : 'border-[#E5E7EB] hover:border-gray-300 focus:border-[#DC2B53] focus:ring-2 focus:ring-[#DC2B53]/15'
             } ${className}`}
             {...props}
           />
@@ -65,13 +65,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         </div>
 
         {error && (
-          <p className="text-xs font-semibold text-red-600 flex items-center gap-1">
+          <p className="text-xs font-medium text-[#DC2626] flex items-center gap-1">
             {error}
           </p>
         )}
 
         {!error && helperText && (
-          <p className="text-xs text-slate-500">{helperText}</p>
+          <p className="text-xs text-[#6B7280]">{helperText}</p>
         )}
       </div>
     );

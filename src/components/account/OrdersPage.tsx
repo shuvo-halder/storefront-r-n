@@ -3,31 +3,29 @@
 import React, { useState } from 'react';
 import { SmartImage } from '../common/SmartImage';
 import { useStorefront } from '../../context/StorefrontContext';
-import { useAuth } from '../../context/AuthContext';
 import { Order } from '../../types/storefront';
 import { AccountLayout } from './AccountLayout';
-import { Package, Truck, CheckCircle2, ChevronRight, X, Clock, RefreshCw } from 'lucide-react';
+import { Package, Truck, CheckCircle2, ChevronRight, X, Clock, RefreshCw, ShoppingBag } from 'lucide-react';
 
 export const OrdersPage: React.FC = () => {
   const { userOrders, navigateTo } = useStorefront();
-  const { user } = useAuth();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   return (
     <AccountLayout activeTab="orders">
-      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="space-y-6">
         
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
               Order History ({userOrders.length})
             </h1>
-            <p className="text-sm text-slate-500 font-medium mt-1">
+            <p className="text-sm text-gray-500 font-medium mt-1">
               Track active shipments, view past receipts, and manage return requests.
             </p>
           </div>
           <div className="hidden sm:block">
-            <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-slate-200 transition-all">
+            <button className="flex items-center gap-2 px-3.5 py-2 bg-gray-100 text-gray-700 font-semibold text-xs rounded-lg hover:bg-gray-200 transition-colors">
               <RefreshCw size={14} />
               <span>Refresh History</span>
             </button>
@@ -35,57 +33,59 @@ export const OrdersPage: React.FC = () => {
         </div>
 
         {userOrders.length === 0 ? (
-          <div className="bg-white border border-slate-100 rounded-[40px] p-20 shadow-sm text-center space-y-6">
-            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
-              <Package size={40} className="text-slate-300" />
+          <div className="bg-white border border-gray-200 rounded-xl p-16 shadow-xs text-center space-y-5">
+            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-400 border border-gray-100">
+              <Package size={32} />
             </div>
             <div>
-              <h3 className="text-lg font-black text-slate-900">No orders placed yet</h3>
-              <p className="text-sm text-slate-500 font-medium max-w-xs mx-auto mt-1">
-                Your recent electronics purchases will show up here with live carrier tracking.
+              <h3 className="text-base font-bold text-gray-900">No orders placed yet</h3>
+              <p className="text-sm text-gray-500 font-medium max-w-xs mx-auto mt-1">
+                Your recent purchases will show up here with live carrier tracking.
               </p>
             </div>
             <button
               onClick={() => navigateTo('shop')}
-              className="px-10 py-4 bg-primary text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:bg-primary transition-all"
+              className="btn-primary inline-flex items-center gap-2 text-sm"
             >
               Start Shopping
             </button>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {userOrders.map((ord) => (
               <div 
                 key={ord.id}
                 onClick={() => navigateTo('order-details', { id: ord.id })}
-                className="bg-white border border-slate-100 rounded-[32px] p-8 shadow-sm space-y-6 hover:shadow-xl transition-all group cursor-pointer"
+                className="bg-white border border-gray-200 rounded-xl p-6 shadow-xs space-y-5 hover:border-gray-300 transition-colors group cursor-pointer"
               >
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
-                      <ShoppingBag size={20} />
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 group-hover:bg-primary-light group-hover:text-primary transition-colors border border-gray-100">
+                      <ShoppingBag size={18} />
                     </div>
                     <div>
-                      <div className="text-xs font-black text-slate-900 uppercase tracking-widest">Order #{ord.id}</div>
-                      <div className="text-[11px] text-slate-400 font-bold uppercase mt-1">Placed on {new Date(ord.createdAt).toLocaleDateString()}</div>
+                      <div className="text-xs font-bold text-gray-900">Order #{ord.id}</div>
+                      <div className="text-[11px] text-gray-500 font-medium mt-0.5">Placed on {new Date(ord.createdAt).toLocaleDateString()}</div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    <span className={`px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest ${
-                      ord.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-primary/5 text-primary border border-primary/10'
+                  <div className="flex items-center gap-3">
+                    <span className={`px-3 py-1 rounded-full font-semibold text-xs ${
+                      ord.status === 'Delivered' 
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                        : 'bg-primary-light text-primary border border-primary/10'
                     }`}>
                       {ord.status}
                     </span>
-                    <ChevronRight size={18} className="text-slate-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                    <ChevronRight size={16} className="text-gray-400 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                  <div className="lg:col-span-8 space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                  <div className="lg:col-span-8 space-y-3">
                     {ord.items.map((item, i) => (
-                      <div key={i} className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl border border-slate-100 shadow-sm overflow-hidden relative flex-shrink-0">
+                      <div key={i} className="flex items-center gap-3.5">
+                        <div className="w-14 h-14 rounded-lg border border-gray-200 overflow-hidden relative flex-shrink-0 bg-gray-50">
                           <SmartImage 
                             src={item.productImage} 
                             alt={item.productName} 
@@ -95,29 +95,29 @@ export const OrdersPage: React.FC = () => {
                             className="w-full h-full object-cover" 
                           />
                         </div>
-                        <div>
-                          <div className="text-sm font-black text-slate-900 line-clamp-1">{item.productName}</div>
-                          <div className="text-[11px] text-slate-400 font-bold uppercase mt-1">Qty: {item.quantity} • ${item.unitPrice.toFixed(2)}</div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-gray-900 truncate">{item.productName}</div>
+                          <div className="text-xs text-gray-500 font-medium mt-0.5">Qty: {item.quantity} • ${item.unitPrice.toFixed(2)}</div>
                         </div>
                       </div>
                     ))}
                   </div>
 
-                  <div className="lg:col-span-4 lg:text-right space-y-3 bg-slate-50 p-6 rounded-[24px] border border-slate-100">
+                  <div className="lg:col-span-4 lg:text-right space-y-2.5 bg-gray-50 p-4 rounded-lg border border-gray-100">
                     <div>
-                      <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Tracking Number</div>
-                      <div className="text-xs font-mono font-black text-slate-900">{ord.trackingNumber || 'UNAVAILABLE'}</div>
+                      <div className="text-[11px] font-medium text-gray-500 mb-0.5">Tracking Number</div>
+                      <div className="text-xs font-mono font-bold text-gray-900">{ord.trackingNumber || 'UNAVAILABLE'}</div>
                     </div>
                     <div>
-                      <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Grand Total</div>
-                      <div className="text-lg font-black text-primary font-mono">${ord.totalAmount.toFixed(2)}</div>
+                      <div className="text-[11px] font-medium text-gray-500 mb-0.5">Grand Total</div>
+                      <div className="text-base font-bold text-primary">${ord.totalAmount.toFixed(2)}</div>
                     </div>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedOrder(ord);
                       }}
-                      className="w-full mt-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg"
+                      className="w-full mt-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white font-semibold text-xs rounded-lg flex items-center justify-center gap-2 transition-colors shadow-xs"
                     >
                       <span>Track Shipment</span>
                       <Truck size={14} />
@@ -133,56 +133,60 @@ export const OrdersPage: React.FC = () => {
 
       {/* Tracking Modal */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSelectedOrder(null)} />
-          <div className="bg-white rounded-[40px] p-10 max-w-lg w-full relative z-10 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-300">
-            <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-xs" onClick={() => setSelectedOrder(null)} />
+          <div className="bg-white rounded-xl p-6 sm:p-8 max-w-lg w-full relative z-10 shadow-xl border border-gray-200">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
               <div>
-                <h3 className="text-xl font-black text-slate-900 tracking-tight">Shipment Tracking</h3>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Order #{selectedOrder.id}</p>
+                <h3 className="text-lg font-bold text-gray-900">Shipment Tracking</h3>
+                <p className="text-xs text-gray-500 font-medium mt-0.5">Order #{selectedOrder.id}</p>
               </div>
               <button 
                 onClick={() => setSelectedOrder(null)} 
-                className="p-3 bg-slate-50 text-slate-400 hover:text-primary rounded-2xl transition-colors"
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
             <div className="space-y-6">
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+              <div className="p-3.5 bg-gray-50 rounded-lg border border-gray-100 flex items-center justify-between">
                 <div>
-                  <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Carrier Tracking ID</div>
-                  <div className="text-xs font-mono font-black text-primary">{selectedOrder.trackingNumber}</div>
+                  <div className="text-[11px] font-medium text-gray-500 mb-0.5">Carrier Tracking ID</div>
+                  <div className="text-xs font-mono font-bold text-primary">{selectedOrder.trackingNumber}</div>
                 </div>
-                <div className="p-2 bg-white rounded-xl shadow-sm text-primary">
-                  <Truck size={20} />
+                <div className="p-2 bg-white rounded-lg border border-gray-200 text-primary">
+                  <Truck size={18} />
                 </div>
               </div>
 
-              <div className="space-y-8 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100">
+              <div className="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200">
                 {selectedOrder.trackingSteps?.map((step, idx) => (
-                  <div key={idx} className="flex items-start gap-6 relative">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center z-10 ${
-                      step.completed ? 'bg-emerald-500 text-white' : step.current ? 'bg-primary text-white animate-pulse' : 'bg-white border-2 border-slate-100 text-slate-200'
+                  <div key={idx} className="flex items-start gap-4 relative">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center z-10 text-xs ${
+                      step.completed 
+                        ? 'bg-emerald-600 text-white' 
+                        : step.current 
+                        ? 'bg-primary text-white ring-4 ring-primary/20' 
+                        : 'bg-white border-2 border-gray-200 text-gray-300'
                     }`}>
                       {step.completed ? <CheckCircle2 size={14} /> : <Clock size={12} />}
                     </div>
                     <div>
-                      <div className={`text-xs font-black uppercase tracking-tight ${step.completed || step.current ? 'text-slate-900' : 'text-slate-300'}`}>
+                      <div className={`text-xs font-bold ${step.completed || step.current ? 'text-gray-900' : 'text-gray-400'}`}>
                         {step.label}
                       </div>
-                      <div className="text-[11px] text-slate-400 font-medium mt-1">{step.description}</div>
+                      <div className="text-xs text-gray-500 font-normal mt-0.5">{step.description}</div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="mt-10">
+            <div className="mt-8">
               <button 
                 onClick={() => setSelectedOrder(null)}
-                className="w-full py-4 bg-slate-900 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-800 transition-colors shadow-xl"
+                className="w-full py-2.5 bg-gray-900 text-white font-semibold text-xs rounded-lg hover:bg-gray-800 transition-colors shadow-xs"
               >
                 Close Tracking
               </button>
@@ -193,6 +197,3 @@ export const OrdersPage: React.FC = () => {
     </AccountLayout>
   );
 };
-
-// Add missing ShoppingBag import
-import { ShoppingBag } from 'lucide-react';

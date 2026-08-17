@@ -15,37 +15,37 @@ export const ActivityPage: React.FC = () => {
 
   return (
     <AccountLayout activeTab="activity">
-      <div className="bg-white rounded-[40px] p-8 sm:p-10 border border-slate-100 shadow-2xl shadow-slate-200/50 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="mb-10">
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Security & Activity</h1>
-          <p className="text-slate-500 text-sm font-medium mt-1">Review your recent account activity and login history.</p>
+      <div className="bg-white rounded-xl p-6 sm:p-8 border border-gray-200 shadow-xs space-y-6">
+        <div className="border-b border-gray-100 pb-6">
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Security & Activity</h1>
+          <p className="text-gray-500 text-sm font-medium mt-1">Review your recent account activity and login history.</p>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-6">
           {activities.map((activity, idx) => (
-            <div key={idx} className="flex gap-6">
-              <div className="relative">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${activity.bg} ${activity.color} shadow-sm z-10 relative`}>
-                  <activity.icon size={20} />
+            <div key={idx} className="flex gap-4">
+              <div className="relative flex flex-col items-center">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${activity.bg} ${activity.color} border border-gray-100 shadow-xs z-10`}>
+                  <activity.icon size={18} />
                 </div>
                 {idx !== activities.length - 1 && (
-                  <div className="absolute top-12 left-1/2 w-0.5 h-12 bg-slate-100 -translate-x-1/2"></div>
+                  <div className="w-0.5 flex-1 bg-gray-100 my-1"></div>
                 )}
               </div>
-              <div className="flex-1 pb-8">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                  <h3 className="text-sm font-bold text-slate-900">{activity.title}</h3>
-                  <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+              <div className="flex-1 pb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
+                  <h3 className="text-sm font-semibold text-gray-900">{activity.title}</h3>
+                  <div className="flex items-center gap-1 text-xs text-gray-400 font-medium">
                     <Clock size={12} />
-                    {activity.time}
+                    <span>{activity.time}</span>
                   </div>
                 </div>
                 {activity.ip && (
-                  <div className="flex flex-wrap gap-4 mt-2">
-                    <div className="px-3 py-1 bg-slate-50 rounded-lg text-[9px] font-black text-slate-400 uppercase tracking-tighter border border-slate-100">
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <div className="px-2.5 py-1 bg-gray-50 rounded-md text-[11px] font-medium text-gray-500 border border-gray-100">
                       IP: {activity.ip}
                     </div>
-                    <div className="px-3 py-1 bg-slate-50 rounded-lg text-[9px] font-black text-slate-400 uppercase tracking-tighter border border-slate-100">
+                    <div className="px-2.5 py-1 bg-gray-50 rounded-md text-[11px] font-medium text-gray-500 border border-gray-100">
                       {activity.location}
                     </div>
                   </div>
@@ -55,8 +55,8 @@ export const ActivityPage: React.FC = () => {
           ))}
         </div>
 
-        <div className="mt-8 pt-8 border-t border-slate-100">
-           <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">
+        <div className="pt-6 border-t border-gray-100">
+           <button className="text-xs font-semibold text-primary hover:underline cursor-pointer">
              Sign out of all other sessions
            </button>
         </div>

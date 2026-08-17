@@ -251,14 +251,14 @@ function HeaderContent() {
   };
 
   const renderSearchDropdown = () => (
-    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden animate-in fade-in-50 duration-150">
+    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-[#E5E7EB] z-50 overflow-hidden">
       {searchInput.trim().length < 2 && (
         <div className="p-4 space-y-4">
           {searchHistory.length > 0 && (
             <div>
-              <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+              <div className="flex items-center justify-between text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2">
                 <span>Recent Searches</span>
-                <button onClick={clearSearchHistory} className="text-[10px] text-accent hover:underline cursor-pointer">Clear All</button>
+                <button onClick={clearSearchHistory} className="text-[10px] text-[#DC2B53] hover:underline cursor-pointer">Clear All</button>
               </div>
               <div className="flex flex-wrap gap-2">
                 {searchHistory.map((q) => (
@@ -269,7 +269,7 @@ function HeaderContent() {
                       router.push(`/search?q=${encodeURIComponent(q)}`);
                       setIsSearchFocused(false);
                     }}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:border-accent hover:text-accent cursor-pointer transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg text-xs font-medium text-[#111827] hover:border-[#DC2B53] hover:text-[#DC2B53] cursor-pointer transition-colors"
                   >
                     <span>{q}</span>
                     <X 
@@ -287,17 +287,17 @@ function HeaderContent() {
           )}
 
           <div>
-            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Popular Categories</div>
+            <div className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Popular Categories</div>
             <div className="grid grid-cols-2 gap-2">
               {categories.slice(0, 6).map((cat) => (
                 <Link
                   key={cat.id}
                   href={`/categories/${cat.slug}`}
                   onClick={() => setIsSearchFocused(false)}
-                  className="p-2 rounded-xl bg-surface hover:bg-primary-light hover:text-primary transition-colors text-xs font-semibold text-slate-700 flex items-center justify-between"
+                  className="p-2 rounded-lg bg-[#F9FAFB] hover:bg-[#FDF0F3] hover:text-[#DC2B53] transition-colors text-xs font-medium text-[#111827] flex items-center justify-between border border-transparent hover:border-[#DC2B53]/20"
                 >
                   <span className="truncate">{cat.name}</span>
-                  <ChevronRight size={14} className="text-slate-400 flex-shrink-0" />
+                  <ChevronRight size={14} className="text-[#6B7280] flex-shrink-0" />
                 </Link>
               ))}
             </div>
@@ -308,14 +308,14 @@ function HeaderContent() {
       {searchInput.trim().length >= 2 && (
         <div>
           {categorySuggestions.length > 0 && (
-            <div className="p-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] font-bold text-slate-400 uppercase">Categories:</span>
+            <div className="p-3 bg-[#F9FAFB] border-b border-[#E5E7EB] flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] font-semibold text-[#6B7280] uppercase">Categories:</span>
               {categorySuggestions.map(cat => (
                 <Link
                   key={cat.slug}
                   href={`/categories/${cat.slug}`}
                   onClick={() => setIsSearchFocused(false)}
-                  className="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-primary hover:border-accent hover:text-accent transition-colors"
+                  className="px-2.5 py-1 bg-white border border-[#E5E7EB] rounded-lg text-xs font-medium text-[#111827] hover:border-[#DC2B53] hover:text-[#DC2B53] transition-colors"
                 >
                   {cat.name}
                 </Link>
@@ -324,7 +324,7 @@ function HeaderContent() {
           )}
 
           {searchResults.length > 0 && (
-            <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
+            <div className="divide-y divide-[#E5E7EB] max-h-80 overflow-y-auto">
               {searchResults.map((prod, idx) => (
                 <div
                   key={prod.id}
@@ -333,7 +333,7 @@ function HeaderContent() {
                     setIsSearchFocused(false);
                   }}
                   className={`p-3 flex items-center justify-between gap-3 cursor-pointer transition-colors ${
-                    idx === selectedIndex ? 'bg-primary-light' : 'hover:bg-slate-50'
+                    idx === selectedIndex ? 'bg-[#FDF0F3]' : 'hover:bg-[#F9FAFB]'
                   }`}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -344,11 +344,11 @@ function HeaderContent() {
                       height={48}
                       fallbackType="product"
                       fallbackLabel={prod.name}
-                      className="w-12 h-12 object-cover rounded-xl border border-slate-200 flex-shrink-0" 
+                      className="w-12 h-12 object-cover rounded-lg border border-[#E5E7EB] flex-shrink-0" 
                     />
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-bold text-slate-900 truncate">{prod.name}</div>
-                      <div className="text-xs font-black text-accent mt-0.5">${prod.price}</div>
+                      <div className="text-xs font-medium text-[#111827] truncate">{prod.name}</div>
+                      <div className="text-xs font-bold text-[#DC2B53] mt-0.5">${prod.price}</div>
                     </div>
                   </div>
                   <Badge variant={prod.stock > 0 ? 'success' : 'error'} size="sm" className="flex-shrink-0">
@@ -362,7 +362,7 @@ function HeaderContent() {
           <button
             type="button"
             onClick={() => handleSearchSubmit()}
-            className="w-full p-3 bg-slate-50 hover:bg-primary/5 text-center text-xs font-bold text-primary border-t border-slate-100 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+            className="w-full p-3 bg-[#F9FAFB] hover:bg-[#FDF0F3] text-center text-xs font-semibold text-[#DC2B53] border-t border-[#E5E7EB] transition-colors cursor-pointer flex items-center justify-center gap-1.5"
           >
             <span className="truncate">View all search results for "{searchInput}"</span>
             <ArrowRight size={14} className="flex-shrink-0" />
@@ -380,32 +380,32 @@ function HeaderContent() {
           : '-translate-y-full'
       }`}>
         {/* 1. TOP UTILITY BAR */}
-        <div className="bg-white border-b border-border-default py-2.5 hidden lg:block">
-          <div className="container-vyzobd flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-            <div className="flex items-center gap-8">
-              <a href="tel:+8801700000000" className="flex items-center gap-2 group cursor-pointer hover:text-primary transition-colors">
-                <PhoneCall size={13} className="text-accent" />
+        <div className="bg-white border-b border-[#E5E7EB] py-2 hidden lg:block">
+          <div className="container-vyzobd flex items-center justify-between text-xs font-medium text-[#6B7280]">
+            <div className="flex items-center gap-6">
+              <a href="tel:+8801700000000" className="flex items-center gap-1.5 group cursor-pointer hover:text-[#DC2B53] transition-colors">
+                <PhoneCall size={13} className="text-[#DC2B53]" />
                 <span>Customer Support</span>
               </a>
-              <a href={`mailto:${publicSettings?.general?.storeEmail || 'support@vyzobd.com'}`} className="flex items-center gap-2 group cursor-pointer hover:text-primary transition-colors">
-                <Mail size={13} className="text-accent" />
+              <a href={`mailto:${publicSettings?.general?.storeEmail || 'support@vyzobd.com'}`} className="flex items-center gap-1.5 group cursor-pointer hover:text-[#DC2B53] transition-colors">
+                <Mail size={13} className="text-[#DC2B53]" />
                 <span>{publicSettings?.general?.storeEmail || 'support@vyzobd.com'}</span>
               </a>
             </div>
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
+            <div className="flex items-center gap-5">
+              <div className="flex items-center gap-1 hover:text-[#111827] transition-colors cursor-pointer">
                 <span>English</span>
                 <ChevronDown size={12} />
               </div>
-              <div className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
+              <div className="flex items-center gap-1 hover:text-[#111827] transition-colors cursor-pointer">
                 <span>{publicSettings?.general?.currency || 'BDT'}</span>
                 <ChevronDown size={12} />
               </div>
               <Link 
                 href={user ? '/account/profile' : '/login'}
-                className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer border-l border-slate-200 pl-6 ml-2"
+                className="flex items-center gap-1.5 hover:text-[#DC2B53] transition-colors cursor-pointer border-l border-[#E5E7EB] pl-5 ml-1"
               >
-                <User size={13} className="text-accent" />
+                <User size={13} className="text-[#DC2B53]" />
                 <span>{user ? user.fullName : 'Login / Register'}</span>
               </Link>
             </div>
@@ -414,12 +414,12 @@ function HeaderContent() {
 
         {/* Announcement Banner */}
         {publicSettings?.announcementBanner?.enabled && (
-          <div className="bg-primary text-white text-[10px] sm:text-xs py-2 px-4 text-center font-bold tracking-widest uppercase flex items-center justify-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 animate-pulse text-accent" />
+          <div className="bg-[#111827] text-white text-xs py-2 px-4 text-center font-medium flex items-center justify-center gap-2">
+            <Sparkles className="w-3.5 h-3.5 text-[#DC2B53]" />
             <span>{publicSettings.announcementBanner.text}</span>
             <Link 
               href="/products?deals=true"
-              className="underline underline-offset-2 font-black hover:text-accent transition-colors ml-1 cursor-pointer"
+              className="text-[#DC2B53] font-semibold hover:underline ml-1 cursor-pointer"
             >
               {publicSettings.announcementBanner.linkText || 'Explore Now'}
             </Link>
@@ -427,28 +427,28 @@ function HeaderContent() {
         )}
 
         {/* 2. MAIN HEADER */}
-        <div className="container-vyzobd py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4 lg:gap-10">
+        <div className="container-vyzobd py-3.5 flex items-center justify-between gap-3 sm:gap-4 lg:gap-8">
           
           {/* Mobile: Hamburger and Logo */}
           <div className="flex items-center gap-2 sm:gap-3 lg:hidden min-w-0 flex-1 sm:flex-initial">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 text-primary hover:text-accent rounded-xl hover:bg-surface transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center flex-shrink-0"
+              className="p-2 text-[#111827] hover:text-[#DC2B53] rounded-lg hover:bg-gray-100 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center flex-shrink-0"
               aria-label="Open Menu"
             >
-              <Menu size={24} />
+              <Menu size={22} />
             </button>
             
             <Link href="/" className="flex items-center gap-2 group select-none min-w-0">
               <img 
                 src="/logo.svg" 
                 alt={publicSettings?.general?.siteName || "Vyzobd"} 
-                className="h-8 xs:h-9 sm:h-10 w-auto object-contain flex-shrink-0 max-w-[125px] sm:max-w-[155px] dark:hidden"
+                className="h-8 xs:h-9 w-auto object-contain flex-shrink-0 max-w-[125px] sm:max-w-[155px] dark:hidden"
               />
               <img 
                 src="/logowhite.svg" 
                 alt={publicSettings?.general?.siteName || "Vyzobd"} 
-                className="h-8 xs:h-9 sm:h-10 w-auto object-contain flex-shrink-0 max-w-[125px] sm:max-w-[155px] hidden dark:block"
+                className="h-8 xs:h-9 w-auto object-contain flex-shrink-0 max-w-[125px] sm:max-w-[155px] hidden dark:block"
               />
             </Link>
           </div>
@@ -458,12 +458,12 @@ function HeaderContent() {
             <img 
               src="/logo.svg" 
               alt={publicSettings?.general?.siteName || "Vyzobd"} 
-              className="h-11 xl:h-12 w-auto max-h-[44px] xl:max-h-[48px] max-w-[165px] xl:max-w-[180px] object-contain dark:hidden"
+              className="h-10 xl:h-11 w-auto max-h-[44px] max-w-[165px] xl:max-w-[180px] object-contain dark:hidden"
             />
             <img 
               src="/logowhite.svg" 
               alt={publicSettings?.general?.siteName || "Vyzobd"} 
-              className="h-11 xl:h-12 w-auto max-h-[44px] xl:max-h-[48px] max-w-[165px] xl:max-w-[180px] object-contain hidden dark:block"
+              className="h-10 xl:h-11 w-auto max-h-[44px] max-w-[165px] xl:max-w-[180px] object-contain hidden dark:block"
             />
           </Link>
 
@@ -471,14 +471,14 @@ function HeaderContent() {
           <div className="hidden lg:flex flex-1 max-w-2xl relative" ref={searchContainerRef}>
             <form 
               onSubmit={handleSearchSubmit}
-              className="flex items-center w-full bg-surface border border-border-default rounded-2xl focus-within:border-accent focus-within:ring-4 focus-within:ring-accent/10 focus-within:bg-white transition-all overflow-hidden"
+              className="flex items-center w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg focus-within:border-[#DC2B53] focus-within:ring-1 focus-within:ring-[#DC2B53] focus-within:bg-white transition-colors overflow-hidden"
             >
               {/* Category Selector */}
-              <div className="relative border-r border-border-default bg-slate-100/50 flex-shrink-0">
+              <div className="relative border-r border-[#E5E7EB] bg-gray-50 flex-shrink-0">
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="appearance-none py-3 pl-4 pr-9 text-xs font-bold text-primary bg-transparent cursor-pointer focus:outline-none"
+                  className="appearance-none py-2.5 pl-3 pr-8 text-xs font-medium text-[#111827] bg-transparent cursor-pointer focus:outline-none"
                 >
                   <option value="All Categories">All Categories</option>
                   {categories.map((cat) => (
@@ -487,27 +487,27 @@ function HeaderContent() {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <ChevronDown className="w-3.5 h-3.5 text-[#6B7280] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
 
               {/* Input field */}
               <div className="relative flex-1 flex items-center">
                 <input
                   type="text"
-                  placeholder="Search webcams, headphones, chargers, accessories..."
+                  placeholder="Search products, brands, categories..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   onFocus={() => setIsSearchFocused(true)}
                   onKeyDown={handleKeyDown}
-                  className="w-full py-3 px-4 text-sm font-medium text-primary placeholder-slate-400 bg-transparent focus:outline-none"
+                  className="w-full py-2.5 px-3 text-sm font-normal text-[#111827] placeholder-[#6B7280] bg-transparent focus:outline-none"
                 />
                 {searchInput && (
                   <button
                     type="button"
                     onClick={() => setSearchInput('')}
-                    className="p-1 mr-2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                    className="p-1 mr-2 text-[#6B7280] hover:text-[#111827] transition-colors cursor-pointer"
                   >
-                    <X size={16} />
+                    <X size={15} />
                   </button>
                 )}
               </div>
@@ -515,10 +515,10 @@ function HeaderContent() {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="px-6 bg-primary hover:bg-accent text-white transition-colors cursor-pointer min-h-[48px] flex items-center justify-center"
+                className="px-5 bg-[#DC2B53] hover:bg-[#C52247] text-white transition-colors cursor-pointer min-h-[42px] flex items-center justify-center shrink-0"
                 aria-label="Search"
               >
-                {isSearching ? <Loader2 size={18} className="animate-spin" /> : <Search size={20} />}
+                {isSearching ? <Loader2 size={16} className="animate-spin" /> : <Search size={18} />}
               </button>
             </form>
 
@@ -527,7 +527,7 @@ function HeaderContent() {
           </div>
 
           {/* Action Controls: User Account, Wishlist, Cart */}
-          <div className="flex items-center gap-1 sm:gap-2.5 flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             
             {/* User Account Button & Dropdown */}
             <div className="relative" ref={accountMenuRef}>
@@ -539,76 +539,76 @@ function HeaderContent() {
                     router.push('/login');
                   }
                 }}
-                className="flex items-center gap-2 p-2 sm:px-3 sm:py-2 text-primary hover:text-accent hover:bg-surface rounded-2xl transition-all cursor-pointer min-h-[44px]"
+                className="flex items-center gap-2 p-2 text-[#111827] hover:text-[#DC2B53] hover:bg-gray-50 rounded-lg transition-colors cursor-pointer min-h-[40px]"
               >
-                <div className="w-8 h-8 rounded-full bg-white border border-border-default flex items-center justify-center text-primary font-bold text-xs shadow-premium">
-                  {user ? user.fullName.charAt(0).toUpperCase() : <User size={18} />}
+                <div className="w-8 h-8 rounded-full bg-[#F9FAFB] border border-[#E5E7EB] flex items-center justify-center text-[#111827] font-semibold text-xs">
+                  {user ? user.fullName.charAt(0).toUpperCase() : <User size={16} />}
                 </div>
                 <div className="hidden xl:block text-left">
-                  <div className="text-[10px] text-slate-400 uppercase font-black leading-tight tracking-wider">
+                  <div className="text-[10px] text-[#6B7280] uppercase font-medium leading-tight">
                     {user ? 'Welcome' : 'Account'}
                   </div>
-                  <div className="text-xs font-bold text-primary leading-tight truncate max-w-[110px]">
-                    {user ? user.fullName.split(' ')[0] : 'Login / Register'}
+                  <div className="text-xs font-semibold text-[#111827] leading-tight truncate max-w-[110px]">
+                    {user ? user.fullName.split(' ')[0] : 'Sign In'}
                   </div>
                 </div>
-                {user && <ChevronDown size={14} className="text-slate-400 hidden xl:block" />}
+                {user && <ChevronDown size={13} className="text-[#6B7280] hidden xl:block" />}
               </button>
 
               {/* Account Dropdown Menu */}
               {user && isAccountMenuOpen && (
-                <div className="absolute right-0 top-full mt-2 w-56 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 z-50 animate-in fade-in-50 duration-150">
-                  <div className="p-3 bg-slate-50 rounded-xl mb-1 border border-slate-100">
-                    <div className="text-xs font-bold text-slate-900">{user.fullName}</div>
-                    <div className="text-[11px] text-slate-500 truncate">{user.email}</div>
+                <div className="absolute right-0 top-full mt-2 w-56 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-lg border border-[#E5E7EB] p-1.5 z-50">
+                  <div className="p-2.5 bg-[#F9FAFB] rounded-lg mb-1 border border-[#E5E7EB]">
+                    <div className="text-xs font-bold text-[#111827]">{user.fullName}</div>
+                    <div className="text-[11px] text-[#6B7280] truncate">{user.email}</div>
                   </div>
 
                   <div className="space-y-0.5">
                     <Link
                       href="/account/profile"
                       onClick={() => setIsAccountMenuOpen(false)}
-                      className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:text-primary hover:bg-primary-light rounded-xl transition-colors flex items-center gap-2"
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-[#111827] hover:text-[#DC2B53] hover:bg-[#FDF0F3] rounded-lg transition-colors flex items-center gap-2"
                     >
-                      <User size={15} />
+                      <User size={14} />
                       <span>My Profile</span>
                     </Link>
 
                     <Link
                       href="/account/orders"
                       onClick={() => setIsAccountMenuOpen(false)}
-                      className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:text-primary hover:bg-primary-light rounded-xl transition-colors flex items-center gap-2"
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-[#111827] hover:text-[#DC2B53] hover:bg-[#FDF0F3] rounded-lg transition-colors flex items-center gap-2"
                     >
-                      <Package size={15} />
+                      <Package size={14} />
                       <span>Order History</span>
                     </Link>
 
                     <Link
                       href="/account/wishlist"
                       onClick={() => setIsAccountMenuOpen(false)}
-                      className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:text-primary hover:bg-primary-light rounded-xl transition-colors flex items-center justify-between"
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-[#111827] hover:text-[#DC2B53] hover:bg-[#FDF0F3] rounded-lg transition-colors flex items-center justify-between"
                     >
                       <div className="flex items-center gap-2">
-                        <Heart size={15} />
+                        <Heart size={14} />
                         <span>Wishlist</span>
                       </div>
                       {wishlist.length > 0 && (
-                        <span className="text-[10px] bg-primary text-white font-bold px-1.5 py-0.5 rounded-full">
+                        <span className="text-[10px] bg-[#DC2B53] text-white font-bold px-1.5 py-0.2 rounded-full">
                           {wishlist.length}
                         </span>
                       )}
                     </Link>
                   </div>
 
-                  <div className="pt-1 mt-1 border-t border-slate-100">
+                  <div className="pt-1 mt-1 border-t border-[#E5E7EB]">
                     <button
                       onClick={async () => {
                         await logout();
                         setIsAccountMenuOpen(false);
                         router.push('/');
                       }}
-                      className="w-full text-left px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-2 cursor-pointer"
+                      className="w-full text-left px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
                     >
-                      <LogOut size={15} />
+                      <LogOut size={14} />
                       <span>Sign Out</span>
                     </button>
                   </div>
@@ -619,18 +619,18 @@ function HeaderContent() {
             {/* Wishlist Button */}
             <Link
               href="/account/wishlist"
-              className="relative p-2 sm:px-3 sm:py-2 text-primary hover:text-accent hover:bg-surface rounded-2xl transition-all flex items-center gap-2 min-h-[44px]"
+              className="relative p-2 text-[#111827] hover:text-[#DC2B53] hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-1.5 min-h-[40px]"
               aria-label="View Wishlist"
             >
               <div className="relative">
-                <Heart size={22} />
+                <Heart size={20} />
                 {wishlist.length > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-accent text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-accent">
+                  <span className="absolute -top-1.5 -right-1.5 bg-[#DC2B53] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                     {wishlist.length}
                   </span>
                 )}
               </div>
-              <span className="hidden xl:inline text-xs font-bold text-primary">
+              <span className="hidden xl:inline text-xs font-medium text-[#111827]">
                 Wishlist
               </span>
             </Link>
@@ -638,22 +638,22 @@ function HeaderContent() {
             {/* Shopping Cart Button */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="flex items-center gap-2.5 px-4 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-2xl font-bold shadow-accent transition-all cursor-pointer group min-h-[44px]"
+              className="flex items-center gap-2 px-3.5 py-2 bg-[#DC2B53] hover:bg-[#C52247] text-white rounded-lg font-semibold shadow-xs transition-colors cursor-pointer group min-h-[40px]"
               aria-label="Open Cart"
             >
               <div className="relative">
-                <ShoppingCart size={20} className="group-hover:scale-110 transition-transform" />
+                <ShoppingCart size={18} />
                 {totalCartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-accent shadow-premium">
+                  <span className="absolute -top-2 -right-2 bg-[#111827] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
                     {totalCartCount}
                   </span>
                 )}
               </div>
               <div className="text-left hidden sm:block">
-                <div className="text-[9px] text-white/80 uppercase font-bold tracking-wider leading-none">
+                <div className="text-[10px] text-white/80 uppercase font-medium leading-none">
                   Cart
                 </div>
-                <div className="text-xs font-black leading-tight">
+                <div className="text-xs font-bold leading-tight">
                   ${(cart?.total || 0).toFixed(2)}
                 </div>
               </div>
@@ -663,7 +663,7 @@ function HeaderContent() {
 
         {/* 3. PRIMARY NAVIGATION BAR */}
         <div 
-          className="hidden lg:block bg-surface border-t border-border-default relative" 
+          className="hidden lg:block bg-[#F9FAFB] border-t border-[#E5E7EB] relative" 
           ref={navContainerRef}
           onMouseLeave={() => setIsMegaMenuOpen(false)}
         >
@@ -671,10 +671,10 @@ function HeaderContent() {
             <nav className="flex items-center">
               <Link
                 href="/"
-                className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-1 border-b-2 ${
                   isNavActive('/', true) 
-                    ? 'text-accent border-accent' 
-                    : 'text-primary border-transparent hover:text-accent'
+                    ? 'text-[#DC2B53] border-[#DC2B53]' 
+                    : 'text-[#111827] border-transparent hover:text-[#DC2B53]'
                 }`}
               >
                 Home
@@ -682,10 +682,10 @@ function HeaderContent() {
 
               <Link
                 href="/products"
-                className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-1 border-b-2 ${
                   isNavActive('/products', true) 
-                    ? 'text-accent border-accent' 
-                    : 'text-primary border-transparent hover:text-accent'
+                    ? 'text-[#DC2B53] border-[#DC2B53]' 
+                    : 'text-[#111827] border-transparent hover:text-[#DC2B53]'
                 }`}
               >
                 Shop
@@ -697,23 +697,23 @@ function HeaderContent() {
               >
                 <Link
                   href="/categories"
-                  className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                  className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-1 border-b-2 ${
                     isNavActive('/categories') 
-                      ? 'text-accent border-accent' 
-                      : 'text-primary border-transparent hover:text-accent'
+                      ? 'text-[#DC2B53] border-[#DC2B53]' 
+                      : 'text-[#111827] border-transparent hover:text-[#DC2B53]'
                   }`}
                 >
                   <span>Categories</span>
-                  <ChevronDown size={14} className={`transition-transform duration-300 ${isMegaMenuOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={13} className={`transition-transform duration-200 ${isMegaMenuOpen ? 'rotate-180' : ''}`} />
                 </Link>
               </div>
 
               <Link
                 href="/brands"
-                className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-1 border-b-2 ${
                   isNavActive('/brands') 
-                    ? 'text-accent border-accent' 
-                    : 'text-primary border-transparent hover:text-accent'
+                    ? 'text-[#DC2B53] border-[#DC2B53]' 
+                    : 'text-[#111827] border-transparent hover:text-[#DC2B53]'
                 }`}
               >
                 Brands
@@ -721,10 +721,10 @@ function HeaderContent() {
 
               <Link
                 href="/products?deals=true"
-                className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-1 border-b-2 ${
                   isNavActive('/products?deals=true') 
-                    ? 'text-accent border-accent' 
-                    : 'text-primary border-transparent hover:text-accent'
+                    ? 'text-[#DC2B53] border-[#DC2B53]' 
+                    : 'text-[#111827] border-transparent hover:text-[#DC2B53]'
                 }`}
               >
                 Deals
@@ -732,10 +732,10 @@ function HeaderContent() {
 
               <Link
                 href="/products?sort=newest"
-                className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-1 border-b-2 ${
                   isNavActive('/products?sort=newest') 
-                    ? 'text-accent border-accent' 
-                    : 'text-primary border-transparent hover:text-accent'
+                    ? 'text-[#DC2B53] border-[#DC2B53]' 
+                    : 'text-[#111827] border-transparent hover:text-[#DC2B53]'
                 }`}
               >
                 New Arrivals
@@ -743,10 +743,10 @@ function HeaderContent() {
 
               <Link
                 href="/blog"
-                className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-1 border-b-2 ${
                   isNavActive('/blog') 
-                    ? 'text-accent border-accent' 
-                    : 'text-primary border-transparent hover:text-accent'
+                    ? 'text-[#DC2B53] border-[#DC2B53]' 
+                    : 'text-[#111827] border-transparent hover:text-[#DC2B53]'
                 }`}
               >
                 Blog
@@ -754,10 +754,10 @@ function HeaderContent() {
 
               <Link
                 href="/pages/about"
-                className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-1 border-b-2 ${
                   isNavActive('/pages/about') 
-                    ? 'text-accent border-accent' 
-                    : 'text-primary border-transparent hover:text-accent'
+                    ? 'text-[#DC2B53] border-[#DC2B53]' 
+                    : 'text-[#111827] border-transparent hover:text-[#DC2B53]'
                 }`}
               >
                 About
@@ -765,23 +765,23 @@ function HeaderContent() {
 
               <Link
                 href="/pages/contact"
-                className={`px-4 py-3.5 text-[13px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 border-b-2 ${
+                className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-1 border-b-2 ${
                   isNavActive('/pages/contact') 
-                    ? 'text-accent border-accent' 
-                    : 'text-primary border-transparent hover:text-accent'
+                    ? 'text-[#DC2B53] border-[#DC2B53]' 
+                    : 'text-[#111827] border-transparent hover:text-[#DC2B53]'
                 }`}
               >
                 Contact
               </Link>
             </nav>
 
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
               <Link 
                 href="/products?deals=true"
-                className="flex items-center gap-2 text-xs font-black text-accent animate-pulse uppercase tracking-tighter"
+                className="flex items-center gap-1.5 text-xs font-semibold text-[#DC2B53] hover:underline uppercase tracking-wider"
               >
                 <Zap size={14} />
-                <span>Flash Deals ending soon</span>
+                <span>Special Offers</span>
               </Link>
             </div>
           </div>
@@ -808,20 +808,20 @@ function HeaderContent() {
             >
               <input
                 type="text"
-                placeholder="Search webcams, headphones, chargers..."
+                placeholder="Search products..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
-                className="w-full py-2.5 sm:py-3 pl-10 pr-10 text-sm bg-surface border border-border-default rounded-2xl focus:outline-none focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 font-medium transition-all"
+                className="w-full py-2.5 pl-9 pr-9 text-sm bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg focus:outline-none focus:bg-white focus:border-[#DC2B53] focus:ring-1 focus:ring-[#DC2B53] font-normal transition-colors"
               />
-              <Search size={18} className="absolute left-3.5 text-primary pointer-events-none" />
+              <Search size={16} className="absolute left-3 text-[#6B7280] pointer-events-none" />
               {searchInput && (
                 <button
                   type="button"
                   onClick={() => setSearchInput('')}
-                  className="absolute right-3 text-slate-400 hover:text-primary transition-colors cursor-pointer p-1"
+                  className="absolute right-3 text-[#6B7280] hover:text-[#111827] transition-colors cursor-pointer p-1"
                 >
-                  <X size={18} />
+                  <X size={16} />
                 </button>
               )}
             </form>
@@ -839,53 +839,50 @@ function HeaderContent() {
           size="md"
           title={
             <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 group min-w-0">
-              <img src="/logo.svg" alt={publicSettings?.general?.siteName || "Vyzobd"} className="h-8 sm:h-9 w-auto flex-shrink-0 dark:hidden" />
-              <img src="/logowhite.svg" alt={publicSettings?.general?.siteName || "Vyzobd"} className="h-8 sm:h-9 w-auto flex-shrink-0 hidden dark:block" />
-              <span className="font-display font-black text-lg sm:text-xl text-primary tracking-tighter uppercase group-hover:text-accent transition-colors truncate max-w-[180px] sm:max-w-[220px]">
-                {publicSettings?.general?.siteName || "Vyzobd"}
-              </span>
+              <img src="/logo.svg" alt={publicSettings?.general?.siteName || "Vyzobd"} className="h-8 w-auto flex-shrink-0 dark:hidden" />
+              <img src="/logowhite.svg" alt={publicSettings?.general?.siteName || "Vyzobd"} className="h-8 w-auto flex-shrink-0 hidden dark:block" />
             </Link>
           }
           footer={
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <button className="flex flex-col items-center justify-center p-3 rounded-2xl bg-surface border border-border-default hover:border-accent transition-all group">
-                  <ShieldCheck size={20} className="text-primary group-hover:text-accent mb-1" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Warranty</span>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <button className="flex flex-col items-center justify-center p-2.5 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] hover:border-[#DC2B53] transition-colors group">
+                  <ShieldCheck size={18} className="text-[#111827] group-hover:text-[#DC2B53] mb-1" />
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">Warranty</span>
                 </button>
-                <button className="flex flex-col items-center justify-center p-3 rounded-2xl bg-surface border border-border-default hover:border-accent transition-all group">
-                  <Truck size={20} className="text-primary group-hover:text-accent mb-1" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Track</span>
+                <button className="flex flex-col items-center justify-center p-2.5 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] hover:border-[#DC2B53] transition-colors group">
+                  <Truck size={18} className="text-[#111827] group-hover:text-[#DC2B53] mb-1" />
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#6B7280]">Track</span>
                 </button>
               </div>
-              <div className="flex items-center justify-center gap-2 text-xs text-slate-400 font-medium">
+              <div className="flex items-center justify-center gap-1.5 text-xs text-[#6B7280]">
                 <HelpCircle size={14} />
-                <span>Support Center Available 24/7</span>
+                <span>Support Available 24/7</span>
               </div>
             </div>
           }
         >
-          <div className="space-y-8 overflow-x-hidden">
+          <div className="space-y-6 overflow-x-hidden">
             {/* User Profile Summary */}
-            <div className="relative overflow-hidden rounded-3xl bg-primary p-6 text-white shadow-xl">
-              <div className="relative z-10 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-xl font-black shadow-lg">
-                  {user ? user.fullName.charAt(0).toUpperCase() : <User size={28} />}
+            <div className="relative overflow-hidden rounded-xl bg-[#111827] p-5 text-white shadow-sm">
+              <div className="relative z-10 flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center text-lg font-bold">
+                  {user ? user.fullName.charAt(0).toUpperCase() : <User size={24} />}
                 </div>
                 <div>
-                  <h3 className="font-display font-black text-lg leading-tight">
-                    {user ? `Hey, ${user.fullName.split(' ')[0]}!` : 'Welcome to Vyzobd'}
+                  <h3 className="font-bold text-base leading-tight">
+                    {user ? `Hello, ${user.fullName.split(' ')[0]}` : 'Welcome to Vyzobd'}
                   </h3>
-                  <p className="text-white/70 text-xs mt-0.5">
-                    {user ? user.email : 'Login for a personalized experience'}
+                  <p className="text-gray-300 text-xs mt-0.5">
+                    {user ? user.email : 'Sign in to manage orders'}
                   </p>
                 </div>
               </div>
-              <div className="mt-6 flex gap-2 relative z-10">
+              <div className="mt-4 flex gap-2 relative z-10">
                 <Link
                   href={user ? '/account/profile' : '/login'}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex-1 py-3 px-4 bg-white text-primary font-black text-xs rounded-xl shadow-lg text-center block"
+                  className="flex-1 py-2.5 px-3 bg-[#DC2B53] hover:bg-[#C52247] text-white font-semibold text-xs rounded-lg text-center block transition-colors"
                 >
                   {user ? 'My Dashboard' : 'Sign In / Register'}
                 </Link>
@@ -896,9 +893,9 @@ function HeaderContent() {
                       setIsMobileMenuOpen(false);
                       router.push('/');
                     }}
-                    className="p-3 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-colors"
+                    className="p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors cursor-pointer"
                   >
-                    <LogOut size={18} />
+                    <LogOut size={16} />
                   </button>
                 )}
               </div>
@@ -906,76 +903,76 @@ function HeaderContent() {
 
             {/* Main Navigation Links */}
             <div className="space-y-1">
-              <div className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Explore Store</div>
+              <div className="px-3 text-[10px] font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Navigation</div>
               {[
-                { label: 'Shop Catalog', href: '/products', icon: LayoutGrid },
-                { label: 'Hot Deals', href: '/products?deals=true', icon: Zap, isHot: true },
+                { label: 'Shop All Products', href: '/products', icon: LayoutGrid },
+                { label: 'Deals & Offers', href: '/products?deals=true', icon: Zap, isHot: true },
                 { label: 'Best Sellers', href: '/products?sort=bestsellers', icon: Star },
                 { label: 'New Arrivals', href: '/products?sort=newest', icon: Sparkles },
                 { label: 'Brands', href: '/brands', icon: Box },
-                { label: 'Vyzobd Blog', href: '/blog', icon: Box },
+                { label: 'Blog', href: '/blog', icon: Box },
               ].map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${
-                    item.isHot ? 'bg-accent/5 hover:bg-accent/10' : 'hover:bg-surface'
+                  className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors group ${
+                    item.isHot ? 'bg-[#FDF0F3] text-[#DC2B53]' : 'hover:bg-[#F9FAFB] text-[#111827]'
                   }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`p-2.5 rounded-xl transition-colors ${
-                      item.isHot ? 'bg-accent/10 text-accent' : 'bg-slate-100 text-primary group-hover:bg-white'
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-md ${
+                      item.isHot ? 'bg-[#DC2B53]/10 text-[#DC2B53]' : 'bg-gray-100 text-[#111827]'
                     }`}>
-                      <item.icon size={20} />
+                      <item.icon size={16} />
                     </div>
-                    <span className={`text-sm font-bold ${item.isHot ? 'text-accent' : 'text-primary'}`}>{item.label}</span>
+                    <span className="text-sm font-medium">{item.label}</span>
                   </div>
-                  <ChevronRight size={18} className={item.isHot ? 'text-accent' : 'text-slate-300'} />
+                  <ChevronRight size={16} className={item.isHot ? 'text-[#DC2B53]' : 'text-gray-400'} />
                 </Link>
               ))}
             </div>
 
             {/* Product Categories Section */}
             <div>
-              <div className="px-4 flex items-center justify-between mb-4">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Top Categories</span>
+              <div className="px-3 flex items-center justify-between mb-3">
+                <span className="text-[10px] font-semibold text-[#6B7280] uppercase tracking-wider">Categories</span>
                 <Link 
                   href="/categories" 
                   onClick={() => setIsMobileMenuOpen(false)} 
-                  className="text-[11px] font-black text-accent uppercase tracking-tighter"
+                  className="text-xs font-semibold text-[#DC2B53] hover:underline"
                 >
                   View All
                 </Link>
               </div>
-              <div className="grid grid-cols-2 gap-3 px-1">
+              <div className="grid grid-cols-2 gap-2 px-1">
                 {categories.slice(0, 4).map((cat) => (
                   <Link
                     key={cat.id}
                     href={`/categories/${cat.slug}`}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex flex-col p-3 rounded-2xl bg-surface border border-border-default hover:border-accent transition-all group"
+                    className="flex flex-col p-2.5 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] hover:border-[#DC2B53] transition-colors group"
                   >
-                    <div className="aspect-square rounded-xl overflow-hidden mb-3">
+                    <div className="aspect-square rounded-md overflow-hidden mb-2">
                       <SmartImage 
                         src={cat.image} 
                         alt={cat.name} 
                         fill
                         fallbackType="category"
                         fallbackLabel={cat.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
                       />
                     </div>
-                    <span className="text-xs font-bold text-primary truncate">{cat.name}</span>
-                    <span className="text-[10px] text-slate-400 font-medium mt-0.5">{cat.itemCount || 0} Items</span>
+                    <span className="text-xs font-semibold text-[#111827] truncate">{cat.name}</span>
+                    <span className="text-[10px] text-[#6B7280] mt-0.5">{cat.itemCount || 0} Items</span>
                   </Link>
                 ))}
               </div>
             </div>
 
             {/* Support & Links */}
-            <div className="pt-4 border-t border-border-default">
-              <div className="grid grid-cols-2 gap-y-2">
+            <div className="pt-3 border-t border-[#E5E7EB]">
+              <div className="grid grid-cols-2 gap-y-1">
                 {[
                   { label: 'About Us', href: '/pages/about' },
                   { label: 'Help & FAQ', href: '/faq' },
@@ -986,7 +983,7 @@ function HeaderContent() {
                     key={item.label}
                     href={item.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-left px-4 py-2 text-xs font-bold text-slate-500 hover:text-primary transition-colors block"
+                    className="text-left px-3 py-1.5 text-xs font-medium text-[#6B7280] hover:text-[#DC2B53] transition-colors block"
                   >
                     {item.label}
                   </Link>
@@ -1003,9 +1000,9 @@ function HeaderContent() {
 export const Header: React.FC = () => {
   return (
     <Suspense fallback={
-      <header className="w-full bg-white border-b border-border-default sticky top-0 z-40 py-4">
+      <header className="w-full bg-white border-b border-[#E5E7EB] sticky top-0 z-40 py-3.5">
         <div className="container-vyzobd flex items-center justify-between">
-          <Link href="/" className="font-display font-black text-2xl text-primary uppercase">VYZOBD</Link>
+          <Link href="/" className="font-bold text-xl text-[#111827]">VYZOBD</Link>
         </div>
       </header>
     }>

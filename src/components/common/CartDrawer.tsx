@@ -86,14 +86,14 @@ export const CartDrawer: React.FC = () => {
       <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-250">
         
         {/* Header */}
-        <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
+        <div className="p-4 border-b border-[#E5E7EB] flex items-center justify-between bg-[#F9FAFB]">
           <div className="flex items-center gap-2">
-            <ShoppingBag className="text-primary" size={20} />
-            <h3 className="font-extrabold text-base text-slate-900">
+            <ShoppingBag className="text-[#DC2B53]" size={18} />
+            <h3 className="font-bold text-base text-[#111827]">
               Shopping Cart ({totalItemCount})
             </h3>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {cart.items.length > 0 && (
               <button
                 onClick={() => {
@@ -102,7 +102,7 @@ export const CartDrawer: React.FC = () => {
                   }
                 }}
                 disabled={isClearingCart}
-                className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-colors cursor-pointer"
+                className="p-1.5 text-[#6B7280] hover:text-[#DC2B53] hover:bg-[#FDF0F3] rounded-lg transition-colors cursor-pointer"
                 title="Clear Entire Cart"
               >
                 {isClearingCart ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
@@ -110,52 +110,52 @@ export const CartDrawer: React.FC = () => {
             )}
             <button
               onClick={() => setIsCartOpen(false)}
-              className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/80 rounded-xl transition-colors cursor-pointer"
+              className="p-1.5 text-[#6B7280] hover:text-[#111827] hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
         </div>
 
         {/* Free Shipping Progress Indicator */}
-        <div className="p-3.5 bg-primary/5/80 border-b border-primary/10/80">
-          <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
-            <span className="flex items-center gap-1.5 text-primary">
-              <Truck size={15} />
+        <div className="p-3.5 bg-[#FDF0F3] border-b border-[#DC2B53]/15">
+          <div className="flex items-center justify-between text-xs font-medium mb-1.5">
+            <span className="flex items-center gap-1.5 text-[#111827]">
+              <Truck size={14} className="text-[#DC2B53]" />
               {amountNeeded > 0 ? (
-                <>Add <span className="font-extrabold text-rose-800">${amountNeeded.toFixed(2)}</span> more for FREE Shipping</>
+                <>Add <span className="font-bold text-[#DC2B53]">${amountNeeded.toFixed(2)}</span> more for FREE Shipping</>
               ) : (
-                <span className="text-emerald-700 font-bold flex items-center gap-1">
-                  <Sparkles size={14} /> You unlocked FREE Express Shipping!
+                <span className="text-[#16A34A] font-semibold flex items-center gap-1">
+                  <Sparkles size={14} /> You unlocked FREE Shipping!
                 </span>
               )}
             </span>
-            <span className="text-slate-500 text-[11px] font-mono">{shippingPercent}%</span>
+            <span className="text-[#6B7280] text-xs font-mono">{shippingPercent}%</span>
           </div>
-          <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+          <div className="w-full h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden">
             <div 
-              className={`h-full transition-all duration-500 ${amountNeeded === 0 ? 'bg-emerald-500' : 'bg-primary'}`}
+              className={`h-full transition-all duration-300 ${amountNeeded === 0 ? 'bg-[#16A34A]' : 'bg-[#DC2B53]'}`}
               style={{ width: `${shippingPercent}%` }}
             />
           </div>
         </div>
 
         {/* Items List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-2 divide-y divide-slate-100">
+        <div className="flex-1 overflow-y-auto p-4 space-y-2 divide-y divide-[#E5E7EB]">
           {isLoading ? (
-            <div className="h-full flex flex-col items-center justify-center py-12 text-slate-400">
-              <Loader2 size={32} className="animate-spin text-primary mb-2" />
-              <p className="text-xs font-bold">Synchronizing cart...</p>
+            <div className="h-full flex flex-col items-center justify-center py-12 text-[#6B7280]">
+              <Loader2 size={28} className="animate-spin text-[#DC2B53] mb-2" />
+              <p className="text-xs font-semibold">Synchronizing cart...</p>
             </div>
           ) : cart.items.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center py-12 px-4 space-y-4">
-              <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                <ShoppingBag size={32} />
+            <div className="h-full flex flex-col items-center justify-center text-center py-12 px-4 space-y-3">
+              <div className="w-14 h-14 rounded-full bg-[#F9FAFB] border border-[#E5E7EB] flex items-center justify-center text-[#6B7280]">
+                <ShoppingBag size={24} />
               </div>
               <div>
-                <h4 className="font-bold text-slate-800 text-base">Your cart is empty</h4>
-                <p className="text-xs text-slate-500 mt-1 max-w-xs">
-                  Looks like you haven't added any flagship headphones or tech gear yet.
+                <h4 className="font-bold text-[#111827] text-base">Your cart is empty</h4>
+                <p className="text-xs text-[#6B7280] mt-1 max-w-xs">
+                  Discover great tech accessories and electronics.
                 </p>
               </div>
               <button
@@ -163,7 +163,7 @@ export const CartDrawer: React.FC = () => {
                   setIsCartOpen(false);
                   navigateTo('shop');
                 }}
-                className="px-5 py-2.5 bg-primary hover:bg-primary text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-sm"
+                className="px-4 py-2 bg-[#DC2B53] hover:bg-[#C52247] text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer shadow-xs"
               >
                 Browse Catalog
               </button>
@@ -188,57 +188,57 @@ export const CartDrawer: React.FC = () => {
 
         {/* Footer Summary & Checkout */}
         {cart.items.length > 0 && (
-          <div className="p-4 bg-slate-50 border-t border-slate-200 space-y-3.5">
+          <div className="p-4 bg-[#F9FAFB] border-t border-[#E5E7EB] space-y-3">
             
             {/* Coupon Code input */}
             <form onSubmit={handleApplyCoupon} className="flex gap-2">
               <div className="relative flex-1">
                 <input
                   type="text"
-                  placeholder="Coupon code (e.g. TECH20)"
+                  placeholder="Coupon code (e.g. SAVE10)"
                   value={couponInput}
                   onChange={(e) => setCouponInput(e.target.value)}
-                  className="w-full py-2 pl-8 pr-3 bg-white border border-slate-200 rounded-xl text-xs uppercase placeholder:normal-case font-semibold text-slate-800 focus:outline-none focus:border-primary"
+                  className="w-full py-2 pl-8 pr-3 bg-white border border-[#E5E7EB] rounded-lg text-xs uppercase placeholder:normal-case font-medium text-[#111827] focus:outline-none focus:border-[#DC2B53] focus:ring-1 focus:ring-[#DC2B53]"
                 />
-                <Tag size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Tag size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#6B7280]" />
               </div>
               <button
                 type="submit"
                 disabled={isApplyingCoupon || !couponInput.trim()}
-                className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                className="px-3.5 py-2 bg-[#111827] hover:bg-black text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer disabled:opacity-50"
               >
-                {isApplyingCoupon ? <Loader2 size={14} className="animate-spin" /> : 'Apply'}
+                {isApplyingCoupon ? <Loader2 size={13} className="animate-spin" /> : 'Apply'}
               </button>
             </form>
             {applyCouponError && (
-              <p className="text-[11px] text-primary font-medium">{(applyCouponError as any).message || 'Invalid coupon'}</p>
+              <p className="text-[11px] text-[#DC2626] font-medium">{(applyCouponError as any).message || 'Invalid coupon'}</p>
             )}
 
             {/* Calculations Breakdown */}
-            <div className="space-y-1.5 text-xs text-slate-600 pt-1 border-t border-slate-200/80">
+            <div className="space-y-1.5 text-xs text-[#6B7280] pt-1 border-t border-[#E5E7EB]">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span className="font-semibold text-slate-800">${cart.subtotal.toFixed(2)}</span>
+                <span className="font-semibold text-[#111827]">${cart.subtotal.toFixed(2)}</span>
               </div>
               {cart.discount > 0 && (
-                <div className="flex justify-between text-primary font-medium">
+                <div className="flex justify-between text-[#DC2B53] font-medium">
                   <span>Discount ({cart.appliedCoupon})</span>
                   <span>-${cart.discount.toFixed(2)}</span>
                 </div>
               )}
               <div className="flex justify-between">
                 <span>Shipping</span>
-                <span className="font-semibold text-slate-800">
-                  {cart.shippingFee === 0 ? <span className="text-emerald-600 font-bold">FREE</span> : `$${cart.shippingFee.toFixed(2)}`}
+                <span className="font-semibold text-[#111827]">
+                  {cart.shippingFee === 0 ? <span className="text-[#16A34A] font-semibold">FREE</span> : `${cart.shippingFee.toFixed(2)}`}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Estimated Tax (8%)</span>
-                <span className="font-semibold text-slate-800">${cart.estimatedTax.toFixed(2)}</span>
+                <span>Estimated Tax</span>
+                <span className="font-semibold text-[#111827]">${cart.estimatedTax.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-sm font-extrabold text-slate-900 pt-2 border-t border-slate-200">
+              <div className="flex justify-between text-sm font-bold text-[#111827] pt-2 border-t border-[#E5E7EB]">
                 <span>Total Amount</span>
-                <span className="text-primary font-mono">${cart.total.toFixed(2)}</span>
+                <span className="text-[#DC2B53] font-bold">${cart.total.toFixed(2)}</span>
               </div>
             </div>
 
@@ -249,10 +249,10 @@ export const CartDrawer: React.FC = () => {
                   setIsCartOpen(false);
                   navigateTo('checkout');
                 }}
-                className="w-full py-3 px-4 bg-primary hover:bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-2.5 px-4 bg-[#DC2B53] hover:bg-[#C52247] text-white font-semibold text-xs uppercase tracking-wider rounded-lg shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>Proceed to Checkout</span>
-                <ArrowRight size={16} />
+                <ArrowRight size={14} />
               </button>
 
               <button
@@ -260,14 +260,14 @@ export const CartDrawer: React.FC = () => {
                   setIsCartOpen(false);
                   navigateTo('cart');
                 }}
-                className="w-full py-2.5 px-4 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold text-xs rounded-xl transition-colors cursor-pointer text-center"
+                className="w-full py-2 px-4 bg-white hover:bg-gray-50 text-[#111827] border border-[#E5E7EB] font-semibold text-xs rounded-lg transition-colors cursor-pointer text-center"
               >
-                View Full Cart Details
+                View Cart
               </button>
             </div>
 
-            <div className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1">
-              <ShieldCheck size={13} className="text-emerald-500" />
+            <div className="text-[11px] text-[#6B7280] text-center flex items-center justify-center gap-1">
+              <ShieldCheck size={13} className="text-[#16A34A]" />
               <span>Guaranteed safe & secure checkout</span>
             </div>
 
