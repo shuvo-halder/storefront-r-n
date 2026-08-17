@@ -80,8 +80,26 @@ export const checkoutService = {
   completeCheckout: async (formData: CheckoutFormData & { [key: string]: any }): Promise<ApiResponse<Order>> => {
     try {
       const analyticsIds = getGA4ClientAndSessionId();
+
+      // Format paymentMethod cleanly (e.g. 'cod' -> 'COD')
+      let paymentMethodFormatted = formData.paymentMethod || 'COD';
+      if (typeof paymentMethodFormatted === 'string' && paymentMethodFormatted.toLowerCase() === 'cod') {
+        paymentMethodFormatted = 'COD';
+      }
+
       const payload = {
-        ...formData,
+        paymentMethod: paymentMethodFormatted,
+        shippingAddress: formData.shippingAddress,
+        billingAddress: formData.billingAddress,
+        ...(formData.customer ? { customer: formData.customer } : {}),
+        ...(formData.shippingMethod ? { shippingMethod: formData.shippingMethod } : {}),
+        ...(formData.couponCode ? { couponCode: formData.couponCode } : {}),
+        ...(formData.items ? { items: formData.items } : {}),
+        ...(formData.subtotal !== undefined ? { subtotal: formData.subtotal } : {}),
+        ...(formData.discount !== undefined ? { discount: formData.discount } : {}),
+        ...(formData.shippingFee !== undefined ? { shippingFee: formData.shippingFee } : {}),
+        ...(formData.tax !== undefined ? { tax: formData.tax } : {}),
+        ...(formData.totalAmount !== undefined ? { totalAmount: formData.totalAmount } : {}),
         ...(analyticsIds.clientId ? { clientId: analyticsIds.clientId } : {}),
         ...(analyticsIds.sessionId ? { sessionId: analyticsIds.sessionId } : {}),
       };
