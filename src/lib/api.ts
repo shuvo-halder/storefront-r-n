@@ -345,11 +345,11 @@ export function normalizeProduct(raw: any): Product {
 
   let stock = 0;
 
-  if (variants.length > 0) {
-    // If product has variants, total stock is the sum of variant stock
-    stock = variants.reduce((sum, v) => sum + v.stock, 0);
-  } else if (rawStock !== undefined && rawStock !== null && !isNaN(Number(rawStock))) {
+  if (rawStock !== undefined && rawStock !== null && !isNaN(Number(rawStock))) {
     stock = Number(rawStock);
+  } else if (variants.length > 0) {
+    // Fall back to variant sum only if product-level stock is missing
+    stock = variants.reduce((sum, v) => sum + v.stock, 0);
   } else if (rawInStock === false) {
     stock = 0;
   } else if (rawInStock === true) {
