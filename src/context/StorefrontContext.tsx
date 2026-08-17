@@ -265,7 +265,7 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
         break;
       case 'checkout-success':
       case 'order-confirmation':
-        routePath = params.orderId || params.id ? `/account/orders/${params.orderId || params.id}` : '/account/orders';
+        routePath = `/order-confirmation${(params.orderId || params.id) ? `?orderId=${params.orderId || params.id}` : ''}`;
         break;
       case 'checkout-failed':
         routePath = '/checkout';

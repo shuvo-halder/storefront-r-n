@@ -111,14 +111,14 @@ export const checkoutService = {
         return { status: 'error', message: unwrapped.message || 'Checkout failed', errors: unwrapped.errors, data: null as any };
       }
 
-      const rawOrder = unwrapped.data;
+      const rawOrder = unwrapped.data?.order || unwrapped.data;
       const order: Order = {
         id: String(rawOrder.id || rawOrder.orderId || `ORD-${Date.now()}`),
         orderNumber: rawOrder.orderNumber ? String(rawOrder.orderNumber) : (rawOrder.order_number ? String(rawOrder.order_number) : undefined),
         createdAt: rawOrder.createdAt || new Date().toISOString(),
         status: rawOrder.status || 'Placed',
         items: Array.isArray(rawOrder.items) ? rawOrder.items : [],
-        shippingAddress: rawOrder.shippingAddress || formData.shippingAddress,
+        shippingAddress: (typeof rawOrder.shippingAddress === 'object' && rawOrder.shippingAddress !== null ? rawOrder.shippingAddress : formData.shippingAddress) || rawOrder.shippingAddress,
         shippingMethod: rawOrder.shippingMethod || formData.shippingMethod,
         paymentMethod: rawOrder.paymentMethod || formData.paymentMethod,
         subtotal: Number(rawOrder.subtotal ?? 0),

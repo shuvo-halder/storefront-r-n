@@ -11,7 +11,7 @@ import { CheckCircle2, Truck, Package, ArrowRight, Printer, Share2, Loader2 } fr
 export const OrderConfirmationPage: React.FC = () => {
   const { viewParams, navigateTo } = useStorefront();
   const [order, setOrder] = useState<Order | null>(viewParams.confirmedOrder || null);
-  const [isLoading, setIsLoading] = useState<boolean>(!viewParams.confirmedOrder && Boolean(viewParams.orderId));
+  const [isLoading, setIsLoading] = useState<boolean>(!viewParams.confirmedOrder && Boolean(viewParams.orderId || viewParams.id));
   const hasTrackedPurchaseRef = useRef<boolean>(false);
 
   let currency = 'BDT';
@@ -24,10 +24,11 @@ export const OrderConfirmationPage: React.FC = () => {
 
   // Load order from API if only orderId was provided in viewParams
   useEffect(() => {
-    if (!order && viewParams.orderId) {
+    const fetchId = viewParams.orderId || viewParams.id;
+    if (!order && fetchId) {
       setIsLoading(true);
       storefrontApi
-        .getOrderById(viewParams.orderId)
+        .getOrderById(fetchId)
         .then((fetched) => {
           if (fetched) {
             setOrder(fetched);
@@ -40,7 +41,7 @@ export const OrderConfirmationPage: React.FC = () => {
           setIsLoading(false);
         });
     }
-  }, [order, viewParams.orderId]);
+  }, [order, viewParams.orderId, viewParams.id]);
 
   // Single authoritative purchase event dispatch on order confirmation
   useEffect(() => {
