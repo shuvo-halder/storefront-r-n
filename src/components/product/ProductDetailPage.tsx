@@ -224,7 +224,10 @@ export const ProductDetailPage: React.FC = () => {
   const selectedVariant = product.variants?.find(v => v.id === selectedVariantId);
   const activePrice = selectedVariant ? selectedVariant.price : product.price;
   const activeComparePrice = selectedVariant?.compareAtPrice ?? product.compareAtPrice;
-  const activeStock = selectedVariant ? selectedVariant.stock : product.stock;
+  // Use product-level stock as availability source if variant stock is 0 but product.stock > 0
+  const activeStock = (selectedVariant && selectedVariant.stock > 0)
+    ? selectedVariant.stock
+    : (product.stock > 0 ? product.stock : 0);
   const activeSKU = selectedVariant ? selectedVariant.sku : `AURA-PRD-${product.id}`;
 
   const hasDiscount = activeComparePrice && activeComparePrice > activePrice;
@@ -239,22 +242,39 @@ export const ProductDetailPage: React.FC = () => {
     if (variant.image) {
       setSelectedImage(variant.image);
     }
-    if (variant.stock > 0) {
-      setQuantity(prev => Math.min(prev, variant.stock));
+    const variantEffectiveStock = variant.stock > 0 ? variant.stock : (product.stock > 0 ? product.stock : 0);
+    if (variantEffectiveStock > 0) {
+      setQuantity(prev => Math.min(Math.max(1, prev), variantEffectiveStock));
     } else {
       setQuantity(1);
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (activeStock === 0) return;
-    addToCartFn(product.id, quantity, selectedVariantId);
+    try {
+      await addToCartFn(product.id, quantity, selectedVariantId);
+    } catch (err: any) {
+      addToast({
+        title: 'Failed to Add to Cart',
+        description: err?.message || 'Could not add item to cart. Please try again.',
+        type: 'error',
+      });
+    }
   };
 
   const handleBuyNow = async () => {
     if (activeStock === 0) return;
-    await addToCartFn(product.id, quantity, selectedVariantId);
-    navigateTo('checkout');
+    try {
+      await addToCartFn(product.id, quantity, selectedVariantId);
+      navigateTo('checkout');
+    } catch (err: any) {
+      addToast({
+        title: 'Checkout Redirect Interrupted',
+        description: err?.message || 'Failed to add item to cart prior to checkout.',
+        type: 'error',
+      });
+    }
   };
 
   const handleShare = () => {
