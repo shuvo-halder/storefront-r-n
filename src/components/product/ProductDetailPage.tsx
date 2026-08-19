@@ -9,7 +9,7 @@ import { storefrontApi } from '../../services/storefrontApi';
 import { Product, ProductReview, ProductVariant } from '../../types/storefront';
 import { RatingStars } from '../common/RatingStars';
 import { ProductCard } from '../common/ProductCard';
-import { trackGA4ViewItem, trackGA4ViewItemList } from '../../utils/analytics';
+import { trackGA4ViewItem, trackGA4ViewItemList, trackGA4WhatsAppClick, trackGA4CallClick } from '../../utils/analytics';
 import { 
   ShoppingCart, 
   Heart, 
@@ -34,7 +34,9 @@ import {
   Send,
   Check,
   Zap,
-  Loader2
+  Loader2,
+  MessageCircle,
+  PhoneCall
 } from 'lucide-react';
 import { Skeleton } from '../ui/Skeleton';
 import { Badge } from '../ui/Badge';
@@ -276,6 +278,40 @@ export const ProductDetailPage: React.FC = () => {
     } catch {
       // Handled centrally in useCart
     }
+  };
+
+  const storePhone = publicSettings?.general?.storePhone || '';
+  const cleanedPhone = storePhone.replace(/[^\d+]/g, '');
+
+  const handleWhatsAppClick = (e: React.MouseEvent) => {
+    trackGA4WhatsAppClick(product?.name || '');
+    if (!storePhone) {
+      e.preventDefault();
+      notifyError(new Error('WhatsApp number not configured.'), 'Configuration Error');
+      return;
+    }
+    const variant = product?.variants?.find(v => v.id === selectedVariantId);
+    let message = `Hello, I want to order ${product?.name}.`;
+    message += `\n\n*Product URL:* ${window.location.href}`;
+    if (variant) {
+      message += `\n*Variant:* ${variant.name}`;
+    }
+    message += `\n*Quantity:* ${quantity}`;
+    const price = variant?.price || product?.price || 0;
+    message += `\n*Price:* ${currencySymbol}${(price * quantity).toFixed(2)}`;
+    
+    const url = `https://wa.me/${cleanedPhone}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleCallClick = (e: React.MouseEvent) => {
+    trackGA4CallClick(product?.name || '');
+    if (!storePhone) {
+      e.preventDefault();
+      notifyError(new Error('Store phone number not configured.'), 'Configuration Error');
+      return;
+    }
+    window.location.href = `tel:${cleanedPhone}`;
   };
 
   const handleShare = () => {
@@ -659,6 +695,26 @@ export const ProductDetailPage: React.FC = () => {
                   </button>
                 </div>
 
+              </div>
+
+              {/* WhatsApp & Call For Order Buttons */}
+              <div className="flex flex-col sm:flex-row items-stretch gap-2.5 pt-2">
+                <button
+                  onClick={handleWhatsAppClick}
+                  disabled={activeStock === 0}
+                  className="flex-1 py-2.5 px-5 bg-[#25D366] hover:bg-[#1EAE53] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold text-xs rounded-lg shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer min-h-[42px]"
+                >
+                  <MessageCircle size={16} />
+                  <span>Order On WhatsApp</span>
+                </button>
+                <button
+                  onClick={handleCallClick}
+                  disabled={activeStock === 0}
+                  className="flex-1 py-2.5 px-5 bg-[#3B82F6] hover:bg-[#2563EB] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold text-xs rounded-lg shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer min-h-[42px]"
+                >
+                  <PhoneCall size={16} />
+                  <span>Call For Order</span>
+                </button>
               </div>
             </div>
 

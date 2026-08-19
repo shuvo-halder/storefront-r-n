@@ -724,6 +724,32 @@ export const trackGA4Purchase = (order: any, currency: string = 'BDT') => {
   }
 };
 
+export const trackGA4WhatsAppClick = (productName: string) => {
+  try {
+    pushToDataLayer({
+      event: 'whatsapp_order_click',
+      ecommerce: {
+        product_name: productName
+      },
+    });
+  } catch (err) {
+    console.error('[GA4 whatsapp_order_click error]', err);
+  }
+};
+
+export const trackGA4CallClick = (productName: string) => {
+  try {
+    pushToDataLayer({
+      event: 'call_order_click',
+      ecommerce: {
+        product_name: productName
+      },
+    });
+  } catch (err) {
+    console.error('[GA4 call_order_click error]', err);
+  }
+};
+
 export const trackGA4Refund = (
   refundData: {
     id?: string;
