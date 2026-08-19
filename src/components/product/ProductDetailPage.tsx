@@ -10,6 +10,7 @@ import { Product, ProductReview, ProductVariant } from '../../types/storefront';
 import { RatingStars } from '../common/RatingStars';
 import { ProductCard } from '../common/ProductCard';
 import { trackGA4ViewItem, trackGA4ViewItemList, trackGA4WhatsAppClick, trackGA4CallClick } from '../../utils/analytics';
+import { formatPrice } from '../../utils/formatters';
 import { 
   ShoppingCart, 
   Heart, 
@@ -225,7 +226,8 @@ export const ProductDetailPage: React.FC = () => {
   }
 
   // Variant computation
-  const currencySymbol = publicSettings?.general?.currencySymbol || (publicSettings?.general?.currency === 'BDT' ? '৳' : '$');
+  const currencySymbol = publicSettings?.general?.currencySymbol || (publicSettings?.general?.currency === 'BDT' ? '৳' : '৳');
+  const currencyCode = publicSettings?.general?.currency || 'BDT';
   const selectedVariant = product.variants?.find(v => v.id === selectedVariantId);
   const activePrice = selectedVariant ? selectedVariant.price : product.price;
   const activeComparePrice = selectedVariant?.compareAtPrice ?? product.compareAtPrice;
@@ -298,7 +300,7 @@ export const ProductDetailPage: React.FC = () => {
     }
     message += `\n*Quantity:* ${quantity}`;
     const price = variant?.price || product?.price || 0;
-    message += `\n*Price:* ${currencySymbol}${(price * quantity).toFixed(2)}`;
+    message += `\n*Price:* ${formatPrice(price * quantity, currencyCode, currencySymbol)}`;
     
     const url = `https://wa.me/${cleanedPhone}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -562,23 +564,25 @@ export const ProductDetailPage: React.FC = () => {
               {/* Price Row */}
               <div className="flex items-baseline gap-3 pt-1">
                 <span className="text-2xl sm:text-3xl font-bold text-[#111827]">
-                  {currencySymbol}{activePrice.toFixed(2)}
+                  {formatPrice(activePrice, currencyCode, currencySymbol)}
                 </span>
                 {activeComparePrice && activeComparePrice > activePrice && (
                   <span className="text-base font-medium text-[#6B7280] line-through">
-                    {currencySymbol}{activeComparePrice.toFixed(2)}
+                    {formatPrice(activeComparePrice, currencyCode, currencySymbol)}
                   </span>
                 )}
                 {computedDiscount && (
                   <span className="px-2 py-0.5 bg-[#FDF0F3] text-[#DC2B53] font-bold text-xs rounded-md border border-[#DC2B53]/20">
-                    Save {currencySymbol}{(activeComparePrice! - activePrice).toFixed(2)} ({computedDiscount}%)
+                    Save {formatPrice(activeComparePrice! - activePrice, currencyCode, currencySymbol)} ({computedDiscount}%)
                   </span>
                 )}
               </div>
 
-              <p className="text-xs sm:text-sm text-[#6B7280] leading-relaxed pt-1">
-                {product.description}
-              </p>
+              {product.subtitle && (
+                <p className="text-xs sm:text-sm text-[#6B7280] leading-relaxed pt-1 line-clamp-3">
+                  {product.subtitle}
+                </p>
+              )}
             </div>
 
             {/* Variant Selector */}
@@ -612,7 +616,7 @@ export const ProductDetailPage: React.FC = () => {
                           )}
                         </div>
                         <div className="text-[#6B7280] text-[11px] flex items-center justify-between">
-                          <span>{currencySymbol}{v.price}</span>
+                          <span>{formatPrice(v.price, currencyCode, currencySymbol)}</span>
                           {v.stock === 0 && <span className="text-[#DC2626] text-[10px]">Out of stock</span>}
                         </div>
                       </button>
@@ -626,7 +630,7 @@ export const ProductDetailPage: React.FC = () => {
             <div className="p-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg flex items-center gap-2.5 text-xs text-[#6B7280]">
               <Truck size={18} className="text-[#DC2B53] flex-shrink-0" />
               <div>
-                <span className="font-semibold text-[#111827]">Free Delivery</span> on orders over {currencySymbol}{publicSettings?.shipping.freeShippingThreshold || 99}.
+                <span className="font-semibold text-[#111827]">Free Delivery</span> on orders over {formatPrice(publicSettings?.shipping.freeShippingThreshold || 99, currencyCode, currencySymbol)}.
               </div>
             </div>
 
@@ -797,7 +801,7 @@ export const ProductDetailPage: React.FC = () => {
                 <div className="p-4 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB] space-y-1">
                   <Truck size={18} className="text-[#DC2B53] mb-2" />
                   <h5 className="font-bold text-[#111827]">Standard Shipping</h5>
-                  <p className="text-xs text-[#6B7280]">3–5 Business Days. Free on orders over {currencySymbol}{publicSettings?.shipping.freeShippingThreshold || 99}.</p>
+                  <p className="text-xs text-[#6B7280]">3–5 Business Days. Free on orders over {formatPrice(publicSettings?.shipping.freeShippingThreshold || 99, currencyCode, currencySymbol)}.</p>
                 </div>
 
                 <div className="p-4 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB] space-y-1">
