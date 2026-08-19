@@ -19,9 +19,9 @@ export const billingAddressSchema = shippingAddressSchema.extend({
 export const checkoutSchema = z.object({
   customer: z.object({
     email: z.string().email('Invalid email').optional().or(z.literal('')),
-    firstName: z.string().min(2, 'First name is required').optional(),
-    lastName: z.string().min(2, 'Last name is required').optional(),
-    phone: z.string().min(10, 'Valid phone is required').optional(),
+    firstName: z.string().min(2, 'First name is required').optional().or(z.literal('')),
+    lastName: z.string().min(2, 'Last name is required').optional().or(z.literal('')),
+    phone: z.string().min(10, 'Valid phone is required').optional().or(z.literal('')),
   }),
   shippingAddress: shippingAddressSchema,
   billingAddress: billingAddressSchema,

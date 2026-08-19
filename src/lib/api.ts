@@ -81,7 +81,15 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (typeof window !== 'undefined') {
+      const sessionId = response.headers['x-cart-session-id'];
+      if (sessionId) {
+        localStorage.setItem('vyzobd_cart_session_id', sessionId);
+      }
+    }
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
     if (

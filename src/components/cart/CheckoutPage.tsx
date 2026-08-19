@@ -42,7 +42,8 @@ export const CheckoutPage: React.FC = () => {
     isLoading: isCartLoading, 
     updateQuantity,
     removeCartItem,
-    applyCoupon
+    applyCoupon,
+    clearCart
   } = useCart();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -217,6 +218,13 @@ export const CheckoutPage: React.FC = () => {
       };
 
       const createdOrder = await storefrontApi.checkoutComplete(orderPayload);
+      
+      // Clear the cart only after successful order creation
+      try {
+        await clearCart();
+      } catch (err) {
+        console.error('Failed to clear cart after checkout', err);
+      }
       
       const isCod = data.paymentMethod === 'cod';
 
