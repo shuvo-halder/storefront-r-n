@@ -1,5 +1,6 @@
 'use client';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 
@@ -24,6 +25,12 @@ export const Drawer: React.FC<DrawerProps> = ({
   size = 'md',
   bodyClassName,
 }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -58,7 +65,9 @@ export const Drawer: React.FC<DrawerProps> = ({
     visible: { x: '0%' },
   };
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[100] overflow-hidden">
@@ -68,7 +77,7 @@ export const Drawer: React.FC<DrawerProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-[#111827]/50 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-[#111827]/50 backdrop-blur-xs transition-opacity z-[100]"
             aria-hidden="true"
           />
 
@@ -80,7 +89,7 @@ export const Drawer: React.FC<DrawerProps> = ({
               animate="visible"
               exit="hidden"
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className={`${sizeClasses[size]} bg-white shadow-xl flex flex-col justify-between z-10 ${position === 'right' ? 'border-l' : 'border-r'} border-[#E5E7EB] h-full max-h-screen overflow-hidden`}
+              className={`${sizeClasses[size]} bg-white shadow-xl flex flex-col justify-between z-[102] ${position === 'right' ? 'border-l' : 'border-r'} border-[#E5E7EB] h-full max-h-screen overflow-hidden`}
             >
               {/* Header */}
               <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-[#E5E7EB] shrink-0">
@@ -109,6 +118,8 @@ export const Drawer: React.FC<DrawerProps> = ({
           </div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
+
