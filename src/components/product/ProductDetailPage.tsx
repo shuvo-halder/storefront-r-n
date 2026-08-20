@@ -39,7 +39,7 @@ import {
   MessageCircle,
   PhoneCall
 } from 'lucide-react';
-import { Skeleton } from '../ui/Skeleton';
+import { Skeleton, ProductCardSkeleton } from '../ui/Skeleton';
 import { Badge } from '../ui/Badge';
 
 import { SEO } from '../common/SEO';
@@ -65,6 +65,7 @@ export const ProductDetailPage: React.FC = () => {
 
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [isRelatedLoading, setIsRelatedLoading] = useState<boolean>(false);
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(undefined);
   const [quantity, setQuantity] = useState<number>(1);
@@ -144,15 +145,19 @@ export const ProductDetailPage: React.FC = () => {
           trackRecentlyViewed(data.id);
 
           // Fetch related products - can be started immediately after product data is known
+          setIsRelatedLoading(true);
           storefrontApi.getProducts({ categorySlug: data.categoryId || data.category })
             .then(relatedRes => {
               if (isMounted) {
-                const filtered = relatedRes.products.filter(p => p.id !== data.id).slice(0, 4);
+                const filtered = relatedRes.products.filter(p => p.id !== data.id).slice(0, 5);
                 setRelatedProducts(filtered);
               }
             })
             .catch(() => {
               if (isMounted) setRelatedProducts([]);
+            })
+            .finally(() => {
+              if (isMounted) setIsRelatedLoading(false);
             });
 
         } else {
@@ -888,32 +893,29 @@ export const ProductDetailPage: React.FC = () => {
         </div>
 
         {/* Related Products Grid */}
-        {relatedProducts.length > 0 && (
-          <div className="space-y-4 pt-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[#DC2B53] block">More in {product.category}</span>
-                <h3 className="text-lg sm:text-xl font-bold text-[#111827] tracking-tight">You Might Also Like</h3>
-              </div>
-              <button
-                onClick={() => navigateTo('shop')}
-                className="text-xs font-semibold text-[#DC2B53] hover:text-[#C52247] flex items-center gap-1 cursor-pointer"
-              >
-                <span>View All</span>
-                <ChevronRight size={14} />
-              </button>
+        {(relatedProducts.length > 0 || isRelatedLoading) && (
+          <div className="space-y-4 pt-10 border-t border-[#E5E7EB] mt-8">
+            <div className="flex flex-col mb-6">
+              <h3 className="text-xl sm:text-2xl font-bold text-[#111827] tracking-tight">Related Products</h3>
+              <span className="text-sm font-medium text-[#6B7280] block mt-1">You may also like these products</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {relatedProducts.map((relProduct, idx) => (
-                <ProductCard 
-                  key={relProduct.id} 
-                  product={relProduct} 
-                  itemListId="related_products"
-                  itemListName="Related Products"
-                  index={idx + 1}
-                />
-              ))}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+              {isRelatedLoading ? (
+                Array.from({ length: 5 }).map((_, idx) => (
+                  <ProductCardSkeleton key={idx} />
+                ))
+              ) : (
+                relatedProducts.map((relProduct, idx) => (
+                  <ProductCard 
+                    key={relProduct.id} 
+                    product={relProduct} 
+                    itemListId="related_products"
+                    itemListName="Related Products"
+                    index={idx + 1}
+                  />
+                ))
+              )}
             </div>
           </div>
         )}
