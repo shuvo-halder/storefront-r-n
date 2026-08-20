@@ -58,6 +58,9 @@ export const settingsService = {
       }
 
       const raw = unwrapped.data;
+      const whatsappOrderNumber = raw.store?.whatsappOrderNumber || raw.general?.whatsappOrderNumber || raw.whatsappOrderNumber || '';
+      const callOrderNumber = raw.store?.callOrderNumber || raw.general?.callOrderNumber || raw.callOrderNumber || '';
+
       const settings: PublicSettings = {
         branding: {
           logoUrl: raw.branding?.logoUrl || raw.logoUrl || '',
@@ -89,8 +92,16 @@ export const settingsService = {
           currencySymbol: raw.general?.currencySymbol || (raw.general?.currency === 'BDT' ? '৳' : '$'),
           storePhone: raw.general?.storePhone || raw.supportPhone || '',
           storeEmail: raw.general?.storeEmail || raw.supportEmail || 'support@vyzobd.com',
-          storeAddress: raw.general?.storeAddress
+          storeAddress: raw.general?.storeAddress,
+          whatsappOrderNumber: whatsappOrderNumber || undefined,
+          callOrderNumber: callOrderNumber || undefined
         },
+        store: {
+          whatsappOrderNumber: whatsappOrderNumber || undefined,
+          callOrderNumber: callOrderNumber || undefined
+        },
+        whatsappOrderNumber: whatsappOrderNumber || undefined,
+        callOrderNumber: callOrderNumber || undefined,
         marketing: {
           gtmContainerId: raw.marketing?.gtmContainerId || raw.marketing?.gtmId || raw.gtmId || raw.gtmContainerId || '',
           gtmId: raw.marketing?.gtmId || raw.marketing?.gtmContainerId || raw.gtmId || raw.gtmContainerId || '',

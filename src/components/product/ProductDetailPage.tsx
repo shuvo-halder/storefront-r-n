@@ -287,14 +287,38 @@ export const ProductDetailPage: React.FC = () => {
     }
   };
 
-  const storePhone = publicSettings?.general?.storePhone || '';
-  const cleanedPhone = storePhone.replace(/[^\d+]/g, '');
+  // Contact numbers from settings API
+  const whatsappRaw = publicSettings?.store?.whatsappOrderNumber || publicSettings?.general?.whatsappOrderNumber || publicSettings?.whatsappOrderNumber || publicSettings?.general?.storePhone || '';
+  const callRaw = publicSettings?.store?.callOrderNumber || publicSettings?.general?.callOrderNumber || publicSettings?.callOrderNumber || publicSettings?.general?.storePhone || '';
+
+  // Safely normalize WhatsApp number (e.g. 01712345678 -> 8801712345678, +88017... -> 88017...)
+  const getNormalizedWhatsAppNumber = (num: string): string => {
+    let digits = num.replace(/\D/g, '');
+    if (!digits) return '';
+    if (digits.startsWith('01') && digits.length === 11) {
+      digits = '88' + digits;
+    }
+    return digits;
+  };
+
+  // Safely normalize Call number for tel: link
+  const getNormalizedCallNumber = (num: string): string => {
+    let cleaned = num.trim();
+    if (!cleaned) return '';
+    const hasPlus = cleaned.startsWith('+');
+    const digits = cleaned.replace(/\D/g, '');
+    if (!digits) return '';
+    return hasPlus ? `+${digits}` : digits;
+  };
+
+  const whatsappNumber = getNormalizedWhatsAppNumber(whatsappRaw);
+  const callNumber = getNormalizedCallNumber(callRaw);
 
   const handleWhatsAppClick = (e: React.MouseEvent) => {
     trackGA4WhatsAppClick(product?.name || '');
-    if (!storePhone) {
+    if (!whatsappNumber) {
       e.preventDefault();
-      notifyError(new Error('WhatsApp number not configured.'), 'Configuration Error');
+      notifyError(new Error('WhatsApp order number not configured.'), 'Configuration Error');
       return;
     }
     const variant = product?.variants?.find(v => v.id === selectedVariantId);
@@ -307,18 +331,18 @@ export const ProductDetailPage: React.FC = () => {
     const price = variant?.price || product?.price || 0;
     message += `\n*Price:* ${formatPrice(price * quantity, currencyCode, currencySymbol)}`;
     
-    const url = `https://wa.me/${cleanedPhone}?text=${encodeURIComponent(message)}`;
+    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const handleCallClick = (e: React.MouseEvent) => {
     trackGA4CallClick(product?.name || '');
-    if (!storePhone) {
+    if (!callNumber) {
       e.preventDefault();
-      notifyError(new Error('Store phone number not configured.'), 'Configuration Error');
+      notifyError(new Error('Call order number not configured.'), 'Configuration Error');
       return;
     }
-    window.location.href = `tel:${cleanedPhone}`;
+    window.location.href = `tel:${callNumber}`;
   };
 
   const handleShare = () => {
@@ -710,7 +734,7 @@ export const ProductDetailPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row items-stretch gap-2.5 pt-2">
                 <button
                   onClick={handleWhatsAppClick}
-                  disabled={activeStock === 0}
+                  disabled={activeStock === 0 || !whatsappNumber}
                   className="flex-1 py-2.5 px-5 bg-[#25D366] hover:bg-[#1EAE53] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold text-xs rounded-lg shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer min-h-[42px]"
                 >
                   <MessageCircle size={16} />
@@ -718,7 +742,7 @@ export const ProductDetailPage: React.FC = () => {
                 </button>
                 <button
                   onClick={handleCallClick}
-                  disabled={activeStock === 0}
+                  disabled={activeStock === 0 || !callNumber}
                   className="flex-1 py-2.5 px-5 bg-[#3B82F6] hover:bg-[#2563EB] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold text-xs rounded-lg shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer min-h-[42px]"
                 >
                   <PhoneCall size={16} />

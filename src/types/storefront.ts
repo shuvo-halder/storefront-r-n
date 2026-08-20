@@ -266,6 +266,8 @@ export interface StoreGeneral {
   storePhone: string;
   storeEmail: string;
   storeAddress?: string;
+  whatsappOrderNumber?: string;
+  callOrderNumber?: string;
 }
 
 export interface PublicSettings {
@@ -275,6 +277,12 @@ export interface PublicSettings {
   tax: StoreTax;
   general: StoreGeneral;
   marketing?: StoreMarketing;
+  store?: {
+    whatsappOrderNumber?: string;
+    callOrderNumber?: string;
+  };
+  whatsappOrderNumber?: string;
+  callOrderNumber?: string;
   // Deprecated fields kept for backward compatibility during migration
   siteName: string;
   siteTitle: string;
