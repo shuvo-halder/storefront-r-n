@@ -26,7 +26,7 @@ export const getWebsiteSchema = (general: StoreGeneral | null) => ({
   }
 });
 
-export const getProductSchema = (product: Product, currency: string = 'USD', baseUrl?: string) => {
+export const getProductSchema = (product: Product, currency: string = 'BDT', baseUrl?: string) => {
   const origin = baseUrl || (typeof window !== 'undefined' ? window.location.origin : 'https://vyzobd.com');
   const schema: any = {
     '@context': 'https://schema.org',

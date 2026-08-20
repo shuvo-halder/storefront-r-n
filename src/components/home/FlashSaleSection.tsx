@@ -9,6 +9,7 @@ import { RatingStars } from '../common/RatingStars';
 import { Zap, Clock, ShoppingCart, Heart, ShieldCheck, ArrowRight, AlertCircle, RefreshCw } from 'lucide-react';
 import { Skeleton } from '../ui/Skeleton';
 import { SmartImage } from '../common/SmartImage';
+import { formatPrice } from '../../utils/formatters';
 
 export const FlashSaleSection: React.FC = () => {
   const { toggleWishlist, isInWishlist, navigateTo } = useStorefront();
@@ -143,11 +144,11 @@ export const FlashSaleSection: React.FC = () => {
             <div className="space-y-3 pt-2">
               <div className="flex items-baseline gap-3">
                 <span className="text-3xl font-black text-rose-400">
-                  ${dealProduct.price.toFixed(2)}
+                  {formatPrice(dealProduct.price)}
                 </span>
                 {dealProduct.compareAtPrice && (
                   <span className="text-base font-semibold text-slate-400 line-through">
-                    ${dealProduct.compareAtPrice.toFixed(2)}
+                    {formatPrice(dealProduct.compareAtPrice)}
                   </span>
                 )}
               </div>

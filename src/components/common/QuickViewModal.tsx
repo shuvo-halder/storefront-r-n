@@ -7,6 +7,7 @@ import { useCart } from '../../hooks/useCart';
 import { storefrontApi } from '../../services/storefrontApi';
 import { Product, ProductVariant } from '../../types/storefront';
 import { RatingStars } from './RatingStars';
+import { formatPrice } from '../../utils/formatters';
 import { 
   X, 
   ShoppingCart, 
@@ -27,9 +28,13 @@ export const QuickViewModal: React.FC = () => {
     toggleWishlist, 
     isInWishlist, 
     navigateTo,
-    addToast 
+    addToast,
+    publicSettings
   } = useStorefront();
   const { addToCart, isAddingToCart } = useCart();
+
+  const currencyCode = publicSettings?.general?.currency || 'BDT';
+  const currencySymbol = publicSettings?.general?.currencySymbol || '৳';
 
   const [fullProduct, setFullProduct] = useState<Product | null>(quickViewProduct);
   const [isLoadingProduct, setIsLoadingProduct] = useState<boolean>(false);
@@ -230,11 +235,11 @@ export const QuickViewModal: React.FC = () => {
                 {/* Price Row */}
                 <div className="flex items-baseline gap-3 pt-1">
                   <span className="text-2xl font-black text-slate-900 font-mono">
-                    ${activePrice.toFixed(2)}
+                    {formatPrice(activePrice, currencyCode, currencySymbol)}
                   </span>
                   {activeComparePrice && activeComparePrice > activePrice && (
                     <span className="text-sm font-semibold text-slate-400 line-through font-mono">
-                      ${activeComparePrice.toFixed(2)}
+                      {formatPrice(activeComparePrice, currencyCode, currencySymbol)}
                     </span>
                   )}
                 </div>

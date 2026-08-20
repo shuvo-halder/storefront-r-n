@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { useStorefront } from '../../context/StorefrontContext';
+import { formatPrice } from '../../utils/formatters';
 import { X, RotateCcw, Filter, Check, Star, Search } from 'lucide-react';
 
 interface FilterSidebarProps {
@@ -146,13 +147,13 @@ export const ProductFilterSidebar: React.FC<FilterSidebarProps> = ({ onCloseMobi
         <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
           <span>Price Range</span>
           <span className="text-[#DC2B53] font-mono font-bold text-xs">
-            ${filters.minPrice} - ${filters.maxPrice}
+            {formatPrice(filters.minPrice)} - {formatPrice(filters.maxPrice)}
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-[10px] font-medium text-[#6B7280] block mb-1">Min ($)</label>
+            <label className="text-[10px] font-medium text-[#6B7280] block mb-1">Min (৳)</label>
             <input
               type="number"
               min={0}
@@ -163,7 +164,7 @@ export const ProductFilterSidebar: React.FC<FilterSidebarProps> = ({ onCloseMobi
             />
           </div>
           <div>
-            <label className="text-[10px] font-medium text-[#6B7280] block mb-1">Max ($)</label>
+            <label className="text-[10px] font-medium text-[#6B7280] block mb-1">Max (৳)</label>
             <input
               type="number"
               min={filters.minPrice}

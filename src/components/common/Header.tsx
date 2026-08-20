@@ -38,6 +38,8 @@ import { Drawer } from '../ui/Drawer';
 import { MegaMenu } from './MegaMenu';
 import { motion, AnimatePresence } from 'motion/react';
 
+import { formatPrice } from '../../utils/formatters';
+
 function HeaderContent() {
   const router = useRouter();
   const pathname = usePathname();
@@ -682,7 +684,7 @@ function HeaderContent() {
                   Cart
                 </div>
                 <div className="text-xs font-bold leading-tight">
-                  ${(cart?.total || 0).toFixed(2)}
+                  {formatPrice(cart?.total || 0, publicSettings?.general?.currency || 'BDT', publicSettings?.general?.currencySymbol || '৳')}
                 </div>
               </div>
             </button>

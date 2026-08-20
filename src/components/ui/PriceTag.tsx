@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatPrice } from '../../utils/formatters';
 
 export interface PriceTagProps {
   price: number;
@@ -15,7 +16,7 @@ export const PriceTag: React.FC<PriceTagProps> = ({
   price,
   compareAtPrice,
   discountPercent,
-  currencySymbol = '$',
+  currencySymbol = '৳',
   size = 'md',
   showBadge = true,
   align = 'left',
@@ -60,14 +61,12 @@ export const PriceTag: React.FC<PriceTagProps> = ({
   return (
     <div className={`flex flex-wrap gap-2 ${alignClasses[align]} ${className}`}>
       <span className={currentStyles.current}>
-        {currencySymbol}
-        {price.toFixed(2)}
+        {formatPrice(price, 'BDT', currencySymbol)}
       </span>
 
       {compareAtPrice && compareAtPrice > price && (
         <span className={currentStyles.original}>
-          {currencySymbol}
-          {compareAtPrice.toFixed(2)}
+          {formatPrice(compareAtPrice, 'BDT', currencySymbol)}
         </span>
       )}
 

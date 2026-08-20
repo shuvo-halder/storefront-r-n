@@ -581,7 +581,7 @@ export const SearchPageView: React.FC = () => {
               </h3>
               <div className="grid grid-cols-2 gap-2 mb-3">
                 <div>
-                  <label className="text-[10px] text-slate-400 font-bold uppercase">Min ($)</label>
+                  <label className="text-[10px] text-slate-400 font-bold uppercase">Min (৳)</label>
                   <input
                     type="number"
                     min={0}
@@ -596,7 +596,7 @@ export const SearchPageView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 font-bold uppercase">Max ($)</label>
+                  <label className="text-[10px] text-slate-400 font-bold uppercase">Max (৳)</label>
                   <input
                     type="number"
                     min={0}

@@ -4,6 +4,7 @@ import { useStorefront } from '../../../context/StorefrontContext';
 import { useSettings } from '../../../context/SettingsContext';
 import { storefrontApi } from '../../../services/storefrontApi';
 import { trackGA4Purchase } from '../../../utils/analytics';
+import { formatPrice } from '../../../utils/formatters';
 import { CheckCircle2, ShoppingBag, ArrowRight, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -91,7 +92,7 @@ export const PaymentSuccess: React.FC = () => {
           </div>
           <div className="flex justify-between text-xs">
             <span className="text-[#6B7280]">Total Amount</span>
-            <span className="text-[#111827] font-bold">${order?.totalAmount?.toFixed(2) || '0.00'}</span>
+            <span className="text-[#111827] font-bold">{formatPrice(order?.totalAmount || order?.total || 0, currency)}</span>
           </div>
           <div className="flex justify-between items-center text-xs">
             <span className="text-[#6B7280]">Status</span>

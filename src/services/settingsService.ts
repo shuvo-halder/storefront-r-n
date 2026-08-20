@@ -24,8 +24,8 @@ const DEFAULT_SETTINGS: PublicSettings = {
   general: {
     siteName: 'Vyzobd',
     siteTitle: 'Vyzobd Store',
-    currency: 'USD',
-    currencySymbol: '$',
+    currency: 'BDT',
+    currencySymbol: '৳',
     storePhone: '',
     storeEmail: 'support@vyzobd.com'
   },
@@ -39,8 +39,8 @@ const DEFAULT_SETTINGS: PublicSettings = {
   siteTitle: 'Vyzobd Store',
   logoUrl: '',
   faviconUrl: '',
-  currency: 'USD',
-  currencySymbol: '$',
+  currency: 'BDT',
+  currencySymbol: '৳',
   freeShippingThreshold: 100,
   supportEmail: 'support@vyzobd.com',
   supportPhone: ''
@@ -88,8 +88,8 @@ export const settingsService = {
         general: {
           siteName: raw.general?.siteName || raw.branding?.siteName || raw.siteName || 'Vyzobd',
           siteTitle: raw.general?.siteTitle || raw.branding?.siteTitle || raw.siteTitle || 'Vyzobd Store',
-          currency: raw.general?.currency || raw.branding?.defaultCurrency || raw.currency || 'USD',
-          currencySymbol: raw.general?.currencySymbol || (raw.general?.currency === 'BDT' ? '৳' : '$'),
+          currency: raw.general?.currency || raw.branding?.defaultCurrency || raw.currency || 'BDT',
+          currencySymbol: raw.general?.currencySymbol || '৳',
           storePhone: raw.general?.storePhone || raw.supportPhone || '',
           storeEmail: raw.general?.storeEmail || raw.supportEmail || 'support@vyzobd.com',
           storeAddress: raw.general?.storeAddress,
@@ -116,8 +116,8 @@ export const settingsService = {
         siteTitle: raw.branding?.siteTitle || raw.siteTitle || 'Vyzobd Store',
         logoUrl: raw.branding?.logoUrl || raw.logoUrl || '',
         faviconUrl: raw.branding?.faviconUrl || raw.faviconUrl || '',
-        currency: raw.branding?.defaultCurrency || raw.currency || 'USD',
-        currencySymbol: raw.general?.currencySymbol || '$',
+        currency: raw.branding?.defaultCurrency || raw.currency || 'BDT',
+        currencySymbol: raw.general?.currencySymbol || '৳',
         freeShippingThreshold: Number(raw.shipping?.freeShippingThreshold ?? 100),
         supportEmail: raw.general?.storeEmail || raw.supportEmail || 'support@vyzobd.com',
         supportPhone: raw.general?.storePhone || raw.supportPhone || ''

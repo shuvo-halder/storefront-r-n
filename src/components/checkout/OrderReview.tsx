@@ -2,6 +2,7 @@ import React from 'react';
 import { Cart } from '../../types/storefront';
 import { CheckoutFormData } from '../../types/checkout';
 import { ShoppingBag, MapPin, Wallet } from 'lucide-react';
+import { formatPrice } from '../../utils/formatters';
 
 interface OrderReviewProps {
   cart: Cart;
@@ -25,7 +26,7 @@ export const OrderReview: React.FC<OrderReviewProps> = ({ cart, formData }) => {
               <span className="text-[#6B7280] font-medium truncate max-w-[240px]">
                 {item.product.name} <span className="text-[#111827] font-semibold">× {item.quantity}</span>
               </span>
-              <span className="font-semibold text-[#111827]">${item.totalPrice.toFixed(2)}</span>
+              <span className="font-semibold text-[#111827]">{formatPrice(item.totalPrice)}</span>
             </div>
           ))}
         </div>
@@ -69,27 +70,27 @@ export const OrderReview: React.FC<OrderReviewProps> = ({ cart, formData }) => {
       <div className="bg-[#111827] text-white p-5 rounded-lg space-y-2.5">
         <div className="flex justify-between text-xs text-gray-300">
           <span>Subtotal</span>
-          <span className="font-semibold text-white">${cart.subtotal.toFixed(2)}</span>
+          <span className="font-semibold text-white">{formatPrice(cart.subtotal)}</span>
         </div>
         {cart.discount > 0 && (
           <div className="flex justify-between text-xs text-emerald-400">
             <span>Discount ({cart.appliedCoupon})</span>
-            <span className="font-semibold">-${cart.discount.toFixed(2)}</span>
+            <span className="font-semibold">-{formatPrice(cart.discount)}</span>
           </div>
         )}
         <div className="flex justify-between text-xs text-gray-300">
           <span>Shipping</span>
           <span className="font-semibold text-white">
-            {cart.shippingFee === 0 ? 'FREE' : `${cart.shippingFee.toFixed(2)}`}
+            {cart.shippingFee === 0 ? 'FREE' : formatPrice(cart.shippingFee)}
           </span>
         </div>
         <div className="flex justify-between text-xs text-gray-300">
           <span>Tax</span>
-          <span className="font-semibold text-white">${cart.estimatedTax.toFixed(2)}</span>
+          <span className="font-semibold text-white">{formatPrice(cart.estimatedTax)}</span>
         </div>
         <div className="flex justify-between text-base font-bold pt-3 border-t border-gray-700">
           <span>Total</span>
-          <span className="text-[#DC2B53]">${cart.total.toFixed(2)}</span>
+          <span className="text-[#DC2B53]">{formatPrice(cart.total)}</span>
         </div>
       </div>
     </div>
