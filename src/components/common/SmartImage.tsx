@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Image, { ImageProps } from 'next/image';
+import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { isValidImageUrl, formatCloudinaryUrl, getFallbackSvgUri, FallbackType } from '../../utils/imageUtils';
 
 export interface SmartImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src' | 'placeholder'> {
@@ -42,6 +42,9 @@ export const SmartImage: React.FC<SmartImageProps> = ({
   onError,
   ...props
 }) => {
+  const imgRef = useRef<HTMLImageElement | null>(null);
+  const prevSrcRef = useRef<string | null | undefined>(src);
+
   const [imgSrc, setImgSrc] = useState<string>(() => {
     if (!isValidImageUrl(src)) {
       return getFallbackSvgUri(fallbackType, fallbackLabel || alt);
@@ -49,10 +52,20 @@ export const SmartImage: React.FC<SmartImageProps> = ({
     return formatCloudinaryUrl(src!, cloudinaryOptions);
   });
 
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isError, setIsError] = useState(false);
+  const [isLoaded, setIsLoaded] = useState<boolean>(() => {
+    // If invalid image URL or data URI, mark loaded immediately
+    if (!isValidImageUrl(src) || (typeof src === 'string' && src.startsWith('data:'))) {
+      return true;
+    }
+    return false;
+  });
+
+  const [isError, setIsError] = useState<boolean>(false);
 
   useEffect(() => {
+    const srcChanged = prevSrcRef.current !== src;
+    prevSrcRef.current = src;
+
     if (!isValidImageUrl(src)) {
       setImgSrc(getFallbackSvgUri(fallbackType, fallbackLabel || alt));
       setIsError(true);
@@ -61,9 +74,20 @@ export const SmartImage: React.FC<SmartImageProps> = ({
       const formatted = formatCloudinaryUrl(src!, cloudinaryOptions);
       setImgSrc(formatted);
       setIsError(false);
-      setIsLoaded(false);
+
+      // Only reset isLoaded when src actually changed
+      if (srcChanged) {
+        setIsLoaded(false);
+      }
     }
   }, [src, fallbackType, fallbackLabel, alt, cloudinaryOptions]);
+
+  // Check if image is already completed in browser cache on mount or src change
+  useEffect(() => {
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+      setIsLoaded(true);
+    }
+  }, [imgSrc]);
 
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     setIsLoaded(true);
@@ -86,7 +110,6 @@ export const SmartImage: React.FC<SmartImageProps> = ({
     none: 'object-none',
   }[objectFit];
 
-  // If using fill mode or fixed dimensions
   const isSvgDataUri = imgSrc.startsWith('data:image/svg+xml');
 
   return (
@@ -98,6 +121,7 @@ export const SmartImage: React.FC<SmartImageProps> = ({
       {/* Native or Next Image rendering */}
       {fill ? (
         <Image
+          ref={imgRef}
           src={imgSrc}
           alt={alt || 'Vyzobd Image'}
           fill
@@ -114,6 +138,7 @@ export const SmartImage: React.FC<SmartImageProps> = ({
         />
       ) : (
         <img
+          ref={imgRef}
           src={imgSrc}
           alt={alt || 'Vyzobd Image'}
           width={width}

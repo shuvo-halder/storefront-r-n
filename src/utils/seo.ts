@@ -56,11 +56,11 @@ export const getProductSchema = (product: Product, currency: string = 'BDT', bas
     schema.category = product.category;
   }
 
-  if (product.rating && product.rating > 0) {
+  if (product.rating && product.rating > 0 && product.reviewCount && product.reviewCount > 0) {
     schema.aggregateRating = {
       '@type': 'AggregateRating',
       'ratingValue': product.rating,
-      'reviewCount': Math.max(product.reviewCount || 1, 1),
+      'reviewCount': product.reviewCount,
       'bestRating': 5,
       'worstRating': 1
     };

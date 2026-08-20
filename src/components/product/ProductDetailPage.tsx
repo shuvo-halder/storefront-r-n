@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { SmartImage } from '../common/SmartImage';
+import { isValidImageUrl } from '../../utils/imageUtils';
 import { useParams } from 'next/navigation';
 import { useStorefront } from '../../context/StorefrontContext';
 import { useCart } from '../../hooks/useCart';
@@ -134,7 +135,7 @@ export const ProductDetailPage: React.FC = () => {
           if (data.variants && data.variants.length > 0) {
             const firstVariant = data.variants[0];
             setSelectedVariantId(firstVariant.id);
-            if (firstVariant.image) {
+            if (firstVariant.image && isValidImageUrl(firstVariant.image)) {
               setSelectedImage(firstVariant.image);
             }
           } else {
@@ -513,25 +514,6 @@ export const ProductDetailPage: React.FC = () => {
               </div>
             )}
 
-            {/* Trust Badges under gallery */}
-            <div className="grid grid-cols-2 gap-3 pt-1">
-              <div className="p-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg flex items-center gap-2.5 text-xs text-[#6B7280]">
-                <ShieldCheck size={16} className="text-[#16A34A] flex-shrink-0" />
-                <div>
-                  <span className="font-bold block text-[#111827]">2-Year Warranty</span>
-                  <span className="text-[10px] text-[#6B7280]">Official coverage</span>
-                </div>
-              </div>
-
-              <div className="p-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg flex items-center gap-2.5 text-xs text-[#6B7280]">
-                <RotateCcw size={16} className="text-[#DC2B53] flex-shrink-0" />
-                <div>
-                  <span className="font-bold block text-[#111827]">30-Day Returns</span>
-                  <span className="text-[10px] text-[#6B7280]">Money back guarantee</span>
-                </div>
-              </div>
-            </div>
-
           </div>
 
           {/* Details Column (6 cols on Desktop) */}
@@ -654,14 +636,6 @@ export const ProductDetailPage: React.FC = () => {
                 </div>
               </div>
             )}
-
-            {/* Express Shipping Notification Box */}
-            <div className="p-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg flex items-center gap-2.5 text-xs text-[#6B7280]">
-              <Truck size={18} className="text-[#DC2B53] flex-shrink-0" />
-              <div>
-                <span className="font-semibold text-[#111827]">Free Delivery</span> on orders over {formatPrice(publicSettings?.shipping.freeShippingThreshold || 99, currencyCode, currencySymbol)}.
-              </div>
-            </div>
 
             {/* Quantity and CTA Buttons */}
             <div className="space-y-3 pt-1">
