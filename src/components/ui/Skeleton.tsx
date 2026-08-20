@@ -107,22 +107,21 @@ export const BrandCardSkeleton: React.FC = () => {
 
 export const HeroSkeleton: React.FC = () => {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <div className="lg:col-span-8 rounded-[32px] overflow-hidden bg-slate-100 border border-slate-200 p-8 sm:p-12 min-h-[420px] flex flex-col justify-between">
-        <div className="space-y-4 max-w-lg">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      <div className="w-full rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-100 border border-slate-200 p-6 sm:p-8 lg:p-10 min-h-[260px] sm:min-h-[340px] lg:min-h-[400px] flex flex-col justify-between">
+        <div className="flex justify-between items-center">
           <Skeleton className="h-6 w-32 rounded-full bg-slate-200" />
-          <Skeleton className="h-10 w-full rounded-2xl bg-slate-200" />
-          <Skeleton className="h-10 w-3/4 rounded-2xl bg-slate-200" />
-          <Skeleton className="h-14 w-full rounded-2xl bg-slate-100" />
+          <Skeleton className="h-8 w-20 rounded-full bg-slate-200" />
         </div>
-        <div className="flex gap-4 pt-6">
-          <Skeleton className="h-12 w-36 rounded-xl bg-slate-200" />
-          <Skeleton className="h-12 w-32 rounded-xl bg-slate-100" />
+        <div className="space-y-3 max-w-xl">
+          <Skeleton className="h-8 sm:h-10 w-3/4 rounded-xl bg-slate-200" />
+          <Skeleton className="h-4 w-full rounded-lg bg-slate-200" />
+          <Skeleton className="h-4 w-2/3 rounded-lg bg-slate-200" />
         </div>
-      </div>
-      <div className="lg:col-span-4 flex flex-col gap-6">
-        <Skeleton className="h-[200px] w-full rounded-[28px] bg-slate-100 border border-slate-200" />
-        <Skeleton className="h-[200px] w-full rounded-[28px] bg-slate-100 border border-slate-200" />
+        <div className="flex items-center justify-between pt-4 border-t border-slate-200/60">
+          <Skeleton className="h-3 w-24 rounded-full bg-slate-200" />
+          <Skeleton className="h-3 w-40 rounded-full bg-slate-200" />
+        </div>
       </div>
     </section>
   );

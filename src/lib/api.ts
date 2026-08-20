@@ -255,12 +255,19 @@ export function normalizeProduct(raw: any): Product {
   const categoryId = typeof raw.category === 'object' 
     ? (raw.category?.id || raw.category?.slug || '') 
     : (raw.categoryId || raw.category_id || (Array.isArray(raw.categories) && (raw.categories[0]?.id || raw.categories[0]?.slug)) || '');
+  const categorySlug = typeof raw.category === 'object'
+    ? (raw.category?.slug || raw.category?.id || '')
+    : (raw.categorySlug || raw.category_slug || (Array.isArray(raw.categories) && (raw.categories[0]?.slug || raw.categories[0]?.id)) || '');
+
   const brandName = typeof raw.brand === 'string' 
     ? raw.brand 
     : (raw.brand?.name || raw.brand?.title || raw.brandName || raw.brand_name || '');
   const brandId = typeof raw.brand === 'object' 
     ? (raw.brand?.id || raw.brand?.slug || '') 
     : (raw.brandId || raw.brand_id || '');
+  const brandSlug = typeof raw.brand === 'object'
+    ? (raw.brand?.slug || raw.brand?.id || '')
+    : (raw.brandSlug || raw.brand_slug || '');
 
   let rawImages: string[] = [];
   const candidateList = raw.images || raw.gallery || raw.photos || raw.pictures;
@@ -371,8 +378,10 @@ export function normalizeProduct(raw: any): Product {
     subtitle: raw.subtitle || raw.shortDescription || raw.short_description || raw.subheading || raw.summary || undefined,
     brand: brandName,
     brandId: brandId || undefined,
+    brandSlug: brandSlug || undefined,
     category: categoryName,
     categoryId: categoryId,
+    categorySlug: categorySlug || undefined,
     price,
     compareAtPrice,
     discountPercent,

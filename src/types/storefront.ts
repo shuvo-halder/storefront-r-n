@@ -32,8 +32,10 @@ export interface Product {
   subtitle?: string;
   brand: string;
   brandId?: string;
+  brandSlug?: string;
   category: string;
   categoryId: string;
+  categorySlug?: string;
   price: number;
   compareAtPrice?: number;
   discountPercent?: number;

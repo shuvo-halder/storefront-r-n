@@ -106,7 +106,7 @@ export const ProductDetailPage: React.FC = () => {
     }
   }, [relatedProducts]);
 
-  // Load product data based on viewParams.productSlug
+  // Load product data based on viewParams.productSlug or routeParams.slug
   useEffect(() => {
     let isMounted = true;
 
@@ -120,9 +120,10 @@ export const ProductDetailPage: React.FC = () => {
 
       setIsLoading(true);
       setError(null);
+      setIsRelatedLoading(true);
+      setRelatedProducts([]);
 
       try {
-        // Parallelize product fetch and recently viewed if possible (though recently viewed is local)
         const data = await storefrontApi.getProductBySlug(slug);
         
         if (!isMounted) return;
@@ -145,29 +146,57 @@ export const ProductDetailPage: React.FC = () => {
           setQuantity(1);
           trackRecentlyViewed(data.id);
 
-          // Fetch related products - can be started immediately after product data is known
-          setIsRelatedLoading(true);
-          storefrontApi.getProducts({ categorySlug: data.categoryId || data.category })
-            .then(relatedRes => {
-              if (isMounted) {
-                const filtered = relatedRes.products.filter(p => p.id !== data.id).slice(0, 5);
-                setRelatedProducts(filtered);
+          // Fetch related products using categorySlug, falling back to brandSlug and general catalog
+          const catSlug = data.categorySlug;
+          const brandSlug = data.brandSlug;
+
+          let related: Product[] = [];
+
+          if (catSlug) {
+            try {
+              const res = await storefrontApi.getProducts({ categorySlug: catSlug, pageSize: 12 });
+              related = res.products.filter(p => p.id !== data.id && p.slug !== data.slug);
+            } catch (e) {
+              console.warn('Error fetching related products by category:', e);
+            }
+          }
+
+          if (related.length < 4) {
+            let fallbackProducts: Product[] = [];
+            if (brandSlug) {
+              try {
+                const brandRes = await storefrontApi.getProducts({ brandSlugs: [brandSlug], pageSize: 12 });
+                fallbackProducts = brandRes.products;
+              } catch (e) {}
+            }
+            if (fallbackProducts.length <= 1) {
+              try {
+                const genRes = await storefrontApi.getProducts({ pageSize: 12 });
+                fallbackProducts = genRes.products;
+              } catch (e) {}
+            }
+
+            for (const item of fallbackProducts) {
+              if (item.id !== data.id && item.slug !== data.slug && !related.some(r => r.id === item.id || r.slug === item.slug)) {
+                related.push(item);
               }
-            })
-            .catch(() => {
-              if (isMounted) setRelatedProducts([]);
-            })
-            .finally(() => {
-              if (isMounted) setIsRelatedLoading(false);
-            });
+            }
+          }
+
+          if (isMounted) {
+            setRelatedProducts(related.slice(0, 5));
+            setIsRelatedLoading(false);
+          }
 
         } else {
           setError('Product not found or may have been removed from the catalog.');
+          setIsRelatedLoading(false);
         }
       } catch (err: any) {
         if (isMounted) {
           console.error('Error fetching product details:', err);
           setError(err?.message || 'Failed to load product details.');
+          setIsRelatedLoading(false);
         }
       } finally {
         if (isMounted) setIsLoading(false);
@@ -177,7 +206,7 @@ export const ProductDetailPage: React.FC = () => {
     loadProductAndRelated();
 
     return () => { isMounted = false; };
-  }, [viewParams.productSlug]);
+  }, [routeParams?.slug, viewParams.productSlug]);
 
 
   if (isLoading) {
