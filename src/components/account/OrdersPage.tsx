@@ -5,11 +5,23 @@ import { SmartImage } from '../common/SmartImage';
 import { useStorefront } from '../../context/StorefrontContext';
 import { Order } from '../../types/storefront';
 import { AccountLayout } from './AccountLayout';
+import { useSettings } from '../../context/SettingsContext';
+import { formatPrice } from '../../utils/formatters';
 import { Package, Truck, CheckCircle2, ChevronRight, X, Clock, RefreshCw, ShoppingBag } from 'lucide-react';
 
 export const OrdersPage: React.FC = () => {
-  const { userOrders, navigateTo } = useStorefront();
+  const { userOrders, navigateTo, publicSettings } = useStorefront();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  let currencyCode = 'BDT';
+  let currencySymbol = '৳';
+  try {
+    const { settings } = useSettings();
+    currencyCode = publicSettings?.general?.currency || settings?.general?.currency || 'BDT';
+    currencySymbol = publicSettings?.general?.currencySymbol || settings?.general?.currencySymbol || (currencyCode === 'BDT' ? '৳' : '৳');
+  } catch {
+    // Ignore
+  }
 
   return (
     <AccountLayout activeTab="orders">
@@ -97,7 +109,7 @@ export const OrdersPage: React.FC = () => {
                         </div>
                         <div className="min-w-0">
                           <div className="text-sm font-semibold text-gray-900 truncate">{item.productName}</div>
-                          <div className="text-xs text-gray-500 font-medium mt-0.5">Qty: {item.quantity} • ${item.unitPrice.toFixed(2)}</div>
+                          <div className="text-xs text-gray-500 font-medium mt-0.5">Qty: {item.quantity} • {formatPrice(item.unitPrice, currencyCode, currencySymbol)}</div>
                         </div>
                       </div>
                     ))}
@@ -110,7 +122,7 @@ export const OrdersPage: React.FC = () => {
                     </div>
                     <div>
                       <div className="text-[11px] font-medium text-gray-500 mb-0.5">Grand Total</div>
-                      <div className="text-base font-bold text-primary">${ord.totalAmount.toFixed(2)}</div>
+                      <div className="text-base font-bold text-primary">{formatPrice(ord.totalAmount, currencyCode, currencySymbol)}</div>
                     </div>
                     <button
                       onClick={(e) => {

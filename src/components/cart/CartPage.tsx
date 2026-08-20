@@ -13,6 +13,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { CartItem } from './CartItem';
+import { formatPrice } from '../../utils/formatters';
 
 export const CartPage: React.FC = () => {
   const { navigateTo, publicSettings } = useStorefront();
@@ -34,6 +35,9 @@ export const CartPage: React.FC = () => {
 
   const [couponCode, setCouponCode] = React.useState('');
   const trackedPageKeyRef = React.useRef<string | null>(null);
+
+  const currencyCode = publicSettings?.general?.currency || 'BDT';
+  const currencySymbol = publicSettings?.general?.currencySymbol || (currencyCode === 'BDT' ? '৳' : '৳');
 
   // GA4 Tracking
   useEffect(() => {
@@ -182,7 +186,7 @@ export const CartPage: React.FC = () => {
             <div className="space-y-2 text-xs text-[#6B7280] border-t border-[#E5E7EB] pt-3.5">
               <div className="flex justify-between">
                 <span>Items Subtotal</span>
-                <span className="font-semibold text-[#111827]">${cart.subtotal.toFixed(2)}</span>
+                <span className="font-semibold text-[#111827]">{formatPrice(cart.subtotal, currencyCode, currencySymbol)}</span>
               </div>
               {cart.discount > 0 && (
                 <div className="flex justify-between text-[#DC2B53] font-medium bg-[#FDF0F3] px-2 py-1.5 rounded-md border border-[#DC2B53]/20">
@@ -190,22 +194,22 @@ export const CartPage: React.FC = () => {
                     <Tag size={12} />
                     Coupon Discount ({cart.appliedCoupon})
                   </span>
-                  <span>-${cart.discount.toFixed(2)}</span>
+                  <span>-{formatPrice(cart.discount, currencyCode, currencySymbol)}</span>
                 </div>
               )}
               <div className="flex justify-between">
                 <span>Shipping Fee</span>
                 <span className="font-semibold text-[#111827]">
-                  {cart.shippingFee === 0 ? <span className="text-[#16A34A] font-semibold">FREE</span> : `${cart.shippingFee.toFixed(2)}`}
+                  {cart.shippingFee === 0 ? <span className="text-[#16A34A] font-semibold">FREE</span> : formatPrice(cart.shippingFee, currencyCode, currencySymbol)}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>Estimated Tax</span>
-                <span className="font-semibold text-[#111827]">${cart.estimatedTax.toFixed(2)}</span>
+                <span className="font-semibold text-[#111827]">{formatPrice(cart.estimatedTax, currencyCode, currencySymbol)}</span>
               </div>
               <div className="flex justify-between text-base font-bold text-[#111827] pt-2.5 border-t border-[#E5E7EB]">
                 <span>Total Amount</span>
-                <span className="text-[#DC2B53] font-bold">${cart.total.toFixed(2)}</span>
+                <span className="text-[#DC2B53] font-bold">{formatPrice(cart.total, currencyCode, currencySymbol)}</span>
               </div>
             </div>
 

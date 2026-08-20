@@ -416,7 +416,19 @@ export function normalizeCart(rawCart: any): Cart {
     : (Array.isArray(rawCart.cartItems) ? rawCart.cartItems : []);
 
   const items = rawItems.map((item: any, idx: number) => {
-    const p = item.product || item.productData || {};
+    let p = item.product || item.productData;
+    
+    // If the product object is completely missing from the API response but flat fields exist
+    if (!p || Object.keys(p).length === 0) {
+      p = {
+        id: item.productId || item.product_id || '',
+        name: item.productName || item.product_name || item.name || item.title || '',
+        slug: item.productSlug || item.slug || '',
+        images: item.productImage ? [item.productImage] : (item.image || item.imageUrl || item.image_url ? [item.image || item.imageUrl || item.image_url] : []),
+        price: item.unitPrice || item.price || 0,
+      };
+    }
+
     const unitPrice = Number(item.unitPrice ?? item.price ?? p.price ?? 0);
     const qty = Number(item.quantity ?? item.qty ?? 1);
     const totalPrice = Number(item.totalPrice ?? (unitPrice * qty));

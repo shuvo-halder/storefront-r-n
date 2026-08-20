@@ -5,16 +5,28 @@ import { SmartImage } from '../common/SmartImage';
 import { AccountLayout } from './AccountLayout';
 import { Heart, ShoppingBag, Trash2, ArrowRight, Loader2 } from 'lucide-react';
 import { useStorefront } from '../../context/StorefrontContext';
+import { useSettings } from '../../context/SettingsContext';
+import { formatPrice } from '../../utils/formatters';
 import { storefrontApi } from '../../services/storefrontApi';
 import { useCart } from '../../hooks/useCart';
 import { Product } from '../../types/storefront';
 
 export const WishlistPage: React.FC = () => {
-  const { navigateTo, addToast } = useStorefront();
+  const { navigateTo, addToast, publicSettings } = useStorefront();
   const { addToCart } = useCart();
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  let currencyCode = 'BDT';
+  let currencySymbol = '৳';
+  try {
+    const { settings } = useSettings();
+    currencyCode = publicSettings?.general?.currency || settings?.general?.currency || 'BDT';
+    currencySymbol = publicSettings?.general?.currencySymbol || settings?.general?.currencySymbol || (currencyCode === 'BDT' ? '৳' : '৳');
+  } catch {
+    // Ignore
+  }
 
   const loadWishlist = async () => {
     try {
@@ -119,7 +131,7 @@ export const WishlistPage: React.FC = () => {
                       <h3 className="text-sm font-semibold text-gray-900 truncate pr-2">{item.name}</h3>
                       <span className="text-[11px] font-semibold text-primary">{item.stock > 0 ? 'In Stock' : 'Out of Stock'}</span>
                     </div>
-                    <div className="text-base font-bold text-gray-900 mb-2">${item.price.toFixed(2)}</div>
+                    <div className="text-base font-bold text-gray-900 mb-2">{formatPrice(item.price, currencyCode, currencySymbol)}</div>
                   </div>
                 </div>
                 <div className="p-4 pt-0">

@@ -20,14 +20,26 @@ import {
   CheckCircle2,
   AlertTriangle
 } from 'lucide-react';
+import { useSettings } from '../../context/SettingsContext';
+import { formatPrice } from '../../utils/formatters';
 
 export const OrderDetailsPage: React.FC = () => {
-  const { viewParams, navigateTo } = useStorefront();
+  const { viewParams, navigateTo, publicSettings } = useStorefront();
   const [order, setOrder] = useState<Order | null>(null);
   const [refund, setRefund] = useState<Refund | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const orderId = viewParams.id;
+
+  let currencyCode = 'BDT';
+  let currencySymbol = '৳';
+  try {
+    const { settings } = useSettings();
+    currencyCode = publicSettings?.general?.currency || settings?.general?.currency || 'BDT';
+    currencySymbol = publicSettings?.general?.currencySymbol || settings?.general?.currencySymbol || (currencyCode === 'BDT' ? '৳' : '৳');
+  } catch {
+    // Ignore
+  }
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -149,7 +161,7 @@ export const OrderDetailsPage: React.FC = () => {
                       </p>
                       <div className="flex items-center justify-between mt-1.5">
                         <span className="text-xs text-gray-500">Qty: {item.quantity}</span>
-                        <span className="text-sm font-bold text-gray-900">${item.totalPrice.toFixed(2)}</span>
+                        <span className="text-sm font-bold text-gray-900">{formatPrice(item.totalPrice, currencyCode, currencySymbol)}</span>
                       </div>
                     </div>
                   </div>
@@ -237,7 +249,7 @@ export const OrderDetailsPage: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="p-3.5 bg-gray-50 rounded-lg border border-gray-100">
                       <div className="text-xs font-medium text-gray-500 mb-0.5">Amount Refunded</div>
-                      <div className="text-base font-bold text-gray-900">${refund.amount.toFixed(2)}</div>
+                      <div className="text-base font-bold text-gray-900">{formatPrice(refund.amount, currencyCode, currencySymbol)}</div>
                     </div>
                     <div className="p-3.5 bg-gray-50 rounded-lg border border-gray-100">
                       <div className="text-xs font-medium text-gray-500 mb-0.5">Refund Status</div>
@@ -307,25 +319,25 @@ export const OrderDetailsPage: React.FC = () => {
                 <div className="space-y-2 pt-2">
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-500">Subtotal</span>
-                    <span className="text-gray-900 font-medium">${order.subtotal.toFixed(2)}</span>
+                    <span className="text-gray-900 font-medium">{formatPrice(order.subtotal, currencyCode, currencySymbol)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-500">Shipping</span>
-                    <span className="text-gray-900 font-medium">${order.shippingFee.toFixed(2)}</span>
+                    <span className="text-gray-900 font-medium">{formatPrice(order.shippingFee, currencyCode, currencySymbol)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">Tax (8%)</span>
-                    <span className="text-gray-900 font-medium">${order.tax.toFixed(2)}</span>
+                    <span className="text-gray-500">Tax</span>
+                    <span className="text-gray-900 font-medium">{formatPrice(order.tax, currencyCode, currencySymbol)}</span>
                   </div>
                   {order.discount > 0 && (
                     <div className="flex justify-between text-xs font-medium text-emerald-600">
                       <span>Discount</span>
-                      <span>-${order.discount.toFixed(2)}</span>
+                      <span>-{formatPrice(order.discount, currencyCode, currencySymbol)}</span>
                     </div>
                   )}
                   <div className="pt-2.5 border-t border-gray-100 flex justify-between items-center">
                     <span className="text-xs font-bold text-gray-900">Total Amount</span>
-                    <span className="text-lg font-bold text-primary">${order.totalAmount.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-primary">{formatPrice(order.totalAmount, currencyCode, currencySymbol)}</span>
                   </div>
                 </div>
               </div>

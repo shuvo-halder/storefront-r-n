@@ -10,6 +10,7 @@ import {
   trackGA4RemoveFromCart, 
   trackGA4ViewCart 
 } from '../utils/analytics';
+import { formatPrice } from '../utils/formatters';
 
 export const CART_QUERY_KEY = ['cart'];
 
@@ -163,7 +164,7 @@ export function useCart() {
       queryClient.setQueryData<Cart>(CART_QUERY_KEY, updatedCart);
       queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
       const discountVal = coupon?.discountAmount || updatedCart.discount || 0;
-      const discountFormatted = discountVal > 0 ? `$${discountVal.toFixed(2)}` : 'promo';
+      const discountFormatted = discountVal > 0 ? formatPrice(discountVal, currency) : 'promo';
       notifySuccess('Coupon Applied!', `Code "${code.toUpperCase()}" has been applied. You saved ${discountFormatted}.`, {
         badge: 'Coupon'
       });

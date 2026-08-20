@@ -17,6 +17,7 @@ import {
   trackGA4AddShippingInfo,
   trackGA4AddPaymentInfo
 } from '../../utils/analytics';
+import { formatPrice } from '../../utils/formatters';
 import { 
   ArrowLeft, 
   Loader2, 
@@ -30,9 +31,11 @@ export const CheckoutPage: React.FC = () => {
   const { navigateTo, notifyError, notifySuccess } = useStorefront();
   const { user } = useAuth();
   let currency = 'BDT';
+  let currencySymbol = '৳';
   try {
     const { settings } = useSettings();
     currency = settings?.general?.currency || 'BDT';
+    currencySymbol = settings?.general?.currencySymbol || (currency === 'BDT' ? '৳' : '৳');
   } catch {
     // Fallback if rendered outside SettingsProvider
   }
@@ -360,11 +363,11 @@ export const CheckoutPage: React.FC = () => {
                     </div>
                     <div className="text-right shrink-0">
                       <div className="text-xs font-bold text-[#111827]">
-                        {currency === 'BDT' ? '৳' : '$'}{item.totalPrice.toFixed(2)}
+                        {formatPrice(item.totalPrice, currency, currencySymbol)}
                       </div>
                       {item.quantity > 1 && (
                         <div className="text-[10px] text-[#6B7280] mt-1">
-                          {currency === 'BDT' ? '৳' : '$'}{item.unitPrice.toFixed(2)} each
+                          {formatPrice(item.unitPrice, currency, currencySymbol)} each
                         </div>
                       )}
                     </div>
@@ -446,27 +449,27 @@ export const CheckoutPage: React.FC = () => {
                 <div className="space-y-3 pb-4 border-b border-[#E5E7EB] text-sm">
                   <div className="flex justify-between text-[#6B7280]">
                     <span>Subtotal</span>
-                    <span className="font-semibold text-[#111827]">{currency === 'BDT' ? '৳' : '$'}{cart.subtotal.toFixed(2)}</span>
+                    <span className="font-semibold text-[#111827]">{formatPrice(cart.subtotal, currency, currencySymbol)}</span>
                   </div>
                   
                   {cart.discount > 0 && (
                     <div className="flex justify-between text-emerald-600">
                       <span>Discount</span>
-                      <span className="font-semibold">-{currency === 'BDT' ? '৳' : '$'}{cart.discount.toFixed(2)}</span>
+                      <span className="font-semibold">-{formatPrice(cart.discount, currency, currencySymbol)}</span>
                     </div>
                   )}
                   
                   <div className="flex justify-between text-[#6B7280]">
                     <span>Shipping</span>
                     <span className="font-semibold text-[#111827]">
-                      {cart.shippingFee === 0 ? 'FREE' : `${currency === 'BDT' ? '৳' : '$'}${cart.shippingFee.toFixed(2)}`}
+                      {cart.shippingFee === 0 ? 'FREE' : formatPrice(cart.shippingFee, currency, currencySymbol)}
                     </span>
                   </div>
                   
                   {cart.estimatedTax > 0 && (
                     <div className="flex justify-between text-[#6B7280]">
                       <span>Tax</span>
-                      <span className="font-semibold text-[#111827]">{currency === 'BDT' ? '৳' : '$'}{cart.estimatedTax.toFixed(2)}</span>
+                      <span className="font-semibold text-[#111827]">{formatPrice(cart.estimatedTax, currency, currencySymbol)}</span>
                     </div>
                   )}
                 </div>
@@ -474,7 +477,7 @@ export const CheckoutPage: React.FC = () => {
                 {/* Final Total */}
                 <div className="flex justify-between items-center pt-2">
                   <span className="text-base font-bold text-[#111827]">Total</span>
-                  <span className="text-xl font-bold text-[#DC2B53]">{currency === 'BDT' ? '৳' : '$'}{cart.total.toFixed(2)}</span>
+                  <span className="text-xl font-bold text-[#DC2B53]">{formatPrice(cart.total, currency, currencySymbol)}</span>
                 </div>
               </div>
 

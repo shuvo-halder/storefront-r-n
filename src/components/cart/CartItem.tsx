@@ -3,6 +3,8 @@ import { SmartImage } from '../common/SmartImage';
 import { Trash2 } from 'lucide-react';
 import { CartItem as CartItemType } from '../../types/storefront';
 import { QuantitySelector } from './QuantitySelector';
+import { useSettings } from '../../context/SettingsContext';
+import { formatPrice } from '../../utils/formatters';
 
 interface CartItemProps {
   item: CartItemType;
@@ -21,6 +23,16 @@ export const CartItem = React.memo<CartItemProps>(({
   isRemoving = false,
   onNavigateToProduct
 }) => {
+  let currencyCode = 'BDT';
+  let currencySymbol = '৳';
+  try {
+    const { settings } = useSettings();
+    currencyCode = settings?.general?.currency || 'BDT';
+    currencySymbol = settings?.general?.currencySymbol || (currencyCode === 'BDT' ? '৳' : '৳');
+  } catch (e) {
+    // Ignore if not wrapped
+  }
+
   return (
     <div className="py-3.5 flex items-start gap-3.5">
       {/* Product Image */}
@@ -81,11 +93,11 @@ export const CartItem = React.memo<CartItemProps>(({
           
           <div className="text-right">
             <div className="text-sm font-bold text-[#111827]">
-              ${item.totalPrice.toFixed(2)}
+              {formatPrice(item.totalPrice, currencyCode, currencySymbol)}
             </div>
             {item.quantity > 1 && (
               <div className="text-[10px] text-[#6B7280] font-normal">
-                ${item.unitPrice.toFixed(2)} / unit
+                {formatPrice(item.unitPrice, currencyCode, currencySymbol)} / unit
               </div>
             )}
           </div>

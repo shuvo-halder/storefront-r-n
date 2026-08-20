@@ -7,6 +7,7 @@ import { useStorefront } from '../../context/StorefrontContext';
 import { useCart } from '../../hooks/useCart';
 import { RatingStars } from './RatingStars';
 import { trackGA4SelectItem } from '../../utils/analytics';
+import { formatPrice } from '../../utils/formatters';
 import { Heart, Eye, ShoppingCart, Sparkles, Zap, Loader2 } from 'lucide-react';
 
 interface ProductCardProps {
@@ -28,8 +29,12 @@ export const ProductCard = React.memo(({
     toggleWishlist, 
     isInWishlist, 
     openQuickView, 
-    navigateTo 
+    navigateTo,
+    publicSettings
   } = useStorefront();
+
+  const currencyCode = publicSettings?.general?.currency || 'BDT';
+  const currencySymbol = publicSettings?.general?.currencySymbol || (currencyCode === 'BDT' ? '৳' : '৳');
 
   const { addToCart, isAddingToCart } = useCart();
 
@@ -103,11 +108,11 @@ export const ProductCard = React.memo(({
           <div className="flex items-center justify-between pt-3 border-t border-[#E5E7EB] mt-3">
             <div className="flex items-baseline gap-2">
               <span className="text-xl font-bold text-[#111827]">
-                ${product.price.toFixed(2)}
+                {formatPrice(product.price, currencyCode, currencySymbol)}
               </span>
               {product.compareAtPrice && (
                 <span className="text-xs text-[#6B7280] line-through">
-                  ${product.compareAtPrice.toFixed(2)}
+                  {formatPrice(product.compareAtPrice, currencyCode, currencySymbol)}
                 </span>
               )}
             </div>
@@ -253,11 +258,11 @@ export const ProductCard = React.memo(({
           <div className="flex flex-col">
             {product.compareAtPrice && (
               <span className="text-[10px] text-[#6B7280] line-through font-medium">
-                ${product.compareAtPrice.toFixed(2)}
+                {formatPrice(product.compareAtPrice, currencyCode, currencySymbol)}
               </span>
             )}
             <span className="text-sm sm:text-base font-bold text-[#111827]">
-              ${product.price.toFixed(2)}
+              {formatPrice(product.price, currencyCode, currencySymbol)}
             </span>
           </div>
 

@@ -5,11 +5,13 @@ import { AccountLayout } from './AccountLayout';
 import { useAuth } from '../../context/AuthContext';
 import { ShoppingBag, Heart, Package, Clock, Star, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 import { useStorefront } from '../../context/StorefrontContext';
+import { useSettings } from '../../context/SettingsContext';
+import { formatPrice } from '../../utils/formatters';
 import Link from 'next/link';
 
 export const AccountDashboard: React.FC = () => {
   const { user } = useAuth();
-  const { userOrders, wishlist } = useStorefront();
+  const { userOrders, wishlist, publicSettings } = useStorefront();
 
   const activeShipmentsCount = userOrders.filter(o => 
     ['processing', 'shipped', 'pending', 'Placed'].includes(o.orderStatus || o.status || '')
@@ -17,10 +19,20 @@ export const AccountDashboard: React.FC = () => {
 
   const totalSpent = userOrders.reduce((sum, o) => sum + (o.totalAmount || o.total || 0), 0);
 
+  let currencyCode = 'BDT';
+  let currencySymbol = '৳';
+  try {
+    const { settings } = useSettings();
+    currencyCode = publicSettings?.general?.currency || settings?.general?.currency || 'BDT';
+    currencySymbol = publicSettings?.general?.currencySymbol || settings?.general?.currencySymbol || (currencyCode === 'BDT' ? '৳' : '৳');
+  } catch {
+    // Ignore
+  }
+
   const stats = [
     { label: 'Total Orders', value: userOrders.length.toString(), icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: 'Wishlist Items', value: wishlist.length.toString(), icon: Heart, color: 'text-primary', bg: 'bg-primary-light' },
-    { label: 'Total Spend', value: `$${totalSpent.toFixed(2)}`, icon: Star, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { label: 'Total Spend', value: formatPrice(totalSpent, currencyCode, currencySymbol), icon: Star, color: 'text-amber-600', bg: 'bg-amber-50' },
     { label: 'Active Shipments', value: activeShipmentsCount.toString(), icon: Package, color: 'text-emerald-600', bg: 'bg-emerald-50' },
   ];
 
@@ -96,7 +108,7 @@ export const AccountDashboard: React.FC = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-xs font-bold text-gray-900">${(order.totalAmount || order.total || 0).toFixed(2)}</div>
+                      <div className="text-xs font-bold text-gray-900">{formatPrice(order.totalAmount || order.total || 0, currencyCode, currencySymbol)}</div>
                       <div className="text-[10px] font-semibold text-emerald-600 mt-0.5">
                         {order.orderStatus || order.status || 'Placed'}
                       </div>

@@ -6,6 +6,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { storefrontApi } from '../../services/storefrontApi';
 import { Order } from '../../types/storefront';
 import { trackGA4Purchase } from '../../utils/analytics';
+import { formatPrice } from '../../utils/formatters';
 import { CheckCircle2, Truck, Package, ArrowRight, Printer, Share2, Loader2 } from 'lucide-react';
 
 export const OrderConfirmationPage: React.FC = () => {
@@ -15,9 +16,11 @@ export const OrderConfirmationPage: React.FC = () => {
   const hasTrackedPurchaseRef = useRef<boolean>(false);
 
   let currency = 'BDT';
+  let currencySymbol = '৳';
   try {
     const { settings } = useSettings();
     currency = settings?.general?.currency || 'BDT';
+    currencySymbol = settings?.general?.currencySymbol || (currency === 'BDT' ? '৳' : '৳');
   } catch {
     // Fallback if rendered outside SettingsProvider
   }
@@ -159,18 +162,18 @@ export const OrderConfirmationPage: React.FC = () => {
                     <div className="text-[11px] text-slate-400">Qty: {item.quantity}</div>
                   </div>
                 </div>
-                <span className="font-bold text-slate-900">${(item.totalPrice || 0).toFixed(2)}</span>
+                <span className="font-bold text-slate-900">{formatPrice(item.totalPrice || 0, currency, currencySymbol)}</span>
               </div>
             ))}
           </div>
 
           <div className="pt-3 border-t border-slate-200 space-y-1 text-slate-600">
-            <div className="flex justify-between"><span>Subtotal</span><span>${(order.subtotal || 0).toFixed(2)}</span></div>
-            <div className="flex justify-between"><span>Shipping ({order.shippingMethod})</span><span>${(order.shippingFee || 0).toFixed(2)}</span></div>
-            <div className="flex justify-between"><span>Tax</span><span>${(order.tax || 0).toFixed(2)}</span></div>
+            <div className="flex justify-between"><span>Subtotal</span><span>{formatPrice(order.subtotal || 0, currency, currencySymbol)}</span></div>
+            <div className="flex justify-between"><span>Shipping ({order.shippingMethod})</span><span>{formatPrice(order.shippingFee || 0, currency, currencySymbol)}</span></div>
+            <div className="flex justify-between"><span>Tax</span><span>{formatPrice(order.tax || 0, currency, currencySymbol)}</span></div>
             <div className="flex justify-between font-black text-sm text-slate-900 pt-2 border-t border-slate-200">
               <span>Total Paid</span>
-              <span className="text-primary">${(order.totalAmount || order.total || 0).toFixed(2)}</span>
+              <span className="text-primary">{formatPrice(order.totalAmount || order.total || 0, currency, currencySymbol)}</span>
             </div>
           </div>
         </div>
