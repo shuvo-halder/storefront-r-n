@@ -22,7 +22,7 @@ export const Footer: React.FC = () => {
         <div className="lg:col-span-2 space-y-5">
           <Link 
             href="/" 
-            className="cursor-pointer flex items-center group inline-block"
+            className="cursor-pointer inline-flex items-center group"
           >
             <img 
               src="/logowhite.svg" 
@@ -132,13 +132,13 @@ export const Footer: React.FC = () => {
       </div>
 
       {/* Bottom Copyright & Payment Icons */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-gray-400">
         <div>
           © {new Date().getFullYear()} Vyzobd. All rights reserved.
         </div>
 
         {/* Payment Gateway / SSLCOMMERZ Banner */}
-        <div className="flex items-center justify-center sm:justify-end shrink-0">
+        <div className="flex items-center justify-start sm:justify-end shrink-0 w-full sm:w-auto">
           <img 
             src="/images/sslcommerz-banner.svg" 
             alt="Secure Payment Gateway powered by SSLCOMMERZ - Visa, Mastercard, bKash, Nagad, AMEX" 
