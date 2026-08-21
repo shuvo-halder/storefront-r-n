@@ -59,9 +59,9 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
   }, [isLoading, displayedProducts, title, activeTabId]);
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 lg:pt-5 pb-6 sm:pb-8 lg:pb-10">
       {/* Section Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 mb-5 sm:mb-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 mb-4 sm:mb-5">
         <div className="space-y-1">
           {badge && (
             <div className="inline-flex items-center gap-1.5 text-[#DC2B53] font-semibold text-xs uppercase tracking-wider mb-0.5">
