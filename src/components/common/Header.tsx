@@ -442,48 +442,36 @@ function HeaderContent() {
         )}
 
         {/* 2. MAIN HEADER */}
-        <div className="container-vyzobd py-3.5 flex items-center justify-between gap-3 sm:gap-4 lg:gap-8">
+        <div className="container-vyzobd relative py-2 lg:py-3.5 flex items-center justify-between gap-2 lg:gap-8 min-h-[56px] lg:min-h-[auto] px-2 sm:px-4 lg:px-8">
           
-          {/* Mobile: Hamburger and Logo */}
-          <div className="flex items-center gap-2 sm:gap-3 lg:hidden min-w-0 flex-1 sm:flex-initial">
-            <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 text-[#111827] hover:text-[#DC2B53] rounded-lg hover:bg-gray-100 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center flex-shrink-0"
-              aria-label="Open Menu"
-            >
-              <Menu size={22} />
-            </button>
-            
-            <Link href="/" className="flex items-center gap-2 group select-none min-w-0">
-              <img 
-                src="/logo.svg" 
-                alt={publicSettings?.general?.siteName || "Vyzobd"} 
-                className="h-8 xs:h-9 w-auto object-contain flex-shrink-0 max-w-[125px] sm:max-w-[155px] dark:hidden"
-              />
-              <img 
-                src="/logowhite.svg" 
-                alt={publicSettings?.general?.siteName || "Vyzobd"} 
-                className="h-8 xs:h-9 w-auto object-contain flex-shrink-0 max-w-[125px] sm:max-w-[155px] hidden dark:block"
-              />
-            </Link>
-          </div>
-
-          {/* Desktop Brand Logo */}
-          <Link href="/" className="hidden lg:flex items-center group select-none flex-shrink-0">
+          {/* Mobile Hamburger Menu Button (Far Left) */}
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-1.5 text-[#111827] hover:text-[#DC2B53] transition-colors cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center -ml-1 shrink-0 lg:hidden"
+            aria-label="Open Menu"
+          >
+            <Menu size={22} className="stroke-[2.2]" />
+          </button>
+          
+          {/* Centered Brand Logo (Mobile: Absolute Center, Desktop: Flow Position) */}
+          <Link 
+            href="/" 
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:static lg:top-auto lg:left-auto lg:transform-none lg:self-center flex items-center justify-center my-auto group select-none shrink-0 z-10"
+          >
             <img 
               src="/logo.svg" 
               alt={publicSettings?.general?.siteName || "Vyzobd"} 
-              className="h-10 xl:h-11 w-auto max-h-[44px] max-w-[165px] xl:max-w-[180px] object-contain dark:hidden"
+              className="h-7 sm:h-8 lg:h-10 xl:h-10 w-auto object-contain flex-shrink-0 my-auto block max-w-[120px] xs:max-w-[135px] sm:max-w-[155px] lg:max-w-[165px] xl:max-w-[180px] dark:hidden"
             />
             <img 
               src="/logowhite.svg" 
               alt={publicSettings?.general?.siteName || "Vyzobd"} 
-              className="h-10 xl:h-11 w-auto max-h-[44px] max-w-[165px] xl:max-w-[180px] object-contain hidden dark:block"
+              className="h-7 sm:h-8 lg:h-10 xl:h-10 w-auto object-contain flex-shrink-0 my-auto block max-w-[120px] xs:max-w-[135px] sm:max-w-[155px] lg:max-w-[165px] xl:max-w-[180px] hidden dark:block"
             />
           </Link>
 
           {/* Large Search Bar (Desktop) */}
-          <div className="hidden lg:flex flex-1 max-w-2xl relative" ref={searchContainerRef}>
+          <div className="hidden lg:flex flex-1 max-w-2xl relative lg:mr-auto" ref={searchContainerRef}>
             <form 
               onSubmit={handleSearchSubmit}
               className="flex items-center w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg focus-within:border-[#DC2B53] focus-within:ring-1 focus-within:ring-[#DC2B53] focus-within:bg-white transition-colors overflow-hidden"
@@ -541,8 +529,8 @@ function HeaderContent() {
             {isSearchFocused && renderSearchDropdown()}
           </div>
 
-          {/* Action Controls: User Account, Wishlist, Cart */}
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          {/* Action Controls: Search, Profile, Cart (Right Aligned) */}
+          <div className="flex items-center gap-1 sm:gap-1.5 lg:gap-2 flex-shrink-0 ml-auto lg:ml-0">
             
             {/* Mobile Search Toggle Button */}
             <button
@@ -553,7 +541,7 @@ function HeaderContent() {
                   setIsSearchFocused(true);
                 }
               }}
-              className="p-2 text-[#111827] hover:text-[#DC2B53] hover:bg-gray-50 rounded-lg transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center lg:hidden"
+              className="p-1.5 text-[#111827] hover:text-[#DC2B53] hover:bg-gray-50 rounded-lg transition-colors cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center lg:hidden"
               aria-label="Search products"
             >
               <Search size={20} />
@@ -561,7 +549,9 @@ function HeaderContent() {
 
             {/* User Account Button & Dropdown */}
             <div className="relative" ref={accountMenuRef}>
+              {/* Mobile Profile Button */}
               <button
+                type="button"
                 onClick={() => {
                   if (user) {
                     setIsAccountMenuOpen(!isAccountMenuOpen);
@@ -569,7 +559,23 @@ function HeaderContent() {
                     router.push('/login');
                   }
                 }}
-                className="flex items-center gap-2 p-2 text-[#111827] hover:text-[#DC2B53] hover:bg-gray-50 rounded-lg transition-colors cursor-pointer min-h-[40px]"
+                className="p-1.5 text-[#111827] hover:text-[#DC2B53] hover:bg-gray-50 rounded-lg transition-colors cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center lg:hidden"
+                aria-label="Account"
+              >
+                <User size={20} />
+              </button>
+
+              {/* Desktop Profile Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (user) {
+                    setIsAccountMenuOpen(!isAccountMenuOpen);
+                  } else {
+                    router.push('/login');
+                  }
+                }}
+                className="hidden lg:flex items-center gap-2 p-2 text-[#111827] hover:text-[#DC2B53] hover:bg-gray-50 rounded-lg transition-colors cursor-pointer min-h-[40px]"
               >
                 <div className="w-8 h-8 rounded-full bg-[#F9FAFB] border border-[#E5E7EB] flex items-center justify-center text-[#111827] font-semibold text-xs">
                   {user ? user.fullName.charAt(0).toUpperCase() : <User size={16} />}
@@ -646,10 +652,10 @@ function HeaderContent() {
               )}
             </div>
 
-            {/* Wishlist Button */}
+            {/* Wishlist Button (Hidden on Mobile, Visible on Desktop) */}
             <Link
               href="/account/wishlist"
-              className="relative p-2 text-[#111827] hover:text-[#DC2B53] hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-1.5 min-h-[40px]"
+              className="hidden lg:flex relative p-2 text-[#111827] hover:text-[#DC2B53] hover:bg-gray-50 rounded-lg transition-colors items-center gap-1.5 min-h-[40px]"
               aria-label="View Wishlist"
             >
               <div className="relative">
@@ -665,10 +671,24 @@ function HeaderContent() {
               </span>
             </Link>
 
-            {/* Shopping Cart Button */}
+            {/* Mobile Shopping Cart Button (Clean Icon with Badge, No Background Pill) */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="flex items-center gap-2 px-3.5 py-2 bg-[#DC2B53] hover:bg-[#C52247] text-white rounded-lg font-semibold shadow-xs transition-colors cursor-pointer group min-h-[40px]"
+              className="p-1.5 text-[#111827] hover:text-[#DC2B53] hover:bg-gray-50 rounded-lg transition-colors cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center relative lg:hidden"
+              aria-label="Open Cart"
+            >
+              <ShoppingCart size={20} />
+              {totalCartCount > 0 && (
+                <span className="absolute top-0.5 right-0.5 bg-[#DC2B53] text-white text-[10px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center border border-white leading-none">
+                  {totalCartCount}
+                </span>
+              )}
+            </button>
+
+            {/* Desktop Shopping Cart Button (With Red Pill and Price Label) */}
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="hidden lg:flex items-center gap-2 px-3.5 py-2 bg-[#DC2B53] hover:bg-[#C52247] text-white rounded-lg font-semibold shadow-xs transition-colors cursor-pointer group min-h-[40px]"
               aria-label="Open Cart"
             >
               <div className="relative">
