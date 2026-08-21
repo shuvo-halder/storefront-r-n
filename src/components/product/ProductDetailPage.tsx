@@ -16,10 +16,7 @@ import {
   ShoppingCart, 
   Heart, 
   Share2, 
-  Truck, 
-  ShieldCheck, 
   CheckCircle2, 
-  RotateCcw,
   Star,
   ChevronRight,
   ChevronLeft,
@@ -27,15 +24,9 @@ import {
   Minus,
   ZoomIn,
   X,
-  Package,
   AlertCircle,
   Clock,
   Sparkles,
-  Award,
-  HelpCircle,
-  Send,
-  Check,
-  Zap,
   Loader2,
   MessageCircle,
   PhoneCall
@@ -70,7 +61,7 @@ export const ProductDetailPage: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(undefined);
   const [quantity, setQuantity] = useState<number>(1);
-  const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'shipping' | 'returns' | 'reviews'>('description');
+  const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews'>('description');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -466,28 +457,41 @@ export const ProductDetailPage: React.FC = () => {
             
             {/* Main Image Stage */}
             <div className="relative aspect-square bg-[#F9FAFB] rounded-xl border border-[#E5E7EB] overflow-hidden group">
-              <SmartImage 
-                src={selectedImage || product.images[0]} 
-                alt={product.name} 
-                priority
-                fill
-                fallbackType="product"
-                fallbackLabel={product.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-              />
+              {/* Clickable Main Image Trigger */}
+              <button
+                type="button"
+                onClick={() => openLightbox(selectedImage || product.images[0])}
+                className="w-full h-full relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#DC2B53] rounded-xl overflow-hidden text-left block"
+                aria-label={`Open ${product.name} image in lightbox`}
+              >
+                <SmartImage 
+                  src={selectedImage || product.images[0]} 
+                  alt={product.name} 
+                  priority
+                  fill
+                  fallbackType="product"
+                  fallbackLabel={product.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                />
+              </button>
 
               {/* Discount Badge */}
               {computedDiscount && (
-                <span className="absolute top-3.5 left-3.5 bg-[#DC2B53] text-white font-bold text-[11px] px-2.5 py-0.5 rounded-full shadow-xs z-10">
+                <span className="absolute top-3.5 left-3.5 bg-[#DC2B53] text-white font-bold text-[11px] px-2.5 py-0.5 rounded-full shadow-xs z-10 pointer-events-none">
                   -{computedDiscount}% OFF
                 </span>
               )}
 
               {/* Zoom trigger icon */}
               <button
-                onClick={() => openLightbox(selectedImage || product.images[0])}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openLightbox(selectedImage || product.images[0]);
+                }}
                 className="absolute top-3.5 right-3.5 p-2 rounded-lg bg-[#111827]/80 hover:bg-[#111827] text-white opacity-0 group-hover:opacity-100 transition-all cursor-pointer z-10"
                 title="Expand Full Resolution Image"
+                aria-label="Expand Full Resolution Image"
               >
                 <ZoomIn size={16} />
               </button>
@@ -496,22 +500,28 @@ export const ProductDetailPage: React.FC = () => {
               {product.images.length > 1 && (
                 <>
                   <button
-                    onClick={() => {
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
                       const currIdx = product.images.indexOf(selectedImage);
                       const prevIdx = currIdx <= 0 ? product.images.length - 1 : currIdx - 1;
                       setSelectedImage(product.images[prevIdx]);
                     }}
                     className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-[#111827] shadow-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer z-10 border border-[#E5E7EB]"
+                    aria-label="Previous image"
                   >
                     <ChevronLeft size={16} />
                   </button>
                   <button
-                    onClick={() => {
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
                       const currIdx = product.images.indexOf(selectedImage);
                       const nextIdx = (currIdx + 1) % product.images.length;
                       setSelectedImage(product.images[nextIdx]);
                     }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-[#111827] shadow-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer z-10 border border-[#E5E7EB]"
+                    aria-label="Next image"
                   >
                     <ChevronRight size={16} />
                   </button>
@@ -766,8 +776,6 @@ export const ProductDetailPage: React.FC = () => {
             {[
               { id: 'description', label: 'Overview' },
               { id: 'specs', label: 'Specifications' },
-              { id: 'shipping', label: 'Shipping & Delivery' },
-              { id: 'returns', label: 'Returns & Warranty' },
               { id: 'reviews', label: `Reviews (${product.reviewCount})` },
             ].map((tab) => (
               <button
@@ -821,48 +829,6 @@ export const ProductDetailPage: React.FC = () => {
                     <span className="font-semibold text-[#111827] w-2/3 text-right">{spec.value}</span>
                   </div>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {/* Tab 3: Shipping & Delivery */}
-          {activeTab === 'shipping' && (
-            <div className="space-y-4 text-xs sm:text-sm text-[#6B7280] leading-relaxed">
-              <h4 className="font-bold text-sm text-[#111827]">Shipping Policies</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-1">
-                <div className="p-4 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB] space-y-1">
-                  <Truck size={18} className="text-[#DC2B53] mb-2" />
-                  <h5 className="font-bold text-[#111827]">Standard Shipping</h5>
-                  <p className="text-xs text-[#6B7280]">{publicSettings?.shipping?.estimatedDeliveryDays || '3–5 Business Days'}. Free shipping on orders over {formatPrice(publicSettings?.shipping?.freeShippingThreshold ?? 2000, currencyCode, currencySymbol)}. Delivery charge: Inside Dhaka {formatPrice(publicSettings?.shipping?.insideDhakaCharge ?? 60, currencyCode, currencySymbol)}, Outside Dhaka {formatPrice(publicSettings?.shipping?.outsideDhakaCharge ?? 120, currencyCode, currencySymbol)}.</p>
-                </div>
-
-                <div className="p-4 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB] space-y-1">
-                  <Zap size={18} className="text-[#D97706] mb-2" />
-                  <h5 className="font-bold text-[#111827]">Express Delivery</h5>
-                  <p className="text-xs text-[#6B7280]">1–2 Business Days. Dispatched same day if ordered before 2 PM.</p>
-                </div>
-
-                <div className="p-4 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB] space-y-1">
-                  <Package size={18} className="text-[#16A34A] mb-2" />
-                  <h5 className="font-bold text-[#111827]">Insured Transit</h5>
-                  <p className="text-xs text-[#6B7280]">All shipments include transit protection against loss or damage.</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Tab 4: Returns & Warranty */}
-          {activeTab === 'returns' && (
-            <div className="space-y-4 text-xs sm:text-sm text-[#6B7280] leading-relaxed">
-              <h4 className="font-bold text-sm text-[#111827]">30-Day Money-Back Guarantee</h4>
-              <p>
-                We stand behind the quality of every product sold on Vyzobd. If you are not satisfied with your purchase, return it within 30 days in original packaging.
-              </p>
-              <div className="p-4 bg-[#FDF0F3] border border-[#DC2B53]/20 rounded-lg space-y-1 text-[#111827]">
-                <h5 className="font-bold text-xs text-[#DC2B53]">2-Year Manufacturer Warranty</h5>
-                <p className="text-xs text-[#6B7280]">
-                  This product includes a 24-month warranty covering internal component defects and manufacturing faults.
-                </p>
               </div>
             </div>
           )}
