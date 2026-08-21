@@ -245,7 +245,7 @@ export const HeroSection: React.FC = () => {
   );
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <section className="w-full px-[1px] sm:px-[2px] py-2 sm:py-3 md:py-4">
       {isExternal ? (
         <a
           href={bannerHref}
@@ -253,7 +253,7 @@ export const HeroSection: React.FC = () => {
           rel="noopener noreferrer"
           onClick={() => handleBannerClick(activeHero)}
           aria-label={activeHero.title || 'Promotional Banner'}
-          className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden bg-[#111827] text-white border border-[#E5E7EB] shadow-xs flex flex-col justify-between min-h-[260px] sm:min-h-[340px] md:min-h-[380px] lg:min-h-[420px] p-5 sm:p-8 lg:p-10 group block focus:outline-none focus:ring-2 focus:ring-[#DC2B53] focus:ring-offset-2 transition-shadow"
+          className="relative w-full rounded-[2px] sm:rounded-[3px] overflow-hidden bg-[#111827] text-white border border-[#E5E7EB] shadow-xs flex flex-col justify-between min-h-[260px] sm:min-h-[340px] md:min-h-[380px] lg:min-h-[420px] p-5 sm:p-8 lg:p-10 group block focus:outline-none focus:ring-2 focus:ring-[#DC2B53] focus:ring-offset-2 transition-shadow"
         >
           {bannerContent}
         </a>
@@ -262,7 +262,7 @@ export const HeroSection: React.FC = () => {
           href={bannerHref}
           onClick={() => handleBannerClick(activeHero)}
           aria-label={activeHero.title || 'Promotional Banner'}
-          className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden bg-[#111827] text-white border border-[#E5E7EB] shadow-xs flex flex-col justify-between min-h-[260px] sm:min-h-[340px] md:min-h-[380px] lg:min-h-[420px] p-5 sm:p-8 lg:p-10 group block focus:outline-none focus:ring-2 focus:ring-[#DC2B53] focus:ring-offset-2 transition-shadow"
+          className="relative w-full rounded-[2px] sm:rounded-[3px] overflow-hidden bg-[#111827] text-white border border-[#E5E7EB] shadow-xs flex flex-col justify-between min-h-[260px] sm:min-h-[340px] md:min-h-[380px] lg:min-h-[420px] p-5 sm:p-8 lg:p-10 group block focus:outline-none focus:ring-2 focus:ring-[#DC2B53] focus:ring-offset-2 transition-shadow"
         >
           {bannerContent}
         </Link>

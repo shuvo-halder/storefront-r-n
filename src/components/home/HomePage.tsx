@@ -44,7 +44,7 @@ export const HomePage: React.FC = () => {
     : [...newArrivalsOnly, ...products.filter(p => !newArrivalsOnly.includes(p))];
 
   return (
-    <div className="bg-white pb-12 sm:pb-16">
+    <div className="bg-white pb-12 sm:pb-16 overflow-x-hidden">
       
       {/* 1. HERO SECTION & PROMOTIONAL CARDS */}
       <HeroSection />

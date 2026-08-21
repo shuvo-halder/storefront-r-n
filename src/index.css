@@ -133,3 +133,34 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #6B7280;
 }
+
+/* Trust Features Marquee Animation */
+@keyframes trust-marquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-trust-marquee {
+  display: flex;
+  width: max-content;
+  animation: trust-marquee 35s linear infinite;
+  will-change: transform;
+}
+
+@media (hover: hover) {
+  .trust-marquee-container:hover .animate-trust-marquee {
+    animation-play-state: paused;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-trust-marquee {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+

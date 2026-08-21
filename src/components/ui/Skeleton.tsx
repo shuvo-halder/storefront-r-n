@@ -107,8 +107,8 @@ export const BrandCardSkeleton: React.FC = () => {
 
 export const HeroSkeleton: React.FC = () => {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-      <div className="w-full rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-100 border border-slate-200 p-6 sm:p-8 lg:p-10 min-h-[260px] sm:min-h-[340px] lg:min-h-[400px] flex flex-col justify-between">
+    <section className="w-full px-[1px] sm:px-[2px] py-2 sm:py-3 md:py-4">
+      <div className="w-full rounded-[2px] sm:rounded-[3px] overflow-hidden bg-slate-100 border border-slate-200 p-6 sm:p-8 lg:p-10 min-h-[260px] sm:min-h-[340px] lg:min-h-[400px] flex flex-col justify-between">
         <div className="flex justify-between items-center">
           <Skeleton className="h-6 w-32 rounded-full bg-slate-200" />
           <Skeleton className="h-8 w-20 rounded-full bg-slate-200" />
