@@ -456,22 +456,17 @@ function HeaderContent() {
           {/* Centered Brand Logo (Mobile: Absolute Center, Desktop: Flow Position) */}
           <Link 
             href="/" 
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:static lg:top-auto lg:left-auto lg:transform-none lg:self-center flex items-center justify-center my-auto group select-none shrink-0 z-10"
+            className="max-lg:absolute max-lg:left-1/2 max-lg:top-1/2 max-lg:-translate-x-1/2 max-lg:-translate-y-1/2 flex items-center justify-center group select-none shrink-0 z-10"
           >
             <img 
               src="/logo.svg" 
               alt={publicSettings?.general?.siteName || "Vyzobd"} 
-              className="h-7 sm:h-8 lg:h-10 xl:h-10 w-auto object-contain flex-shrink-0 my-auto block max-w-[120px] xs:max-w-[135px] sm:max-w-[155px] lg:max-w-[165px] xl:max-w-[180px] dark:hidden"
-            />
-            <img 
-              src="/logowhite.svg" 
-              alt={publicSettings?.general?.siteName || "Vyzobd"} 
-              className="h-7 sm:h-8 lg:h-10 xl:h-10 w-auto object-contain flex-shrink-0 my-auto block max-w-[120px] xs:max-w-[135px] sm:max-w-[155px] lg:max-w-[165px] xl:max-w-[180px] hidden dark:block"
+              className="h-7 sm:h-8 lg:h-9 xl:h-10 w-auto object-contain shrink-0 block max-w-[120px] xs:max-w-[135px] sm:max-w-[155px] lg:max-w-[165px] xl:max-w-[180px]"
             />
           </Link>
 
           {/* Large Search Bar (Desktop) */}
-          <div className="hidden lg:flex flex-1 max-w-2xl relative lg:mr-auto" ref={searchContainerRef}>
+          <div className="hidden lg:flex flex-1 max-w-2xl lg:max-w-3xl relative" ref={searchContainerRef}>
             <form 
               onSubmit={handleSearchSubmit}
               className="flex items-center w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg focus-within:border-[#DC2B53] focus-within:ring-1 focus-within:ring-[#DC2B53] focus-within:bg-white transition-colors overflow-hidden"
@@ -918,8 +913,7 @@ function HeaderContent() {
           size="md"
           title={
             <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 group min-w-0">
-              <img src="/logo.svg" alt={publicSettings?.general?.siteName || "Vyzobd"} className="h-7 w-auto flex-shrink-0 dark:hidden" />
-              <img src="/logowhite.svg" alt={publicSettings?.general?.siteName || "Vyzobd"} className="h-7 w-auto flex-shrink-0 hidden dark:block" />
+              <img src="/logo.svg" alt={publicSettings?.general?.siteName || "Vyzobd"} className="h-7 w-auto flex-shrink-0" />
             </Link>
           }
           footer={
