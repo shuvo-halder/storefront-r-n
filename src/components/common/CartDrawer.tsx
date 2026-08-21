@@ -62,10 +62,13 @@ export const CartDrawer: React.FC = () => {
 
   if (!isCartOpen) return null;
 
-  const freeShippingGoal = publicSettings?.shipping.freeShippingThreshold || 99;
+  const freeShippingGoal = publicSettings?.shipping?.freeShippingThreshold ?? 150;
+  const flatRateFee = publicSettings?.shipping?.flatRateShippingFee ?? 15;
   const currentSubtotal = cart.subtotal;
   const amountNeeded = Math.max(0, freeShippingGoal - currentSubtotal);
-  const shippingPercent = Math.min(100, Math.round((currentSubtotal / freeShippingGoal) * 100));
+  const shippingPercent = freeShippingGoal > 0 ? Math.min(100, Math.round((currentSubtotal / freeShippingGoal) * 100)) : 100;
+  const estimatedShippingFee = cart.shippingFee > 0 ? cart.shippingFee : (currentSubtotal >= freeShippingGoal || currentSubtotal === 0 ? 0 : flatRateFee);
+  const estimatedTotal = Math.max(0, currentSubtotal - cart.discount + estimatedShippingFee + cart.estimatedTax);
 
   const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -233,7 +236,7 @@ export const CartDrawer: React.FC = () => {
               <div className="flex justify-between">
                 <span>Shipping</span>
                 <span className="font-semibold text-[#111827]">
-                  {cart.shippingFee === 0 ? <span className="text-[#16A34A] font-semibold">FREE</span> : formatPrice(cart.shippingFee, currencyCode, currencySymbol)}
+                  {estimatedShippingFee === 0 ? <span className="text-[#16A34A] font-semibold">FREE</span> : formatPrice(estimatedShippingFee, currencyCode, currencySymbol)}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -242,7 +245,7 @@ export const CartDrawer: React.FC = () => {
               </div>
               <div className="flex justify-between text-sm font-bold text-[#111827] pt-2 border-t border-[#E5E7EB]">
                 <span>Total Amount</span>
-                <span className="text-[#DC2B53] font-bold">{formatPrice(cart.total, currencyCode, currencySymbol)}</span>
+                <span className="text-[#DC2B53] font-bold">{formatPrice(estimatedTotal, currencyCode, currencySymbol)}</span>
               </div>
             </div>
 

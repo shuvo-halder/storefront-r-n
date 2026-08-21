@@ -38,6 +38,10 @@ export const CartPage: React.FC = () => {
 
   const currencyCode = publicSettings?.general?.currency || 'BDT';
   const currencySymbol = publicSettings?.general?.currencySymbol || (currencyCode === 'BDT' ? '৳' : '৳');
+  const freeShippingGoal = publicSettings?.shipping?.freeShippingThreshold ?? 150;
+  const flatRateFee = publicSettings?.shipping?.flatRateShippingFee ?? 15;
+  const estimatedShippingFee = cart.shippingFee > 0 ? cart.shippingFee : (cart.subtotal >= freeShippingGoal || cart.subtotal === 0 ? 0 : flatRateFee);
+  const estimatedTotal = Math.max(0, cart.subtotal - cart.discount + estimatedShippingFee + cart.estimatedTax);
 
   // GA4 Tracking
   useEffect(() => {
@@ -200,7 +204,7 @@ export const CartPage: React.FC = () => {
               <div className="flex justify-between">
                 <span>Shipping Fee</span>
                 <span className="font-semibold text-[#111827]">
-                  {cart.shippingFee === 0 ? <span className="text-[#16A34A] font-semibold">FREE</span> : formatPrice(cart.shippingFee, currencyCode, currencySymbol)}
+                  {estimatedShippingFee === 0 ? <span className="text-[#16A34A] font-semibold">FREE</span> : formatPrice(estimatedShippingFee, currencyCode, currencySymbol)}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -209,7 +213,7 @@ export const CartPage: React.FC = () => {
               </div>
               <div className="flex justify-between text-base font-bold text-[#111827] pt-2.5 border-t border-[#E5E7EB]">
                 <span>Total Amount</span>
-                <span className="text-[#DC2B53] font-bold">{formatPrice(cart.total, currencyCode, currencySymbol)}</span>
+                <span className="text-[#DC2B53] font-bold">{formatPrice(estimatedTotal, currencyCode, currencySymbol)}</span>
               </div>
             </div>
 

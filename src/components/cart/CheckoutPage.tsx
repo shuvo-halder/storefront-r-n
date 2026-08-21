@@ -30,15 +30,12 @@ import {
 export const CheckoutPage: React.FC = () => {
   const { navigateTo, notifyError, notifySuccess } = useStorefront();
   const { user } = useAuth();
-  let currency = 'BDT';
-  let currencySymbol = '৳';
-  try {
-    const { settings } = useSettings();
-    currency = settings?.general?.currency || 'BDT';
-    currencySymbol = settings?.general?.currencySymbol || (currency === 'BDT' ? '৳' : '৳');
-  } catch {
-    // Fallback if rendered outside SettingsProvider
-  }
+  const { settings } = useSettings();
+
+  const currency = settings?.general?.currency || 'BDT';
+  const currencySymbol = settings?.general?.currencySymbol || (currency === 'BDT' ? '৳' : '৳');
+  const freeShippingThreshold = settings?.shipping?.freeShippingThreshold ?? 150;
+  const flatRateFee = settings?.shipping?.flatRateShippingFee ?? 15;
 
   const { 
     cart, 
@@ -55,7 +52,42 @@ export const CheckoutPage: React.FC = () => {
   const [localCoupon, setLocalCoupon] = useState('');
   const [isCouponExpanded, setIsCouponExpanded] = useState(false);
 
+  const [checkoutSession, setCheckoutSession] = useState<{
+    subtotal: number;
+    discount: number;
+    shippingFee: number;
+    tax: number;
+    totalAmount: number;
+  } | null>(null);
+
   const trackedBeginCheckoutKeyRef = React.useRef<string | null>(null);
+
+  // Fetch authoritative backend checkout session totals
+  useEffect(() => {
+    if (cart.items.length > 0) {
+      storefrontApi.getCheckoutSession()
+        .then((sess) => {
+          if (sess && typeof sess.shippingFee === 'number') {
+            setCheckoutSession(sess);
+          }
+        })
+        .catch(() => {
+          // Graceful fallback
+        });
+    } else {
+      setCheckoutSession(null);
+    }
+  }, [cart.items.length, cart.subtotal, cart.appliedCoupon]);
+
+  const effectiveShippingFee = checkoutSession
+    ? checkoutSession.shippingFee
+    : (cart.subtotal >= freeShippingThreshold || cart.subtotal === 0 ? 0 : flatRateFee);
+
+  const effectiveTax = checkoutSession ? checkoutSession.tax : cart.estimatedTax;
+
+  const effectiveTotal = checkoutSession
+    ? checkoutSession.totalAmount
+    : Math.max(0, cart.subtotal - cart.discount + effectiveShippingFee + effectiveTax);
 
   const {
     register,
@@ -214,9 +246,9 @@ export const CheckoutPage: React.FC = () => {
         })),
         subtotal: cart.subtotal,
         discount: cart.discount,
-        shippingFee: cart.shippingFee,
-        tax: cart.estimatedTax,
-        totalAmount: cart.total,
+        shippingFee: effectiveShippingFee,
+        tax: effectiveTax,
+        totalAmount: effectiveTotal,
         status: 'Pending',
       };
 
@@ -462,14 +494,14 @@ export const CheckoutPage: React.FC = () => {
                   <div className="flex justify-between text-[#6B7280]">
                     <span>Shipping</span>
                     <span className="font-semibold text-[#111827]">
-                      {cart.shippingFee === 0 ? 'FREE' : formatPrice(cart.shippingFee, currency, currencySymbol)}
+                      {effectiveShippingFee === 0 ? <span className="text-[#16A34A] font-semibold">FREE</span> : formatPrice(effectiveShippingFee, currency, currencySymbol)}
                     </span>
                   </div>
                   
-                  {cart.estimatedTax > 0 && (
+                  {effectiveTax > 0 && (
                     <div className="flex justify-between text-[#6B7280]">
                       <span>Tax</span>
-                      <span className="font-semibold text-[#111827]">{formatPrice(cart.estimatedTax, currency, currencySymbol)}</span>
+                      <span className="font-semibold text-[#111827]">{formatPrice(effectiveTax, currency, currencySymbol)}</span>
                     </div>
                   )}
                 </div>
@@ -477,7 +509,7 @@ export const CheckoutPage: React.FC = () => {
                 {/* Final Total */}
                 <div className="flex justify-between items-center pt-2">
                   <span className="text-base font-bold text-[#111827]">Total</span>
-                  <span className="text-xl font-bold text-[#DC2B53]">{formatPrice(cart.total, currency, currencySymbol)}</span>
+                  <span className="text-xl font-bold text-[#DC2B53]">{formatPrice(effectiveTotal, currency, currencySymbol)}</span>
                 </div>
               </div>
 

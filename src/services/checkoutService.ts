@@ -26,17 +26,19 @@ export const checkoutService = {
           status: 'error', message: unwrapped.message || 'Failed to initialize session', errors: unwrapped.errors, data: { subtotal: 0, discount: 0, shippingFee: 0, tax: 0, totalAmount: 0 } };
       }
 
+      const sessionData = unwrapped.data?.session || unwrapped.data;
+
       return {
         status: 'success',
         data: {
-          subtotal: Number(unwrapped.data.subtotal ?? 0),
-          discount: Number(unwrapped.data.discount ?? 0),
-          shippingFee: Number(unwrapped.data.shippingFee ?? 0),
-          tax: Number(unwrapped.data.tax ?? unwrapped.data.estimatedTax ?? 0),
-          totalAmount: Number(unwrapped.data.totalAmount ?? unwrapped.data.total ?? 0),
-          appliedCoupon: unwrapped.data.appliedCoupon,
-          shippingMethods: unwrapped.data.shippingMethods,
-          paymentGateways: unwrapped.data.paymentGateways
+          subtotal: Number(sessionData.subtotal ?? 0),
+          discount: Number(sessionData.discount ?? 0),
+          shippingFee: Number(sessionData.shippingFee ?? sessionData.shipping ?? 0),
+          tax: Number(sessionData.tax ?? sessionData.estimatedTax ?? 0),
+          totalAmount: Number(sessionData.totalAmount ?? sessionData.total ?? sessionData.grandTotal ?? 0),
+          appliedCoupon: sessionData.appliedCoupon || sessionData.coupon,
+          shippingMethods: sessionData.shippingMethods,
+          paymentGateways: sessionData.paymentGateways
         },
         message: null
       };

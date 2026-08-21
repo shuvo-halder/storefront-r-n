@@ -12,7 +12,7 @@ const DEFAULT_SETTINGS: PublicSettings = {
     metaDescription: 'Modern Hardware & E-commerce Storefront'
   },
   shipping: {
-    freeShippingThreshold: 100,
+    freeShippingThreshold: 150,
     flatRateShippingFee: 15,
     estimatedDeliveryDays: '3-5 business days'
   },
@@ -41,7 +41,7 @@ const DEFAULT_SETTINGS: PublicSettings = {
   faviconUrl: '',
   currency: 'BDT',
   currencySymbol: '৳',
-  freeShippingThreshold: 100,
+  freeShippingThreshold: 150,
   supportEmail: 'support@vyzobd.com',
   supportPhone: ''
 };
@@ -76,9 +76,28 @@ export const settingsService = {
           twitterHandle: raw.seo?.twitterHandle
         },
         shipping: {
-          freeShippingThreshold: Number(raw.shipping?.freeShippingThreshold ?? raw.freeShippingThreshold ?? 100),
-          flatRateShippingFee: Number(raw.shipping?.flatRateShippingFee ?? raw.flatRateShippingFee ?? 15),
-          estimatedDeliveryDays: raw.shipping?.estimatedDeliveryDays || '3-5 business days'
+          freeShippingThreshold: Number(
+            raw.shipping?.freeShippingThreshold ?? 
+            raw.freeShippingThreshold ?? 
+            raw.shippingSettings?.freeShippingThreshold ?? 
+            raw.deliverySettings?.freeShippingThreshold ??
+            150
+          ),
+          flatRateShippingFee: Number(
+            raw.shipping?.flatRateShippingFee ?? 
+            raw.flatRateShippingFee ?? 
+            raw.shippingFee ?? 
+            raw.deliveryFee ?? 
+            raw.shippingCost ?? 
+            raw.deliveryCost ?? 
+            raw.shippingSettings?.flatRateShippingFee ?? 
+            15
+          ),
+          estimatedDeliveryDays: 
+            raw.shipping?.estimatedDeliveryDays || 
+            raw.estimatedDeliveryDays || 
+            raw.shippingSettings?.estimatedDeliveryDays || 
+            '3-5 business days'
         },
         tax: {
           taxEnabled: Boolean(raw.tax?.taxEnabled ?? true),
@@ -118,7 +137,12 @@ export const settingsService = {
         faviconUrl: raw.branding?.faviconUrl || raw.faviconUrl || '',
         currency: raw.branding?.defaultCurrency || raw.currency || 'BDT',
         currencySymbol: raw.general?.currencySymbol || '৳',
-        freeShippingThreshold: Number(raw.shipping?.freeShippingThreshold ?? 100),
+        freeShippingThreshold: Number(
+          raw.shipping?.freeShippingThreshold ?? 
+          raw.freeShippingThreshold ?? 
+          raw.shippingSettings?.freeShippingThreshold ?? 
+          150
+        ),
         supportEmail: raw.general?.storeEmail || raw.supportEmail || 'support@vyzobd.com',
         supportPhone: raw.general?.storePhone || raw.supportPhone || ''
       };
