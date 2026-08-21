@@ -173,24 +173,24 @@ export const HeroSection: React.FC = () => {
       </div>
 
       {/* Hero Content Body (No CTA button - entire card is clickable) */}
-      <div className="relative z-10 mt-auto pt-6 pb-2 space-y-2 max-w-2xl">
+      <div className="relative z-10 mt-auto pt-3 sm:pt-6 pb-1 sm:pb-2 space-y-1 sm:space-y-2 max-w-2xl">
         {activeHero.title && (
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight drop-shadow-xs">
+          <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight drop-shadow-xs line-clamp-2">
             {activeHero.title}
           </h1>
         )}
         
         {(activeHero.subtitle || activeHero.description) && (
-          <p className="text-xs sm:text-sm md:text-base text-gray-100 font-normal leading-relaxed line-clamp-2 max-w-xl drop-shadow-xs">
+          <p className="text-xs sm:text-sm md:text-base text-gray-100 font-normal leading-snug sm:leading-relaxed line-clamp-1 sm:line-clamp-2 max-w-xl drop-shadow-xs">
             {activeHero.subtitle || activeHero.description}
           </p>
         )}
 
         {/* Price Tag & Discount */}
         {(activeHero.price || activeHero.comparePrice || activeHero.discount) && (
-          <div className="flex items-center gap-2.5 pt-0.5">
+          <div className="flex items-center gap-2 pt-0.5">
             {activeHero.price && (
-              <span className="text-xl sm:text-2xl font-bold text-white drop-shadow-xs">
+              <span className="text-lg sm:text-2xl font-bold text-white drop-shadow-xs">
                 {activeHero.price}
               </span>
             )}
@@ -200,7 +200,7 @@ export const HeroSection: React.FC = () => {
               </span>
             )}
             {activeHero.discount && (
-              <span className="px-2.5 py-0.5 bg-[#DC2B53] text-white text-xs font-bold rounded-md">
+              <span className="px-2 py-0.5 bg-[#DC2B53] text-white text-[11px] sm:text-xs font-bold rounded-md">
                 {activeHero.discount}
               </span>
             )}
@@ -209,7 +209,7 @@ export const HeroSection: React.FC = () => {
       </div>
 
       {/* Bottom Bar: Slide Indicators & Value Badges */}
-      <div className="relative z-10 flex items-center justify-between pt-3 mt-2 border-t border-white/10">
+      <div className="relative z-10 flex items-center justify-between pt-2 sm:pt-3 mt-1 sm:mt-2 border-t border-white/10">
         {heroBanners.length > 1 ? (
           <div className="flex items-center gap-2">
             {heroBanners.map((_, idx) => (
@@ -253,7 +253,7 @@ export const HeroSection: React.FC = () => {
           rel="noopener noreferrer"
           onClick={() => handleBannerClick(activeHero)}
           aria-label={activeHero.title || 'Promotional Banner'}
-          className="relative w-full rounded-[2px] sm:rounded-[3px] overflow-hidden bg-[#111827] text-white border border-[#E5E7EB] shadow-xs flex flex-col justify-between min-h-[260px] sm:min-h-[340px] md:min-h-[380px] lg:min-h-[420px] p-5 sm:p-8 lg:p-10 group block focus:outline-none focus:ring-2 focus:ring-[#DC2B53] focus:ring-offset-2 transition-shadow"
+          className="relative w-full rounded-[2px] sm:rounded-[3px] overflow-hidden bg-[#111827] text-white border border-[#E5E7EB] shadow-xs flex flex-col justify-between min-h-[235px] max-h-[245px] sm:max-h-none sm:min-h-[340px] md:min-h-[380px] lg:min-h-[420px] p-3.5 sm:p-8 lg:p-10 group block focus:outline-none focus:ring-2 focus:ring-[#DC2B53] focus:ring-offset-2 transition-shadow"
         >
           {bannerContent}
         </a>
@@ -262,7 +262,7 @@ export const HeroSection: React.FC = () => {
           href={bannerHref}
           onClick={() => handleBannerClick(activeHero)}
           aria-label={activeHero.title || 'Promotional Banner'}
-          className="relative w-full rounded-[2px] sm:rounded-[3px] overflow-hidden bg-[#111827] text-white border border-[#E5E7EB] shadow-xs flex flex-col justify-between min-h-[260px] sm:min-h-[340px] md:min-h-[380px] lg:min-h-[420px] p-5 sm:p-8 lg:p-10 group block focus:outline-none focus:ring-2 focus:ring-[#DC2B53] focus:ring-offset-2 transition-shadow"
+          className="relative w-full rounded-[2px] sm:rounded-[3px] overflow-hidden bg-[#111827] text-white border border-[#E5E7EB] shadow-xs flex flex-col justify-between min-h-[235px] max-h-[245px] sm:max-h-none sm:min-h-[340px] md:min-h-[380px] lg:min-h-[420px] p-3.5 sm:p-8 lg:p-10 group block focus:outline-none focus:ring-2 focus:ring-[#DC2B53] focus:ring-offset-2 transition-shadow"
         >
           {bannerContent}
         </Link>

@@ -5,10 +5,17 @@ import { SmartImage } from '../common/SmartImage';
 import { Banner } from '../../types/storefront';
 import { storefrontApi } from '../../services/storefrontApi';
 import { useStorefront } from '../../context/StorefrontContext';
+import { HOME_PROMOTIONAL_BANNER_PRIORITY } from '../../config/bannerConfig';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Skeleton } from '../ui/Skeleton';
 
-export const OfferBanner: React.FC = () => {
+interface OfferBannerProps {
+  targetPriority?: number;
+}
+
+export const OfferBanner: React.FC<OfferBannerProps> = ({
+  targetPriority = HOME_PROMOTIONAL_BANNER_PRIORITY
+}) => {
   const { navigateTo, setFilters } = useStorefront();
   const [offerBanner, setOfferBanner] = useState<Banner | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -19,8 +26,12 @@ export const OfferBanner: React.FC = () => {
       try {
         setLoading(true);
         const offers = await storefrontApi.getBanners('offer');
-        if (isMounted && offers.length > 0) {
-          setOfferBanner(offers[0]);
+        if (isMounted && Array.isArray(offers)) {
+          // Strictly match target priority (handling numeric/string safely)
+          const matched = offers.find(
+            b => b.priority !== undefined && b.priority !== null && Number(b.priority) === Number(targetPriority)
+          );
+          setOfferBanner(matched || null);
         }
       } catch (err) {
         console.error('Failed to fetch offer banner:', err);
@@ -31,7 +42,7 @@ export const OfferBanner: React.FC = () => {
 
     fetchOffer();
     return () => { isMounted = false; };
-  }, []);
+  }, [targetPriority]);
 
   if (loading) {
     return (

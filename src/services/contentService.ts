@@ -31,7 +31,12 @@ export const contentService = {
       categorySlug: raw.categorySlug || raw.category?.slug || undefined,
       type: raw.type || 'hero',
       bgColor: raw.bgColor || raw.backgroundColor || undefined,
-      priority: typeof raw.priority === 'number' ? raw.priority : (typeof raw.sortOrder === 'number' ? raw.sortOrder : undefined),
+      priority: (() => {
+        const p = raw.priority ?? raw.sortOrder ?? raw.order;
+        if (typeof p === 'number' && !isNaN(p)) return p;
+        if (typeof p === 'string' && p.trim() !== '' && !isNaN(Number(p))) return Number(p);
+        return undefined;
+      })(),
       isActive: typeof raw.isActive === 'boolean' ? raw.isActive : true,
     };
   },
