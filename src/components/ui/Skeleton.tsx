@@ -42,33 +42,33 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
 export const ProductCardSkeleton: React.FC = () => {
   return (
-    <div className="bg-white border border-slate-200/80 rounded-2xl p-3.5 space-y-3.5 shadow-xs">
-      <Skeleton variant="product" className="h-44 sm:h-52 bg-slate-100" />
-      <div className="space-y-2">
+    <div className="bg-white border border-slate-200/80 rounded-xl p-2.5 space-y-2 shadow-xs">
+      <Skeleton variant="product" className="aspect-square w-full bg-slate-100 rounded-lg" />
+      <div className="space-y-1.5">
         <div className="flex justify-between items-center">
-          <Skeleton variant="text" className="w-1/3 h-3.5 bg-slate-200" />
-          <Skeleton variant="badge" className="w-12 h-4 bg-slate-100" />
+          <Skeleton variant="text" className="w-1/3 h-3 bg-slate-200" />
+          <Skeleton variant="badge" className="w-10 h-3 bg-slate-100" />
         </div>
-        <Skeleton variant="text" className="w-full h-4 bg-slate-200" />
-        <Skeleton variant="text" className="w-2/3 h-4 bg-slate-200" />
+        <Skeleton variant="text" className="w-full h-3.5 bg-slate-200" />
+        <Skeleton variant="text" className="w-2/3 h-3.5 bg-slate-200" />
       </div>
-      <div className="pt-2 flex items-center justify-between border-t border-slate-100">
-        <div className="space-y-1">
-          <Skeleton variant="text" className="w-16 h-5 bg-slate-200" />
-          <Skeleton variant="text" className="w-12 h-3 bg-slate-100" />
+      <div className="pt-1.5 flex items-center justify-between border-t border-slate-100">
+        <div className="space-y-0.5">
+          <Skeleton variant="text" className="w-14 h-4 bg-slate-200" />
+          <Skeleton variant="text" className="w-10 h-2.5 bg-slate-100" />
         </div>
-        <Skeleton variant="circular" className="w-9 h-9 bg-slate-200" />
+        <Skeleton variant="circular" className="w-7 h-7 bg-slate-200" />
       </div>
     </div>
   );
 };
 
 export const ProductGridSkeleton: React.FC<{ count?: number; columns?: string }> = ({
-  count = 8,
-  columns = 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4',
+  count = 12,
+  columns = 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6',
 }) => {
   return (
-    <div className={`grid ${columns} gap-4 sm:gap-6`}>
+    <div className={`grid ${columns} gap-2 sm:gap-3 lg:gap-3.5`}>
       {Array.from({ length: count }).map((_, i) => (
         <ProductCardSkeleton key={i} />
       ))}

@@ -75,7 +75,7 @@ const DEFAULT_FILTERS: ProductFilterState = {
   inStockOnly: false,
   sortBy: 'featured',
   page: 1,
-  pageSize: 9,
+  pageSize: 12,
 };
 
 interface StorefrontContextType {

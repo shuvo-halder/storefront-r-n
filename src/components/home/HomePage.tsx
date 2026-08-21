@@ -86,7 +86,7 @@ export const HomePage: React.FC = () => {
           setFilters(prev => ({ ...prev, sortBy: 'featured' }));
           navigateTo('shop');
         }}
-        limit={10}
+        limit={12}
       />
 
       {/* 5. POPULAR PRODUCTS */}
@@ -102,7 +102,7 @@ export const HomePage: React.FC = () => {
           setFilters(prev => ({ ...prev, sortBy: 'rating' }));
           navigateTo('shop');
         }}
-        limit={5}
+        limit={6}
       />
 
       {/* 6. PROMOTIONAL BANNER */}
@@ -121,7 +121,7 @@ export const HomePage: React.FC = () => {
           setFilters(prev => ({ ...prev, sortBy: 'newest' }));
           navigateTo('shop');
         }}
-        limit={5}
+        limit={6}
       />
 
       {/* 8. BRANDS */}

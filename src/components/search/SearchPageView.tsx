@@ -702,20 +702,20 @@ export const SearchPageView: React.FC = () => {
 
             {/* Product Grid / Loading / Empty */}
             {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="bg-white rounded-3xl p-4 border border-slate-200 space-y-4">
-                    <Skeleton className="w-full h-48 rounded-2xl" />
-                    <Skeleton className="w-3/4 h-5 rounded-lg" />
-                    <Skeleton className="w-1/2 h-4 rounded-lg" />
-                    <Skeleton className="w-full h-10 rounded-xl" />
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5 lg:gap-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="bg-white rounded-2xl p-2.5 border border-slate-200 space-y-2.5">
+                    <Skeleton className="w-full aspect-square rounded-xl" />
+                    <Skeleton className="w-3/4 h-4 rounded-lg" />
+                    <Skeleton className="w-1/2 h-3.5 rounded-lg" />
+                    <Skeleton className="w-full h-8 rounded-lg" />
                   </div>
                 ))}
               </div>
             ) : products.length > 0 ? (
               <div className={
                 viewMode === 'grid'
-                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+                  ? 'grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5 lg:gap-4'
                   : 'space-y-4'
               }>
                 {products.map((prod, idx) => (

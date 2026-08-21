@@ -893,9 +893,9 @@ export const ProductDetailPage: React.FC = () => {
               <span className="text-sm font-medium text-[#6B7280] block mt-1">You may also like these products</span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3.5">
               {isRelatedLoading ? (
-                Array.from({ length: 5 }).map((_, idx) => (
+                Array.from({ length: 6 }).map((_, idx) => (
                   <ProductCardSkeleton key={idx} />
                 ))
               ) : (

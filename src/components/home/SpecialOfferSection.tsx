@@ -29,7 +29,7 @@ export const SpecialOfferSection: React.FC<SpecialOfferSectionProps> = ({ produc
     return () => clearInterval(timer);
   }, []);
 
-  const dealProducts = products.filter(p => p.isDealOfDay || p.discountPercent).slice(0, 4);
+  const dealProducts = products.filter(p => p.isDealOfDay || p.discountPercent).slice(0, 6);
 
   if (dealProducts.length === 0) return null;
 
@@ -79,7 +79,7 @@ export const SpecialOfferSection: React.FC<SpecialOfferSectionProps> = ({ produc
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-6 relative z-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-3.5 pt-6 relative z-10">
           {dealProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

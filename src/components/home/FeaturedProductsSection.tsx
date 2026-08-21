@@ -23,8 +23,8 @@ export const FeaturedProductsSection: React.FC = () => {
   const products = data || [];
 
   const displayedProducts = activeTab === 'all'
-    ? products.slice(0, 8)
-    : products.filter(p => p.categoryId === activeTab || p.category.toLowerCase().includes(activeTab.toLowerCase())).slice(0, 8);
+    ? products.slice(0, 12)
+    : products.filter(p => p.categoryId === activeTab || p.category.toLowerCase().includes(activeTab.toLowerCase())).slice(0, 12);
 
   const trackedFeaturedRef = useRef<string | null>(null);
 
@@ -57,9 +57,9 @@ export const FeaturedProductsSection: React.FC = () => {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-3.5">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-3">
                 <Skeleton className="w-full aspect-square rounded-xl" />
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-4 w-1/2" />
@@ -91,7 +91,7 @@ export const FeaturedProductsSection: React.FC = () => {
 
         {/* Product Grid */}
         {!isLoading && !isError && displayedProducts.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-3.5">
             {displayedProducts.map((product, idx) => (
               <ProductCard 
                 key={product.id} 

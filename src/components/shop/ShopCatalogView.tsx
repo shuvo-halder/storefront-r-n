@@ -412,13 +412,13 @@ export const ShopCatalogView: React.FC = () => {
             
             {/* Loading Skeletons */}
             {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: filters.pageSize || 9 }).map((_, i) => (
-                  <div key={i} className="bg-white border border-[#E5E7EB] rounded-xl p-4 space-y-3">
-                    <Skeleton className="h-48 w-full rounded-lg bg-[#F9FAFB]" />
-                    <Skeleton className="h-4 w-1/3 rounded-md bg-[#F9FAFB]" />
-                    <Skeleton className="h-5 w-full rounded-md bg-[#F9FAFB]" />
-                    <Skeleton className="h-6 w-1/2 rounded-md bg-[#F9FAFB]" />
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5 lg:gap-4">
+                {Array.from({ length: filters.pageSize || 12 }).map((_, i) => (
+                  <div key={i} className="bg-white border border-[#E5E7EB] rounded-xl p-2.5 space-y-2.5">
+                    <Skeleton className="aspect-square w-full rounded-lg bg-[#F9FAFB]" />
+                    <Skeleton className="h-3.5 w-1/3 rounded-md bg-[#F9FAFB]" />
+                    <Skeleton className="h-4 w-full rounded-md bg-[#F9FAFB]" />
+                    <Skeleton className="h-5 w-1/2 rounded-md bg-[#F9FAFB]" />
                   </div>
                 ))}
               </div>
@@ -462,7 +462,7 @@ export const ShopCatalogView: React.FC = () => {
               <>
                 <div className={
                   viewMode === 'grid' 
-                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+                    ? 'grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5 lg:gap-4'
                     : 'space-y-4'
                 }>
                   {products.map((product, idx) => {
