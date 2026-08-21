@@ -62,13 +62,15 @@ export const CartDrawer: React.FC = () => {
 
   if (!isCartOpen) return null;
 
-  const freeShippingGoal = publicSettings?.shipping?.freeShippingThreshold ?? 150;
-  const flatRateFee = publicSettings?.shipping?.flatRateShippingFee ?? 15;
+  const freeShippingGoal = publicSettings?.shipping?.freeShippingThreshold ?? 2000;
   const currentSubtotal = cart.subtotal;
   const amountNeeded = Math.max(0, freeShippingGoal - currentSubtotal);
   const shippingPercent = freeShippingGoal > 0 ? Math.min(100, Math.round((currentSubtotal / freeShippingGoal) * 100)) : 100;
-  const estimatedShippingFee = cart.shippingFee > 0 ? cart.shippingFee : (currentSubtotal >= freeShippingGoal || currentSubtotal === 0 ? 0 : flatRateFee);
-  const estimatedTotal = Math.max(0, currentSubtotal - cart.discount + estimatedShippingFee + cart.estimatedTax);
+  
+  const isFreeShipping = currentSubtotal >= freeShippingGoal || cart.shippingFee === 0;
+  const netSubtotal = Math.max(0, currentSubtotal - cart.discount);
+  const calculatedTax = netSubtotal * 0.10;
+  const estimatedTotal = netSubtotal + (isFreeShipping ? 0 : (cart.shippingFee || 0)) + calculatedTax;
 
   const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -236,12 +238,18 @@ export const CartDrawer: React.FC = () => {
               <div className="flex justify-between">
                 <span>Shipping</span>
                 <span className="font-semibold text-[#111827]">
-                  {estimatedShippingFee === 0 ? <span className="text-[#16A34A] font-semibold">FREE</span> : formatPrice(estimatedShippingFee, currencyCode, currencySymbol)}
+                  {isFreeShipping ? (
+                    <span className="text-[#16A34A] font-semibold">FREE</span>
+                  ) : cart.shippingFee > 0 ? (
+                    formatPrice(cart.shippingFee, currencyCode, currencySymbol)
+                  ) : (
+                    <span className="text-[#6B7280] font-normal text-xs">Calculated at checkout</span>
+                  )}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Estimated Tax</span>
-                <span className="font-semibold text-[#111827]">{formatPrice(cart.estimatedTax, currencyCode, currencySymbol)}</span>
+                <span>Estimated Tax (10%)</span>
+                <span className="font-semibold text-[#111827]">{formatPrice(calculatedTax, currencyCode, currencySymbol)}</span>
               </div>
               <div className="flex justify-between text-sm font-bold text-[#111827] pt-2 border-t border-[#E5E7EB]">
                 <span>Total Amount</span>

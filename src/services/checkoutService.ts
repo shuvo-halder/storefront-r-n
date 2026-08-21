@@ -15,10 +15,15 @@ export interface CheckoutSummary {
 }
 
 export const checkoutService = {
-  // GET /checkout/session
-  getCheckoutSession: async (): Promise<ApiResponse<CheckoutSummary>> => {
+  // POST /checkout/session
+  getCheckoutSession: async (payload?: {
+    shippingAddress?: any;
+    billingAddress?: any;
+    couponCode?: string;
+    shippingMethod?: string;
+  }): Promise<ApiResponse<CheckoutSummary>> => {
     try {
-      const res = await apiClient.get('/checkout/session');
+      const res = await apiClient.post('/checkout/session', payload || {});
       const unwrapped = unwrapApiResponse<any>(res);
 
       if (unwrapped.status === 'error' || !unwrapped.data) {

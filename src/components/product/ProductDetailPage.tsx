@@ -833,7 +833,7 @@ export const ProductDetailPage: React.FC = () => {
                 <div className="p-4 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB] space-y-1">
                   <Truck size={18} className="text-[#DC2B53] mb-2" />
                   <h5 className="font-bold text-[#111827]">Standard Shipping</h5>
-                  <p className="text-xs text-[#6B7280]">{publicSettings?.shipping?.estimatedDeliveryDays || '3–5 Business Days'}. Free on orders over {formatPrice(publicSettings?.shipping?.freeShippingThreshold ?? 150, currencyCode, currencySymbol)}.</p>
+                  <p className="text-xs text-[#6B7280]">{publicSettings?.shipping?.estimatedDeliveryDays || '3–5 Business Days'}. Free shipping on orders over {formatPrice(publicSettings?.shipping?.freeShippingThreshold ?? 2000, currencyCode, currencySymbol)}. Delivery charge: Inside Dhaka {formatPrice(publicSettings?.shipping?.insideDhakaCharge ?? 60, currencyCode, currencySymbol)}, Outside Dhaka {formatPrice(publicSettings?.shipping?.outsideDhakaCharge ?? 120, currencyCode, currencySymbol)}.</p>
                 </div>
 
                 <div className="p-4 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB] space-y-1">

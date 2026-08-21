@@ -12,13 +12,16 @@ const DEFAULT_SETTINGS: PublicSettings = {
     metaDescription: 'Modern Hardware & E-commerce Storefront'
   },
   shipping: {
-    freeShippingThreshold: 150,
-    flatRateShippingFee: 15,
+    freeShippingThreshold: 2000,
+    flatRateShippingFee: 60,
+    insideDhakaCharge: 60,
+    outsideDhakaCharge: 120,
+    freeShippingEnabled: true,
     estimatedDeliveryDays: '3-5 business days'
   },
   tax: {
     taxEnabled: true,
-    taxRate: 0.05,
+    taxRate: 0.10,
     pricesIncludeTax: false
   },
   general: {
@@ -41,7 +44,7 @@ const DEFAULT_SETTINGS: PublicSettings = {
   faviconUrl: '',
   currency: 'BDT',
   currencySymbol: '৳',
-  freeShippingThreshold: 150,
+  freeShippingThreshold: 2000,
   supportEmail: 'support@vyzobd.com',
   supportPhone: ''
 };
@@ -81,7 +84,19 @@ export const settingsService = {
             raw.freeShippingThreshold ?? 
             raw.shippingSettings?.freeShippingThreshold ?? 
             raw.deliverySettings?.freeShippingThreshold ??
-            150
+            2000
+          ),
+          insideDhakaCharge: Number(
+            raw.shipping?.insideDhakaCharge ??
+            raw.insideDhakaCharge ??
+            raw.shippingSettings?.insideDhakaCharge ??
+            60
+          ),
+          outsideDhakaCharge: Number(
+            raw.shipping?.outsideDhakaCharge ??
+            raw.outsideDhakaCharge ??
+            raw.shippingSettings?.outsideDhakaCharge ??
+            120
           ),
           flatRateShippingFee: Number(
             raw.shipping?.flatRateShippingFee ?? 
@@ -91,7 +106,13 @@ export const settingsService = {
             raw.shippingCost ?? 
             raw.deliveryCost ?? 
             raw.shippingSettings?.flatRateShippingFee ?? 
-            15
+            60
+          ),
+          freeShippingEnabled: Boolean(
+            raw.shipping?.freeShippingEnabled ??
+            raw.freeShippingEnabled ??
+            raw.shippingSettings?.freeShippingEnabled ??
+            true
           ),
           estimatedDeliveryDays: 
             raw.shipping?.estimatedDeliveryDays || 
@@ -101,7 +122,7 @@ export const settingsService = {
         },
         tax: {
           taxEnabled: Boolean(raw.tax?.taxEnabled ?? true),
-          taxRate: Number(raw.tax?.taxRate ?? 0.05),
+          taxRate: Number(raw.tax?.taxRate ?? 0.10),
           pricesIncludeTax: Boolean(raw.tax?.pricesIncludeTax ?? false)
         },
         general: {
@@ -141,7 +162,7 @@ export const settingsService = {
           raw.shipping?.freeShippingThreshold ?? 
           raw.freeShippingThreshold ?? 
           raw.shippingSettings?.freeShippingThreshold ?? 
-          150
+          2000
         ),
         supportEmail: raw.general?.storeEmail || raw.supportEmail || 'support@vyzobd.com',
         supportPhone: raw.general?.storePhone || raw.supportPhone || ''

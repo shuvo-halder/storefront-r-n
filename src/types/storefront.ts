@@ -232,6 +232,9 @@ export interface StoreSEO {
 export interface StoreShipping {
   freeShippingThreshold: number;
   flatRateShippingFee: number;
+  insideDhakaCharge?: number;
+  outsideDhakaCharge?: number;
+  freeShippingEnabled?: boolean;
   estimatedDeliveryDays: string;
 }
 

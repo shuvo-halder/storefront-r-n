@@ -243,8 +243,13 @@ export const storefrontApi = {
   },
 
   // CHECKOUT & ORDERS
-  getCheckoutSession: async (): Promise<CheckoutSummary> => {
-    const res = await checkoutService.getCheckoutSession();
+  getCheckoutSession: async (payload?: {
+    shippingAddress?: any;
+    billingAddress?: any;
+    couponCode?: string;
+    shippingMethod?: string;
+  }): Promise<CheckoutSummary> => {
+    const res = await checkoutService.getCheckoutSession(payload);
     return res.data || { subtotal: 0, discount: 0, shippingFee: 0, tax: 0, totalAmount: 0 };
   },
 

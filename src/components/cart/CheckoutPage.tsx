@@ -34,8 +34,7 @@ export const CheckoutPage: React.FC = () => {
 
   const currency = settings?.general?.currency || 'BDT';
   const currencySymbol = settings?.general?.currencySymbol || (currency === 'BDT' ? '৳' : '৳');
-  const freeShippingThreshold = settings?.shipping?.freeShippingThreshold ?? 150;
-  const flatRateFee = settings?.shipping?.flatRateShippingFee ?? 15;
+  const freeShippingThreshold = settings?.shipping?.freeShippingThreshold ?? 2000;
 
   const { 
     cart, 
@@ -52,6 +51,9 @@ export const CheckoutPage: React.FC = () => {
   const [localCoupon, setLocalCoupon] = useState('');
   const [isCouponExpanded, setIsCouponExpanded] = useState(false);
 
+  const [isSessionLoading, setIsSessionLoading] = useState(false);
+  const [sessionError, setSessionError] = useState<string | null>(null);
+
   const [checkoutSession, setCheckoutSession] = useState<{
     subtotal: number;
     discount: number;
@@ -61,33 +63,6 @@ export const CheckoutPage: React.FC = () => {
   } | null>(null);
 
   const trackedBeginCheckoutKeyRef = React.useRef<string | null>(null);
-
-  // Fetch authoritative backend checkout session totals
-  useEffect(() => {
-    if (cart.items.length > 0) {
-      storefrontApi.getCheckoutSession()
-        .then((sess) => {
-          if (sess && typeof sess.shippingFee === 'number') {
-            setCheckoutSession(sess);
-          }
-        })
-        .catch(() => {
-          // Graceful fallback
-        });
-    } else {
-      setCheckoutSession(null);
-    }
-  }, [cart.items.length, cart.subtotal, cart.appliedCoupon]);
-
-  const effectiveShippingFee = checkoutSession
-    ? checkoutSession.shippingFee
-    : (cart.subtotal >= freeShippingThreshold || cart.subtotal === 0 ? 0 : flatRateFee);
-
-  const effectiveTax = checkoutSession ? checkoutSession.tax : cart.estimatedTax;
-
-  const effectiveTotal = checkoutSession
-    ? checkoutSession.totalAmount
-    : Math.max(0, cart.subtotal - cart.discount + effectiveShippingFee + effectiveTax);
 
   const {
     register,
@@ -133,6 +108,80 @@ export const CheckoutPage: React.FC = () => {
 
   const sameAsShipping = watch('billingAddress.sameAsShipping');
   const shippingAddress = watch('shippingAddress');
+  const watchedCoupon = watch('couponCode');
+
+  const hasEnteredAddress = Boolean(
+    shippingAddress && (
+      (shippingAddress.city && shippingAddress.city.trim().length > 0) ||
+      (shippingAddress.state && shippingAddress.state.trim().length > 0) ||
+      (shippingAddress.addressLine1 && shippingAddress.addressLine1.trim().length > 0)
+    )
+  );
+
+  const fetchSession = React.useCallback(async () => {
+    if (cart.items.length === 0) {
+      setCheckoutSession(null);
+      setIsSessionLoading(false);
+      setSessionError(null);
+      return;
+    }
+
+    setIsSessionLoading(true);
+    setSessionError(null);
+
+    try {
+      const payload: any = {
+        couponCode: cart.appliedCoupon || watchedCoupon || undefined,
+      };
+
+      if (hasEnteredAddress) {
+        payload.shippingAddress = {
+          address1: shippingAddress.addressLine1 || '',
+          city: shippingAddress.city || '',
+          state: shippingAddress.state || '',
+          postalCode: shippingAddress.postalCode || '',
+          country: shippingAddress.country || 'Bangladesh'
+        };
+      }
+
+      const sess = await storefrontApi.getCheckoutSession(payload);
+      if (sess && typeof sess.shippingFee === 'number') {
+        setCheckoutSession(sess);
+      }
+    } catch (err: any) {
+      setSessionError('Unable to calculate shipping. Please check your delivery address and try again.');
+    } finally {
+      setIsSessionLoading(false);
+    }
+  }, [
+    cart.items.length, 
+    cart.subtotal, 
+    cart.appliedCoupon, 
+    watchedCoupon,
+    hasEnteredAddress,
+    shippingAddress?.addressLine1, 
+    shippingAddress?.city, 
+    shippingAddress?.state
+  ]);
+
+  useEffect(() => {
+    fetchSession();
+  }, [fetchSession]);
+
+  const netSubtotal = Math.max(0, cart.subtotal - cart.discount);
+  const isFreeShipping = cart.subtotal >= freeShippingThreshold || (checkoutSession && checkoutSession.shippingFee === 0);
+
+  const effectiveShippingFee = checkoutSession
+    ? checkoutSession.shippingFee
+    : (isFreeShipping ? 0 : 60);
+
+  const effectiveTax = checkoutSession
+    ? checkoutSession.tax
+    : netSubtotal * 0.10;
+
+  const effectiveTotal = checkoutSession
+    ? checkoutSession.totalAmount
+    : netSubtotal + (isFreeShipping ? 0 : effectiveShippingFee) + effectiveTax;
 
   // Auto-fill saved default address for authenticated users
   useEffect(() => {
@@ -494,22 +543,59 @@ export const CheckoutPage: React.FC = () => {
                   <div className="flex justify-between text-[#6B7280]">
                     <span>Shipping</span>
                     <span className="font-semibold text-[#111827]">
-                      {effectiveShippingFee === 0 ? <span className="text-[#16A34A] font-semibold">FREE</span> : formatPrice(effectiveShippingFee, currency, currencySymbol)}
+                      {isSessionLoading ? (
+                        <span className="text-xs text-[#6B7280] italic flex items-center gap-1">
+                          <Loader2 size={12} className="animate-spin text-[#DC2B53]" /> Calculating...
+                        </span>
+                      ) : isFreeShipping ? (
+                        <span className="text-[#16A34A] font-semibold">FREE</span>
+                      ) : hasEnteredAddress || checkoutSession ? (
+                        formatPrice(effectiveShippingFee, currency, currencySymbol)
+                      ) : (
+                        <span className="text-xs text-[#6B7280] font-normal">Select delivery address</span>
+                      )}
                     </span>
                   </div>
                   
-                  {effectiveTax > 0 && (
-                    <div className="flex justify-between text-[#6B7280]">
-                      <span>Tax</span>
-                      <span className="font-semibold text-[#111827]">{formatPrice(effectiveTax, currency, currencySymbol)}</span>
-                    </div>
-                  )}
+                  <div className="flex justify-between text-[#6B7280]">
+                    <span>Tax (10%)</span>
+                    <span className="font-semibold text-[#111827]">
+                      {isSessionLoading ? (
+                        <span className="text-xs text-[#6B7280] italic flex items-center gap-1">
+                          <Loader2 size={12} className="animate-spin text-[#DC2B53]" /> Calculating...
+                        </span>
+                      ) : (
+                        formatPrice(effectiveTax, currency, currencySymbol)
+                      )}
+                    </span>
+                  </div>
                 </div>
+
+                {sessionError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600 flex items-center justify-between">
+                    <span>{sessionError}</span>
+                    <button
+                      type="button"
+                      onClick={fetchSession}
+                      className="text-xs underline font-semibold text-red-700 hover:text-red-900 cursor-pointer ml-2"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                )}
 
                 {/* Final Total */}
                 <div className="flex justify-between items-center pt-2">
                   <span className="text-base font-bold text-[#111827]">Total</span>
-                  <span className="text-xl font-bold text-[#DC2B53]">{formatPrice(effectiveTotal, currency, currencySymbol)}</span>
+                  <span className="text-xl font-bold text-[#DC2B53]">
+                    {isSessionLoading ? (
+                      <span className="text-sm font-normal italic text-[#6B7280] flex items-center gap-1">
+                        <Loader2 size={14} className="animate-spin text-[#DC2B53]" /> Calculating...
+                      </span>
+                    ) : (
+                      formatPrice(effectiveTotal, currency, currencySymbol)
+                    )}
+                  </span>
                 </div>
               </div>
 
