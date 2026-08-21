@@ -64,6 +64,7 @@ export interface Category {
   image: string;
   itemCount: number;
   iconName?: string;
+  parentId?: string | null;
   subcategories?: { id: string; name: string; slug: string }[];
 }
 

@@ -34,11 +34,16 @@ export function normalizeCategory(raw: any, facetCountMap?: { bySlug?: Map<strin
     image: String(raw.image || raw.imageUrl || raw.thumbnail || ''),
     itemCount,
     iconName: raw.icon || raw.iconName || undefined,
+    parentId: raw.parentId || raw.parent_id || (raw.parent ? (typeof raw.parent === 'object' ? raw.parent.id : raw.parent) : null) || null,
     subcategories: Array.isArray(raw.children) ? raw.children.map((child: any) => ({
       id: String(child.id || child.slug || ''),
-      name: String(child.name || ''),
+      name: String(child.name || child.title || ''),
       slug: String(child.slug || child.id || '')
-    })) : (Array.isArray(raw.subcategories) ? raw.subcategories : [])
+    })) : (Array.isArray(raw.subcategories) ? raw.subcategories.map((sub: any) => ({
+      id: String(sub.id || sub.slug || ''),
+      name: String(sub.name || sub.title || ''),
+      slug: String(sub.slug || sub.id || '')
+    })) : [])
   };
 }
 
