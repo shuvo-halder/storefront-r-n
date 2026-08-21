@@ -589,12 +589,6 @@ export const ProductDetailPage: React.FC = () => {
                 {product.name}
               </h1>
 
-              {product.subtitle && (
-                <p className="text-xs sm:text-sm text-[#6B7280]">
-                  {product.subtitle}
-                </p>
-              )}
-
               {/* Rating and SKU */}
               <div className="flex items-center justify-between border-y border-[#E5E7EB] py-2.5 my-2">
                 <div className="flex items-center gap-2">
