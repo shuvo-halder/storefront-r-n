@@ -44,35 +44,53 @@ export function buildCategoryHierarchy(categories: Category[]): HierarchyCategor
     }
   });
 
-  // 3. Filter top-level main categories for display in the Mega Menu
-  const result: HierarchyCategory[] = [];
+  // 3. Extract top-level main categories
+  const topLevelList: HierarchyCategory[] = [];
 
   categoryMap.forEach((cat) => {
-    // Determine if it is a top-level parent category
     const isTopLevel = !cat.parentId || !categoryMap.has(cat.parentId);
-
-    // Filter out "Uncategorized" unless it genuinely has subcategories
     const isUncategorized = cat.name.trim().toLowerCase() === 'uncategorized';
-
-    // Must have at least 1 valid child/subcategory
     const hasSubcategories = Array.isArray(cat.subcategories) && cat.subcategories.length > 0;
+    const hasItems = (cat.itemCount || 0) > 0;
 
-    // Rule: Only render parent category if it has at least one valid subcategory
-    if (isTopLevel && hasSubcategories && !isUncategorized) {
-      result.push(cat);
+    // Filter out "Uncategorized" unless it genuinely has subcategories or items
+    if (isTopLevel && (!isUncategorized || hasSubcategories || hasItems)) {
+      topLevelList.push(cat);
     }
   });
 
-  // Fallback: If no category has explicit subcategories, return top-level valid categories
-  if (result.length === 0) {
-    categoryMap.forEach((cat) => {
-      const isTopLevel = !cat.parentId || !categoryMap.has(cat.parentId);
-      const isUncategorized = cat.name.trim().toLowerCase() === 'uncategorized';
-      if (isTopLevel && !isUncategorized) {
-        result.push(cat);
-      }
-    });
-  }
+  // 4. Deduplicate top-level main categories with identical normalized names
+  const deduplicatedMap = new Map<string, HierarchyCategory>();
 
-  return result;
+  topLevelList.forEach((cat) => {
+    const key = cat.name.trim().toLowerCase();
+    if (!deduplicatedMap.has(key)) {
+      deduplicatedMap.set(key, cat);
+    } else {
+      const existing = deduplicatedMap.get(key)!;
+      const existingSubCount = existing.subcategories.length;
+      const currentSubCount = cat.subcategories.length;
+
+      // Merge subcategories from duplicate into primary entry
+      cat.subcategories.forEach((sub) => {
+        if (!existing.subcategories.some((s) => s.slug === sub.slug || s.id === sub.id)) {
+          existing.subcategories.push(sub);
+        }
+      });
+
+      // Prefer entry that has subcategories or higher itemCount or cleaner slug
+      if (
+        (currentSubCount > existingSubCount) ||
+        (currentSubCount === existingSubCount && (cat.itemCount || 0) > (existing.itemCount || 0)) ||
+        (currentSubCount === existingSubCount && cat.slug === key && existing.slug !== key)
+      ) {
+        deduplicatedMap.set(key, {
+          ...cat,
+          subcategories: existing.subcategories
+        });
+      }
+    }
+  });
+
+  return Array.from(deduplicatedMap.values());
 }

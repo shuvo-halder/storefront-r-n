@@ -66,6 +66,7 @@ export interface Category {
   iconName?: string;
   parentId?: string | null;
   subcategories?: { id: string; name: string; slug: string }[];
+  children?: any[];
 }
 
 export interface Brand {

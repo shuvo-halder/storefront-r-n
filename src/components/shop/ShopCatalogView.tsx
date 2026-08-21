@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 import { useStorefront } from '../../context/StorefrontContext';
 import { storefrontApi } from '../../services/storefrontApi';
@@ -209,7 +209,29 @@ export const ShopCatalogView: React.FC = () => {
   const startIndex = (currentPage - 1) * (filters.pageSize || 9) + 1;
   const endIndex = Math.min(currentPage * (filters.pageSize || 9), totalCount);
 
-  const activeCategoryObj = categories.find(c => c.slug === filters.categorySlug);
+  // Deep lookup for category or subcategory
+  const activeCategoryObj = useMemo(() => {
+    if (!filters.categorySlug) return null;
+    for (const cat of categories) {
+      if (cat.slug === filters.categorySlug) return cat;
+      const subs = cat.subcategories || cat.children || [];
+      if (subs && subs.length > 0) {
+        const foundSub = subs.find((s: any) => s.slug === filters.categorySlug);
+        if (foundSub) {
+          return {
+            id: foundSub.id,
+            name: foundSub.name,
+            slug: foundSub.slug,
+            parentName: cat.name,
+            parentSlug: cat.slug,
+            itemCount: foundSub.itemCount || cat.itemCount,
+            description: `Browse ${foundSub.name} in our ${cat.name} department.`
+          };
+        }
+      }
+    }
+    return null;
+  }, [categories, filters.categorySlug]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;

@@ -96,19 +96,43 @@ export const ProductFilterSidebar: React.FC<FilterSidebarProps> = ({ onCloseMobi
 
           {categories.map((cat) => {
             const isSelected = filters.categorySlug === cat.slug;
+            const subs = cat.subcategories || cat.children || [];
+
             return (
-              <button
-                key={cat.id}
-                onClick={() => handleCategorySelect(cat.slug)}
-                className={`w-full text-left py-1.5 px-2.5 rounded-lg text-xs font-medium transition-colors flex items-center justify-between cursor-pointer ${
-                  isSelected ? 'bg-[#FDF0F3] text-[#DC2B53] font-semibold' : 'hover:bg-[#F9FAFB] text-[#111827]'
-                }`}
-              >
-                <span>{cat.name}</span>
-                <span className="text-[10px] bg-[#F9FAFB] border border-[#E5E7EB] text-[#6B7280] px-2 py-0.5 rounded-full font-medium">
-                  {cat.itemCount}
-                </span>
-              </button>
+              <div key={cat.id} className="space-y-0.5">
+                <button
+                  onClick={() => handleCategorySelect(cat.slug)}
+                  className={`w-full text-left py-1.5 px-2.5 rounded-lg text-xs font-medium transition-colors flex items-center justify-between cursor-pointer ${
+                    isSelected ? 'bg-[#FDF0F3] text-[#DC2B53] font-semibold' : 'hover:bg-[#F9FAFB] text-[#111827]'
+                  }`}
+                >
+                  <span>{cat.name}</span>
+                  <span className="text-[10px] bg-[#F9FAFB] border border-[#E5E7EB] text-[#6B7280] px-2 py-0.5 rounded-full font-medium">
+                    {cat.itemCount}
+                  </span>
+                </button>
+
+                {/* Nested Subcategories in Sidebar */}
+                {subs.length > 0 && (
+                  <div className="pl-3.5 border-l border-slate-100 my-0.5 space-y-0.5">
+                    {subs.map((sub: any) => {
+                      const isSubSelected = filters.categorySlug === sub.slug;
+                      return (
+                        <button
+                          key={sub.id}
+                          onClick={() => handleCategorySelect(sub.slug)}
+                          className={`w-full text-left py-1 px-2 rounded-md text-[11px] font-medium transition-colors flex items-center justify-between cursor-pointer ${
+                            isSubSelected ? 'bg-[#FDF0F3] text-[#DC2B53] font-bold' : 'hover:bg-[#F9FAFB] text-[#4B5563] hover:text-[#DC2B53]'
+                          }`}
+                        >
+                          <span className="truncate">└ {sub.name}</span>
+                          {isSubSelected && <Check size={12} />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>

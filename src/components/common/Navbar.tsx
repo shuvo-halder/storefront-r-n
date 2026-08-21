@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { SmartImage } from './SmartImage';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useStorefront } from '../../context/StorefrontContext';
+import { buildCategoryHierarchy } from '../../utils/categoryHierarchy';
 import { 
   ChevronDown, 
   Grid, 
@@ -20,6 +21,8 @@ export const Navbar: React.FC = () => {
   const { categories, brands, setFilters } = useStorefront();
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const [isBrandsMenuOpen, setIsBrandsMenuOpen] = useState(false);
+
+  const hierarchyCategories = useMemo(() => buildCategoryHierarchy(categories), [categories]);
 
   const categoryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const brandTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -74,7 +77,7 @@ export const Navbar: React.FC = () => {
               {/* Dynamic Category Grid */}
               <div className="col-span-2 space-y-4">
                 <div className="text-xs font-black text-slate-400 uppercase tracking-wider pb-2.5 border-b border-slate-100 flex items-center justify-between">
-                  <span>Backend Categories ({categories.length})</span>
+                  <span>Product Categories ({hierarchyCategories.length})</span>
                   <Link 
                     href="/categories"
                     className="text-primary font-bold cursor-pointer hover:underline text-xs flex items-center gap-1" 
@@ -86,7 +89,7 @@ export const Navbar: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3.5">
-                  {categories.map((cat) => (
+                  {hierarchyCategories.map((cat) => (
                     <Link
                       key={cat.id}
                       href={`/categories/${cat.slug}`}
@@ -110,10 +113,14 @@ export const Navbar: React.FC = () => {
                           </h4>
                         </div>
                         <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
-                          {cat.description}
+                          {cat.subcategories && cat.subcategories.length > 0 
+                            ? cat.subcategories.map(s => s.name).join(', ')
+                            : (cat.description || 'Explore products in this category')}
                         </p>
                         <span className="text-[10px] font-extrabold text-primary mt-1 inline-block">
-                          {cat.itemCount} Products Available
+                          {cat.subcategories && cat.subcategories.length > 0
+                            ? `${cat.subcategories.length} Subcategories`
+                            : `${cat.itemCount || 0} Products`}
                         </span>
                       </div>
                     </Link>

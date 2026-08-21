@@ -115,40 +115,53 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ onClose }) => {
                     </Link>
                   </div>
 
-                  {/* Subcategories List */}
-                  <ul className="space-y-2">
-                    {visibleSubcategories.map((sub) => (
-                      <li key={sub.id}>
-                        <Link
-                          href={`/categories/${sub.slug}`}
-                          onClick={onClose}
-                          className="text-xs sm:text-sm text-[#4B5563] hover:text-[#DC2B53] font-medium transition-colors flex items-center justify-between w-full group py-0.5 cursor-pointer"
-                        >
-                          <span className="truncate group-hover:translate-x-0.5 transition-transform duration-150">
-                            {sub.name}
-                          </span>
-                          <ChevronRight
-                            size={13}
-                            className="opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all text-[#DC2B53] shrink-0 ml-1"
-                          />
-                        </Link>
-                      </li>
-                    ))}
+                  {/* Subcategories List or Direct Category Link if no subcategories */}
+                  {subcategories.length === 0 ? (
+                    <div className="pt-0.5">
+                      <Link
+                        href={`/categories/${mainCategory.slug}`}
+                        onClick={onClose}
+                        className="text-xs text-[#6B7280] hover:text-[#DC2B53] font-medium transition-colors inline-flex items-center gap-1.5 group py-1 cursor-pointer"
+                      >
+                        <span>Explore {mainCategory.name}</span>
+                        <ArrowRight size={12} className="text-[#DC2B53] group-hover:translate-x-0.5 transition-transform" />
+                      </Link>
+                    </div>
+                  ) : (
+                    <ul className="space-y-2">
+                      {visibleSubcategories.map((sub) => (
+                        <li key={sub.id}>
+                          <Link
+                            href={`/categories/${sub.slug}`}
+                            onClick={onClose}
+                            className="text-xs sm:text-sm text-[#4B5563] hover:text-[#DC2B53] font-medium transition-colors flex items-center justify-between w-full group py-0.5 cursor-pointer"
+                          >
+                            <span className="truncate group-hover:translate-x-0.5 transition-transform duration-150">
+                              {sub.name}
+                            </span>
+                            <ChevronRight
+                              size={13}
+                              className="opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all text-[#DC2B53] shrink-0 ml-1"
+                            />
+                          </Link>
+                        </li>
+                      ))}
 
-                    {/* View All Subcategories link if count exceeds 5 */}
-                    {remainingCount > 0 && (
-                      <li className="pt-1">
-                        <Link
-                          href={`/categories/${mainCategory.slug}`}
-                          onClick={onClose}
-                          className="text-xs text-[#DC2B53] font-bold hover:underline inline-flex items-center gap-1 group cursor-pointer"
-                        >
-                          <span>View all ({subcategories.length})</span>
-                          <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
-                        </Link>
-                      </li>
-                    )}
-                  </ul>
+                      {/* View All Subcategories link if count exceeds 5 */}
+                      {remainingCount > 0 && (
+                        <li className="pt-1">
+                          <Link
+                            href={`/categories/${mainCategory.slug}`}
+                            onClick={onClose}
+                            className="text-xs text-[#DC2B53] font-bold hover:underline inline-flex items-center gap-1 group cursor-pointer"
+                          >
+                            <span>View all ({subcategories.length})</span>
+                            <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
+                          </Link>
+                        </li>
+                      )}
+                    </ul>
+                  )}
                 </div>
               );
             })}
