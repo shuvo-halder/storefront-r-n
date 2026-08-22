@@ -388,7 +388,7 @@ export function normalizeProduct(raw: any): Product {
     rating: Number(raw.rating ?? raw.average_rating ?? raw.avg_rating ?? 5),
     reviewCount: Number(raw.reviewCount ?? raw.reviews_count ?? raw.review_count ?? 0),
     images: rawImages.filter(Boolean),
-    description: String(raw.description || raw.details || raw.shortDescription || raw.short_description || raw.body || raw.content || ''),
+    description: String(raw.description || raw.details || raw.body || raw.content || ''),
     features: Array.isArray(raw.features) ? raw.features : [],
     specifications: Array.isArray(raw.specifications) ? raw.specifications : [],
     stock,

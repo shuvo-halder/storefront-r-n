@@ -416,7 +416,7 @@ export const ProductDetailPage: React.FC = () => {
     <div className="py-8 bg-white min-h-screen">
       <SEO 
         title={product.name}
-        description={product.description}
+        description={product.description || product.subtitle}
         ogImage={selectedImage || product.images[0]}
         ogType="product"
         structuredData={[
@@ -790,7 +790,9 @@ export const ProductDetailPage: React.FC = () => {
           {/* Tab 1: Overview */}
           {activeTab === 'description' && (
             <div className="space-y-5 text-[#6B7280] text-xs sm:text-sm leading-relaxed">
-              <RichTextRenderer content={product.description} />
+              {product.description && (
+                <RichTextRenderer content={product.description} />
+              )}
 
               {product.features && product.features.length > 0 && (
                 <div className="pt-2">
