@@ -8,6 +8,7 @@ import { CMSPage as CMSPageType } from '../../types/storefront';
 import { Mail, Send, Calendar, ArrowLeft } from 'lucide-react';
 
 import { SEO } from '../common/SEO';
+import { RichTextRenderer } from '../common/RichTextRenderer';
 
 export const CMSPage: React.FC = () => {
   const routeParams = useParams();
@@ -94,9 +95,7 @@ export const CMSPage: React.FC = () => {
             </div>
 
             <div className="prose prose-slate max-w-none">
-              <div className="text-slate-600 text-base sm:text-lg leading-relaxed space-y-6 font-medium whitespace-pre-line">
-                {page.content}
-              </div>
+              <RichTextRenderer content={page.content} />
             </div>
 
             {isContactPage && (

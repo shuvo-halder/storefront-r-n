@@ -36,6 +36,7 @@ import { Badge } from '../ui/Badge';
 
 import { SEO } from '../common/SEO';
 import { getProductSchema, getBreadcrumbSchema } from '../../utils/seo';
+import { RichTextRenderer } from '../common/RichTextRenderer';
 
 export const ProductDetailPage: React.FC = () => {
   const routeParams = useParams();
@@ -789,9 +790,7 @@ export const ProductDetailPage: React.FC = () => {
           {/* Tab 1: Overview */}
           {activeTab === 'description' && (
             <div className="space-y-5 text-[#6B7280] text-xs sm:text-sm leading-relaxed">
-              <p className="text-sm text-[#111827] leading-relaxed">
-                {product.description}
-              </p>
+              <RichTextRenderer content={product.description} />
 
               {product.features && product.features.length > 0 && (
                 <div className="pt-2">

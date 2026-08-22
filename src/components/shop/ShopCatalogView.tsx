@@ -23,6 +23,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { Skeleton } from '../ui/Skeleton';
+import { RichTextRenderer } from '../common/RichTextRenderer';
 
 export const ShopCatalogView: React.FC = () => {
   const routeParams = useParams();
@@ -233,6 +234,13 @@ export const ShopCatalogView: React.FC = () => {
     return null;
   }, [categories, filters.categorySlug]);
 
+  // Deep lookup for active brand
+  const activeBrandObj = useMemo(() => {
+    if (!filters.brandSlugs || filters.brandSlugs.length === 0) return null;
+    const slug = filters.brandSlugs[0];
+    return brands.find(b => b.slug === slug) || null;
+  }, [brands, filters.brandSlugs]);
+
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
     setFilters(prev => ({ ...prev, page: newPage }));
@@ -251,11 +259,25 @@ export const ShopCatalogView: React.FC = () => {
               <span>Flagship Hardware Store</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-[#111827] tracking-tight">
-              {activeCategoryObj ? activeCategoryObj.name : 'All Products & Gear'}
+              {activeCategoryObj 
+                ? activeCategoryObj.name 
+                : activeBrandObj 
+                  ? activeBrandObj.name 
+                  : 'All Products & Gear'}
             </h1>
-            <p className="text-xs sm:text-sm text-[#6B7280] mt-1 max-w-xl font-normal leading-relaxed">
-              {activeCategoryObj ? activeCategoryObj.description : 'Browse our verified collection of pro spatial audio, GaN fast chargers, titanium smartwatches, and mechanical keyboards.'}
-            </p>
+            <div className="text-xs sm:text-sm text-[#6B7280] mt-1 max-w-xl font-normal leading-relaxed">
+              {activeCategoryObj ? (
+                <RichTextRenderer content={activeCategoryObj.description} />
+              ) : activeBrandObj ? (
+                activeBrandObj.description ? (
+                  <RichTextRenderer content={activeBrandObj.description} />
+                ) : (
+                  'Verified manufacturer hardware.'
+                )
+              ) : (
+                'Browse our verified collection of pro spatial audio, GaN fast chargers, titanium smartwatches, and mechanical keyboards.'
+              )}
+            </div>
           </div>
 
           <div className="text-right">

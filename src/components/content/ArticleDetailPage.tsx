@@ -9,6 +9,7 @@ import { storefrontApi } from '../../services/storefrontApi';
 import { BlogArticle } from '../../types/storefront';
 import { Calendar, Clock, User, ArrowLeft, Share2, ChevronRight, AlertCircle, BookOpen } from 'lucide-react';
 import { SEO } from '../common/SEO';
+import { RichTextRenderer } from '../common/RichTextRenderer';
 
 export const ArticleDetailPage: React.FC = () => {
   const routeParams = useParams();
@@ -171,9 +172,7 @@ export const ArticleDetailPage: React.FC = () => {
             </div>
 
             <div className="prose prose-slate max-w-none">
-              <div className="text-slate-600 text-base sm:text-lg leading-relaxed space-y-6 font-medium whitespace-pre-line">
-                {article.content}
-              </div>
+              <RichTextRenderer content={article.content} />
             </div>
 
             {article.tags && article.tags.length > 0 && (
