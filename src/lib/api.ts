@@ -398,7 +398,23 @@ export function normalizeProduct(raw: any): Product {
     isDealOfDay: Boolean(raw.isDealOfDay || raw.is_deal_of_day || raw.isDeal),
     dealEndTime: raw.dealEndTime || raw.deal_end_time || undefined,
     variants,
-    reviews: Array.isArray(raw.reviews) ? raw.reviews : [],
+    reviews: Array.isArray(raw.reviews)
+      ? raw.reviews.map((r: any) => ({
+          id: String(r.id || Math.random()),
+          author: String(r.author || r.userName || r.user_name || r.name || 'Anonymous'),
+          avatar: r.avatar || r.userAvatar || r.user_avatar || undefined,
+          rating: Number(r.rating || 5),
+          date: String(r.date || r.createdAt || r.created_at || 'Recently'),
+          title: String(r.title || ''),
+          comment: String(r.comment || r.body || r.content || ''),
+          verifiedPurchase: Boolean(r.verifiedPurchase ?? r.verified_purchase ?? r.is_verified ?? false),
+          images: Array.isArray(r.images)
+            ? r.images.filter(Boolean)
+            : Array.isArray(r.photos)
+            ? r.photos.filter(Boolean)
+            : []
+        }))
+      : [],
     tags: Array.isArray(raw.tags) ? raw.tags : []
   };
 }

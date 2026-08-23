@@ -37,6 +37,7 @@ import { Badge } from '../ui/Badge';
 import { SEO } from '../common/SEO';
 import { getProductSchema, getBreadcrumbSchema } from '../../utils/seo';
 import { RichTextRenderer } from '../common/RichTextRenderer';
+import { ReviewSection } from './reviews';
 
 export const ProductDetailPage: React.FC = () => {
   const routeParams = useParams();
@@ -69,10 +70,6 @@ export const ProductDetailPage: React.FC = () => {
   // Zoom / Lightbox Modal State
   const [isZoomOpen, setIsZoomOpen] = useState<boolean>(false);
   const [zoomImageIndex, setZoomImageIndex] = useState<number>(0);
-
-  // Review form modal
-  const [isReviewFormOpen, setIsReviewFormOpen] = useState<boolean>(false);
-  const [newReview, setNewReview] = useState({ name: '', rating: 5, title: '', comment: '' });
 
   // GA4 Event Tracking Refs for duplicate prevention
   const trackedProductIdRef = useRef<string | null>(null);
@@ -378,36 +375,8 @@ export const ProductDetailPage: React.FC = () => {
     }
   };
 
-  const handleReviewSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newReview.name || !newReview.comment) {
-      notifyWarning('Incomplete Review', 'Please provide your name and review comments.');
-      return;
-    }
-
-    const reviewObj: ProductReview = {
-      id: `rev-${Date.now()}`,
-      author: newReview.name,
-      rating: newReview.rating,
-      date: 'Just Now',
-      title: newReview.title || 'Verified Hardware Review',
-      comment: newReview.comment,
-      verifiedPurchase: true,
-    };
-
-    setProduct(prev => prev ? {
-      ...prev,
-      reviews: [reviewObj, ...(prev.reviews || [])],
-      reviewCount: prev.reviewCount + 1,
-    } : null);
-
-    setIsReviewFormOpen(false);
-    setNewReview({ name: '', rating: 5, title: '', comment: '' });
-    notifySuccess('Review Published!', 'Thank you! Your verified rating has been submitted.');
-  };
-
   const openLightbox = (imgUrl: string) => {
-    const index = product.images.indexOf(imgUrl);
+    const index = product?.images?.indexOf(imgUrl) ?? -1;
     setZoomImageIndex(index >= 0 ? index : 0);
     setIsZoomOpen(true);
   };
@@ -828,54 +797,24 @@ export const ProductDetailPage: React.FC = () => {
             </div>
           )}
 
-          {/* Tab 5: Customer Reviews */}
+          {/* Tab 3: Customer Reviews */}
           {activeTab === 'reviews' && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E5E7EB]">
-                <div>
-                  <h4 className="font-bold text-base text-[#111827]">Customer Ratings</h4>
-                  <div className="flex items-center gap-2 mt-1">
-                    <RatingStars rating={product.rating} count={product.reviewCount} size={16} />
-                    <span className="text-xs text-[#6B7280]">({product.rating} / 5.0 overall)</span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setIsReviewFormOpen(true)}
-                  className="px-4 py-2 bg-[#DC2B53] hover:bg-[#C52247] text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer shadow-xs self-start sm:self-auto"
-                >
-                  Write a Review
-                </button>
-              </div>
-
-              {/* Review Cards */}
-              <div className="space-y-4 divide-y divide-[#E5E7EB]">
-                {product.reviews && product.reviews.length > 0 ? (
-                  product.reviews.map((rev) => (
-                    <div key={rev.id} className="pt-4 first:pt-0 space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <div className="font-semibold text-xs text-[#111827] flex items-center gap-2">
-                          <span>{rev.author}</span>
-                          {rev.verifiedPurchase && (
-                            <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-[#16A34A] text-[10px] font-semibold border border-emerald-200">
-                              Verified Purchase
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[11px] text-[#6B7280]">{rev.date}</span>
-                      </div>
-                      <RatingStars rating={rev.rating} showNumber={false} size={13} />
-                      <h5 className="font-semibold text-xs text-[#111827]">{rev.title}</h5>
-                      <p className="text-xs text-[#6B7280] leading-relaxed">{rev.comment}</p>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-[#6B7280] py-4 text-center">
-                    No customer reviews published yet. Be the first to write a review!
-                  </p>
-                )}
-              </div>
-            </div>
+            <ReviewSection
+              product={product}
+              onUpdateProductReviews={(updatedReviews, newCount, newRating) => {
+                setProduct((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        reviews: updatedReviews,
+                        reviewCount: newCount,
+                        rating: newRating,
+                      }
+                    : null
+                );
+                notifySuccess('Review Published!', 'Thank you! Your verified rating and photos have been submitted.');
+              }}
+            />
           )}
 
         </div>
@@ -947,89 +886,6 @@ export const ProductDetailPage: React.FC = () => {
                 </button>
               </>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* Write Review Dialog Modal */}
-      {isReviewFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setIsReviewFormOpen(false)} />
-          <div className="bg-white rounded-xl p-6 max-w-md w-full relative z-10 shadow-lg space-y-4 border border-[#E5E7EB]">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E5E7EB]">
-              <h3 className="font-bold text-sm text-[#111827]">Write a Review</h3>
-              <button onClick={() => setIsReviewFormOpen(false)} className="text-[#6B7280] hover:text-[#111827] cursor-pointer">
-                <X size={16} />
-              </button>
-            </div>
-
-            <form onSubmit={handleReviewSubmit} className="space-y-3 text-xs">
-              <div>
-                <label className="font-semibold text-[#111827]">Your Name</label>
-                <input
-                  type="text"
-                  required
-                  value={newReview.name}
-                  onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
-                  className="w-full mt-1 p-2 bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:border-[#DC2B53] text-[#111827]"
-                  placeholder="e.g. Alex Johnson"
-                />
-              </div>
-
-              <div>
-                <label className="font-semibold text-[#111827]">Rating</label>
-                <select
-                  value={newReview.rating}
-                  onChange={(e) => setNewReview({ ...newReview, rating: Number(e.target.value) })}
-                  className="w-full mt-1 p-2 bg-white border border-[#E5E7EB] rounded-lg font-medium text-[#111827] focus:outline-none focus:border-[#DC2B53]"
-                >
-                  <option value={5}>5 Stars — Excellent</option>
-                  <option value={4}>4 Stars — Very Good</option>
-                  <option value={3}>3 Stars — Average</option>
-                  <option value={2}>2 Stars — Below Expectations</option>
-                  <option value={1}>1 Star — Poor</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="font-semibold text-[#111827]">Review Headline</label>
-                <input
-                  type="text"
-                  value={newReview.title}
-                  onChange={(e) => setNewReview({ ...newReview, title: e.target.value })}
-                  className="w-full mt-1 p-2 bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:border-[#DC2B53] text-[#111827]"
-                  placeholder="e.g. Incredible sound and comfort"
-                />
-              </div>
-
-              <div>
-                <label className="font-semibold text-[#111827]">Your Feedback</label>
-                <textarea
-                  rows={3}
-                  required
-                  value={newReview.comment}
-                  onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                  className="w-full mt-1 p-2 bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:border-[#DC2B53] text-[#111827]"
-                  placeholder="Share details about build quality, performance, battery life..."
-                />
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsReviewFormOpen(false)}
-                  className="flex-1 py-2 bg-[#F9FAFB] hover:bg-gray-100 font-semibold text-[#6B7280] rounded-lg cursor-pointer border border-[#E5E7EB] transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2 bg-[#DC2B53] hover:bg-[#C52247] text-white font-semibold rounded-lg cursor-pointer shadow-xs transition-colors"
-                >
-                  Submit Review
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}

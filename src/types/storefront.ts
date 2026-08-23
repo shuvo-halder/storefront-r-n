@@ -18,6 +18,29 @@ export interface ProductReview {
   title: string;
   comment: string;
   verifiedPurchase: boolean;
+  images?: string[];
+  phone?: string;
+  email?: string;
+}
+
+export interface ReviewFormState {
+  name: string;
+  phone?: string;
+  email?: string;
+  rating: number;
+  title: string;
+  comment: string;
+  images: File[];
+}
+
+export interface ReviewSubmissionPayload {
+  name: string;
+  phone?: string;
+  email?: string;
+  rating: number;
+  title?: string;
+  comment: string;
+  images: File[];
 }
 
 export interface ProductSpecification {
