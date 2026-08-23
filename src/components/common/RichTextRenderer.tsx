@@ -7,17 +7,46 @@ interface RichTextRendererProps {
   className?: string;
 }
 
+// Safely convert inline style strings and align attributes to React CSSProperties
+function parseInlineStyle(styleString?: string, alignAttr?: string): React.CSSProperties | undefined {
+  const styleObj: Record<string, string> = {};
+  
+  if (styleString && typeof styleString === 'string') {
+    const declarations = styleString.split(';');
+    for (const declaration of declarations) {
+      const colonIdx = declaration.indexOf(':');
+      if (colonIdx === -1) continue;
+      
+      const prop = declaration.slice(0, colonIdx).trim();
+      const val = declaration.slice(colonIdx + 1).trim();
+      if (!prop || !val) continue;
+      
+      // Convert CSS kebab-case (e.g. text-align, background-color) to camelCase (textAlign, backgroundColor)
+      const camelProp = prop.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
+      styleObj[camelProp] = val;
+    }
+  }
+
+  if (alignAttr && !styleObj.textAlign) {
+    if (['left', 'center', 'right', 'justify'].includes(alignAttr.toLowerCase())) {
+      styleObj.textAlign = alignAttr.toLowerCase();
+    }
+  }
+  
+  return Object.keys(styleObj).length > 0 ? (styleObj as React.CSSProperties) : undefined;
+}
+
 export const RichTextRenderer: React.FC<RichTextRendererProps> = ({ content, className = '' }) => {
   if (!content) return null;
 
   // 1. Sanitize the HTML content on both client & server using DOMPurify
   const sanitizedHtml = DOMPurify.sanitize(content, {
     ALLOWED_TAGS: [
-      'p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'del', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
       'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'img', 'span', 'a',
-      'table', 'thead', 'tbody', 'tr', 'th', 'td'
+      'table', 'thead', 'tbody', 'tr', 'th', 'td', 'hr', 'div', 'sub', 'sup', 'mark'
     ],
-    ALLOWED_ATTR: ['src', 'alt', 'href', 'title', 'target', 'class', 'style'],
+    ALLOWED_ATTR: ['src', 'alt', 'href', 'title', 'target', 'class', 'style', 'align', 'width', 'height'],
     ALLOW_UNKNOWN_PROTOCOLS: false,
     SAFE_FOR_TEMPLATES: true,
   });
@@ -28,23 +57,33 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({ content, cla
       if ('name' in domNode && domNode.type === 'tag') {
         const { name, attribs = {}, children = [] } = domNode;
         const reactChildren = domToReact(children as any, parserOptions);
+        const style = parseInlineStyle(attribs.style, attribs.align);
 
         switch (name) {
           case 'h1':
             return (
-              <h1 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white mt-8 mb-4 leading-tight">
+              <h1
+                style={style}
+                className={`text-xl sm:text-2xl font-black text-[#111827] dark:text-white mt-8 mb-4 leading-tight ${attribs.class || ''}`}
+              >
                 {reactChildren}
               </h1>
             );
           case 'h2':
             return (
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mt-7 mb-3 leading-snug">
+              <h2
+                style={style}
+                className={`text-lg sm:text-xl font-bold text-[#111827] dark:text-white mt-7 mb-3 leading-snug ${attribs.class || ''}`}
+              >
                 {reactChildren}
               </h2>
             );
           case 'h3':
             return (
-              <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mt-6 mb-2">
+              <h3
+                style={style}
+                className={`text-base sm:text-lg font-bold text-[#111827] dark:text-white mt-6 mb-2 ${attribs.class || ''}`}
+              >
                 {reactChildren}
               </h3>
             );
@@ -52,51 +91,146 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({ content, cla
           case 'h5':
           case 'h6':
             return (
-              <h4 className="text-sm sm:text-base font-semibold text-gray-950 dark:text-white mt-5 mb-2">
+              <h4
+                style={style}
+                className={`text-sm sm:text-base font-semibold text-[#111827] dark:text-white mt-5 mb-2 ${attribs.class || ''}`}
+              >
                 {reactChildren}
               </h4>
             );
           case 'p':
             return (
-              <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+              <p
+                style={style}
+                className={`text-sm sm:text-base text-[#111827] dark:text-gray-100 leading-relaxed mb-4 ${attribs.class || ''}`}
+              >
                 {reactChildren}
               </p>
             );
+          case 'div':
+            return (
+              <div
+                style={style}
+                className={`mb-4 ${attribs.class || ''}`}
+              >
+                {reactChildren}
+              </div>
+            );
+          case 'span':
+            return (
+              <span
+                style={style}
+                className={attribs.class}
+              >
+                {reactChildren}
+              </span>
+            );
           case 'ul':
             return (
-              <ul className="list-disc pl-6 mb-4 space-y-1 text-sm sm:text-base text-gray-700 dark:text-gray-300">
+              <ul
+                style={style}
+                className={`list-disc pl-6 mb-4 space-y-1 text-sm sm:text-base text-[#111827] dark:text-gray-100 ${attribs.class || ''}`}
+              >
                 {reactChildren}
               </ul>
             );
           case 'ol':
             return (
-              <ol className="list-decimal pl-6 mb-4 space-y-1 text-sm sm:text-base text-gray-700 dark:text-gray-300">
+              <ol
+                style={style}
+                className={`list-decimal pl-6 mb-4 space-y-1 text-sm sm:text-base text-[#111827] dark:text-gray-100 ${attribs.class || ''}`}
+              >
                 {reactChildren}
               </ol>
             );
           case 'li':
-            return <li className="leading-relaxed marker:text-gray-400">{reactChildren}</li>;
+            return (
+              <li
+                style={style}
+                className={`leading-relaxed marker:text-gray-400 ${attribs.class || ''}`}
+              >
+                {reactChildren}
+              </li>
+            );
           case 'strong':
-            return <strong className="font-bold text-gray-950 dark:text-white">{reactChildren}</strong>;
+          case 'b':
+            return (
+              <strong
+                style={style}
+                className={`font-bold text-[#111827] dark:text-white ${attribs.class || ''}`}
+              >
+                {reactChildren}
+              </strong>
+            );
           case 'em':
-            return <em className="italic">{reactChildren}</em>;
+          case 'i':
+            return (
+              <em
+                style={style}
+                className={`italic ${attribs.class || ''}`}
+              >
+                {reactChildren}
+              </em>
+            );
           case 'u':
-            return <u className="underline text-inherit">{reactChildren}</u>;
+            return (
+              <u
+                style={style}
+                className={`underline text-inherit ${attribs.class || ''}`}
+              >
+                {reactChildren}
+              </u>
+            );
+          case 's':
+          case 'del':
+            return (
+              <del
+                style={style}
+                className={`line-through text-inherit ${attribs.class || ''}`}
+              >
+                {reactChildren}
+              </del>
+            );
+          case 'mark':
+            return (
+              <mark
+                style={style}
+                className={`bg-yellow-100 text-yellow-950 dark:bg-yellow-900/40 dark:text-yellow-200 px-1 py-0.5 rounded ${attribs.class || ''}`}
+              >
+                {reactChildren}
+              </mark>
+            );
+          case 'hr':
+            return (
+              <hr
+                style={style}
+                className={`my-8 border-t border-gray-200 dark:border-gray-700 ${attribs.class || ''}`}
+              />
+            );
           case 'blockquote':
             return (
-              <blockquote className="border-l-4 border-gray-300 dark:border-gray-700 pl-4 italic text-gray-600 dark:text-gray-400 my-6 bg-gray-50 dark:bg-gray-800/50 py-3 pr-2 rounded-r">
+              <blockquote
+                style={style}
+                className={`border-l-4 border-gray-300 dark:border-gray-700 pl-4 italic text-[#374151] dark:text-gray-300 my-6 bg-gray-50 dark:bg-gray-800/50 py-3 pr-2 rounded-r ${attribs.class || ''}`}
+              >
                 {reactChildren}
               </blockquote>
             );
           case 'pre':
             return (
-              <pre className="p-4 bg-gray-900 text-gray-100 rounded-lg overflow-x-auto text-xs sm:text-sm font-mono my-6 leading-relaxed">
+              <pre
+                style={style}
+                className={`p-4 bg-gray-900 text-gray-100 rounded-lg overflow-x-auto text-xs sm:text-sm font-mono my-6 leading-relaxed ${attribs.class || ''}`}
+              >
                 {reactChildren}
               </pre>
             );
           case 'code':
             return (
-              <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-[#E01E5A] dark:text-[#F35E8E] rounded text-xs sm:text-sm font-mono break-all">
+              <code
+                style={style}
+                className={`px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-[#E01E5A] dark:text-[#F35E8E] rounded text-xs sm:text-sm font-mono break-all ${attribs.class || ''}`}
+              >
                 {reactChildren}
               </code>
             );
@@ -109,7 +243,8 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({ content, cla
             return (
               <a
                 href={href}
-                className="text-[#3B82F6] hover:text-[#2563EB] dark:text-blue-400 dark:hover:text-blue-300 font-medium underline transition-colors duration-200 break-all"
+                style={style}
+                className={`text-[#3B82F6] hover:text-[#2563EB] dark:text-blue-400 dark:hover:text-blue-300 font-medium underline transition-colors duration-200 break-all ${attribs.class || ''}`}
                 {...extraProps}
               >
                 {reactChildren}
@@ -122,29 +257,68 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({ content, cla
                 <img
                   src={attribs.src || ''}
                   alt={attribs.alt || 'Content visual'}
+                  style={style}
                   referrerPolicy="no-referrer"
-                  className="max-w-full h-auto mx-auto block object-cover rounded-xl"
+                  className={`max-w-full h-auto mx-auto block object-cover rounded-xl ${attribs.class || ''}`}
                 />
               </span>
             );
           case 'table':
             return (
               <div className="overflow-x-auto my-8 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xs">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left text-sm text-gray-700 dark:text-gray-300">
+                <table
+                  style={style}
+                  className={`min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-left text-sm text-[#111827] dark:text-gray-100 ${attribs.class || ''}`}
+                >
                   {reactChildren}
                 </table>
               </div>
             );
           case 'thead':
-            return <thead className="bg-gray-50 dark:bg-gray-800/80 text-gray-900 dark:text-white uppercase font-semibold text-xs tracking-wider">{reactChildren}</thead>;
+            return (
+              <thead
+                style={style}
+                className={`bg-gray-50 dark:bg-gray-800/80 text-[#111827] dark:text-white uppercase font-semibold text-xs tracking-wider ${attribs.class || ''}`}
+              >
+                {reactChildren}
+              </thead>
+            );
           case 'tbody':
-            return <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-transparent">{reactChildren}</tbody>;
+            return (
+              <tbody
+                style={style}
+                className={`divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-transparent ${attribs.class || ''}`}
+              >
+                {reactChildren}
+              </tbody>
+            );
           case 'tr':
-            return <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">{reactChildren}</tr>;
+            return (
+              <tr
+                style={style}
+                className={`hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors ${attribs.class || ''}`}
+              >
+                {reactChildren}
+              </tr>
+            );
           case 'th':
-            return <th className="px-4 py-3 font-semibold border-b border-gray-200 dark:border-gray-700">{reactChildren}</th>;
+            return (
+              <th
+                style={style}
+                className={`px-4 py-3 font-semibold border-b border-gray-200 dark:border-gray-700 ${attribs.class || ''}`}
+              >
+                {reactChildren}
+              </th>
+            );
           case 'td':
-            return <td className="px-4 py-3.5 align-middle">{reactChildren}</td>;
+            return (
+              <td
+                style={style}
+                className={`px-4 py-3.5 align-middle ${attribs.class || ''}`}
+              >
+                {reactChildren}
+              </td>
+            );
           default:
             return undefined;
         }
@@ -154,8 +328,9 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({ content, cla
   };
 
   return (
-    <div className={`rich-text-content break-words overflow-wrap-anywhere ${className}`}>
+    <div className={`rich-text-content text-[#111827] dark:text-gray-100 break-words overflow-wrap-anywhere ${className}`}>
       {parse(sanitizedHtml, parserOptions)}
     </div>
   );
 };
+

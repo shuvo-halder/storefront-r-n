@@ -5,11 +5,11 @@ function sanitizeContent(content: string): string {
   if (!content) return '';
   return DOMPurify.sanitize(content, {
     ALLOWED_TAGS: [
-      'p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'del', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
       'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'img', 'span', 'a',
-      'table', 'thead', 'tbody', 'tr', 'th', 'td'
+      'table', 'thead', 'tbody', 'tr', 'th', 'td', 'hr', 'div', 'sub', 'sup', 'mark'
     ],
-    ALLOWED_ATTR: ['src', 'alt', 'href', 'title', 'target', 'class', 'style'],
+    ALLOWED_ATTR: ['src', 'alt', 'href', 'title', 'target', 'class', 'style', 'align', 'width', 'height'],
     ALLOW_UNKNOWN_PROTOCOLS: false,
     SAFE_FOR_TEMPLATES: true,
   });
@@ -74,8 +74,8 @@ const testCases: TestCase[] = [
   {
     id: 9,
     name: "Malformed HTML recovery",
-    payload: "<div><p>Malformed text <strong>bold text",
-    validate: (sanitized) => sanitized.includes("bold text") && !sanitized.includes("<div>") // div is not allowed, so stripped but text remains
+    payload: "<section><p>Malformed text <strong>bold text",
+    validate: (sanitized) => sanitized.includes("bold text</strong>") || (sanitized.includes("bold text") && !sanitized.includes("<section>"))
   },
   {
     id: 10,

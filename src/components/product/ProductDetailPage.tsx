@@ -789,7 +789,7 @@ export const ProductDetailPage: React.FC = () => {
 
           {/* Tab 1: Overview */}
           {activeTab === 'description' && (
-            <div className="space-y-5 text-[#6B7280] text-xs sm:text-sm leading-relaxed">
+            <div className="space-y-5 text-xs sm:text-sm leading-relaxed">
               {product.description && (
                 <RichTextRenderer content={product.description} />
               )}

@@ -94,7 +94,7 @@ export const CMSPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="prose prose-slate max-w-none">
+            <div className="w-full">
               <RichTextRenderer content={page.content} />
             </div>
 

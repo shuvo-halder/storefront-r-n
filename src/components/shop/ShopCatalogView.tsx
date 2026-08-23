@@ -265,7 +265,7 @@ export const ShopCatalogView: React.FC = () => {
                   ? activeBrandObj.name 
                   : 'All Products & Gear'}
             </h1>
-            <div className="text-xs sm:text-sm text-[#6B7280] mt-1 max-w-xl font-normal leading-relaxed">
+            <div className="text-xs sm:text-sm text-[#374151] mt-1 max-w-xl font-normal leading-relaxed">
               {activeCategoryObj ? (
                 <RichTextRenderer content={activeCategoryObj.description} />
               ) : activeBrandObj ? (
