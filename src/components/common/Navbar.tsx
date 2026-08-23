@@ -133,22 +133,22 @@ export const Navbar: React.FC = () => {
                 <div className="relative z-10 space-y-3">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/20 text-primary-light text-[10px] font-black uppercase tracking-wider border border-primary/30">
                     <Sparkles size={12} />
-                    Vyzobd Spotlight
+                    Featured Spotlight
                   </div>
                   <h3 className="font-black text-lg leading-snug tracking-tight">
-                    Next-Gen Spatial Audio Series
+                    {categories[0]?.name ? `Explore ${categories[0].name}` : 'Curated Collections'}
                   </h3>
                   <p className="text-xs text-slate-300 leading-relaxed font-normal">
-                    Experience Lossless LDAC audio, 48dB active noise cancellation, and head tracking.
+                    {categories[0]?.description || 'Discover top-rated products handpicked for quality, reliability, and value.'}
                   </p>
                 </div>
 
                 <Link
-                  href="/categories/audio-headphones"
+                  href={categories[0]?.slug ? `/categories/${categories[0].slug}` : '/products'}
                   onClick={() => setIsCategoryMenuOpen(false)}
                   className="mt-6 py-2.5 px-4 bg-primary hover:bg-primary text-white rounded-xl text-xs font-extrabold transition-all self-start flex items-center gap-2 cursor-pointer shadow-sm shadow-primary-hover/50"
                 >
-                  <span>Explore Audio Catalog</span>
+                  <span>{categories[0]?.name ? `Shop ${categories[0].name}` : 'Explore Catalog'}</span>
                   <ArrowRight size={14} />
                 </Link>
               </div>
@@ -204,7 +204,7 @@ export const Navbar: React.FC = () => {
             {isBrandsMenuOpen && brands && brands.length > 0 && (
               <div className="absolute top-full left-0 w-80 bg-white rounded-b-2xl shadow-2xl border border-slate-200 p-4 z-50 text-slate-800 animate-in fade-in-50 slide-in-from-top-2 duration-150">
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2.5 pb-1 border-b border-slate-100 flex justify-between items-center">
-                  <span>Verified Tech Manufacturers</span>
+                  <span>Official Brand Partners</span>
                   <Link href="/brands" className="text-primary font-bold cursor-pointer" onClick={() => setIsBrandsMenuOpen(false)}>
                     All
                   </Link>
@@ -249,7 +249,7 @@ export const Navbar: React.FC = () => {
             <Badge variant="new" size="sm">NEW</Badge>
           </Link>
 
-          {/* Tech Blog */}
+          {/* Blog */}
           <Link
             href="/blog"
             className={`px-3.5 py-3.5 text-xs font-bold transition-all relative flex items-center gap-1.5 cursor-pointer ${
@@ -258,7 +258,7 @@ export const Navbar: React.FC = () => {
                 : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
             }`}
           >
-            <span>Tech Blog</span>
+            <span>Blog</span>
           </Link>
 
           {/* About Us */}

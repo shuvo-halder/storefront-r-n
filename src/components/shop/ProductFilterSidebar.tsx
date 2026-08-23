@@ -64,14 +64,14 @@ export const ProductFilterSidebar: React.FC<FilterSidebarProps> = ({ onCloseMobi
       {/* Quick Search inside Sidebar */}
       <div className="space-y-1.5">
         <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-          Search Hardware
+          Quick Search
         </h4>
         <div className="relative">
           <input
             type="text"
             value={filters.searchQuery}
             onChange={handleSearchChange}
-            placeholder="Search audio, watches, chargers..."
+            placeholder="Search products..."
             className="w-full py-2 pl-8 pr-3 bg-white border border-[#E5E7EB] rounded-lg text-xs font-medium text-[#111827] focus:outline-none focus:border-[#DC2B53] transition-colors"
           />
           <Search size={14} className="text-[#6B7280] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />

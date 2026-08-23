@@ -15,12 +15,56 @@ export interface ProductReview {
   avatar?: string;
   rating: number;
   date: string;
-  title: string;
+  title?: string;
   comment: string;
-  verifiedPurchase: boolean;
+  verifiedPurchase?: boolean;
   images?: string[];
   phone?: string;
   email?: string;
+  productName?: string;
+  productSlug?: string;
+  productImage?: string;
+}
+
+export interface ReviewRatingDistribution {
+  1: number;
+  2: number;
+  3: number;
+  4: number;
+  5: number;
+  [key: number]: number;
+}
+
+export interface ReviewStats {
+  averageRating: number;
+  totalReviews: number;
+  ratingDistribution?: ReviewRatingDistribution;
+  distribution?: ReviewRatingDistribution;
+}
+
+export interface ReviewPagination {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage?: boolean;
+  hasPreviousPage?: boolean;
+}
+
+export interface ProductReviewsResponse {
+  reviews: ProductReview[];
+  stats?: ReviewStats;
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface ReviewEligibilityResponse {
+  eligible: boolean;
+  message?: string;
+  reason?: string;
+  orderItemId?: string;
 }
 
 export interface ReviewFormState {
@@ -35,12 +79,18 @@ export interface ReviewFormState {
 
 export interface ReviewSubmissionPayload {
   name: string;
-  phone?: string;
+  mobile: string;
   email?: string;
   rating: number;
-  title?: string;
-  comment: string;
-  images: File[];
+  reviewHeadline?: string;
+  reviewComment: string;
+  images?: string[];
+}
+
+export interface FeaturedReview extends ProductReview {
+  productName?: string;
+  productSlug?: string;
+  productImage?: string;
 }
 
 export interface ProductSpecification {

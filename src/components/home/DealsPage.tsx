@@ -25,11 +25,11 @@ export const DealsPage: React.FC = () => {
         <div className="bg-gradient-to-r from-slate-900 via-rose-950 to-slate-900 text-white rounded-3xl p-8 border border-slate-800 shadow-xl space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/20 text-rose-300 text-xs font-extrabold uppercase">
             <Flame size={14} className="text-amber-400 animate-pulse" />
-            Limited-Time Hardware Discounts
+            Limited-Time Exclusive Discounts
           </div>
           <h1 className="text-3xl font-black text-white tracking-tight">Special Deals & Flash Sale Offers</h1>
           <p className="text-xs text-slate-300 max-w-xl">
-            Exclusive discounts and seasonal hardware deals direct from our inventory.
+            Exclusive discounts and seasonal promotions direct from our store.
           </p>
         </div>
 

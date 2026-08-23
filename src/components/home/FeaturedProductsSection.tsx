@@ -50,7 +50,7 @@ export const FeaturedProductsSection: React.FC = () => {
               Featured Collection
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Flagship Technology & Hardware
+              Featured Products & Top Picks
             </h2>
           </div>
         </div>

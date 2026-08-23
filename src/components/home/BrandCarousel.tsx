@@ -24,7 +24,7 @@ export const BrandCarousel: React.FC = () => {
             Official Brand Partners
           </div>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-            Industry Leaders in Hardware & Electronics
+            Top Brands You Know and Trust
           </h2>
         </div>
 

@@ -9,6 +9,7 @@ export interface ReviewSummaryProps {
   rating: number;
   reviewCount: number;
   reviews?: ProductReview[];
+  distribution?: Record<number, number>;
   onWriteReview: () => void;
 }
 
@@ -16,12 +17,17 @@ export const ReviewSummary: React.FC<ReviewSummaryProps> = ({
   rating,
   reviewCount,
   reviews = [],
+  distribution: backendDistribution,
   onWriteReview,
 }) => {
-  // Calculate distribution breakdown from reviews list (or proportional fallback)
+  // Use backend pre-calculated distribution if available, or calculate breakdown from reviews list (or proportional fallback)
   const distribution: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
 
-  if (reviews.length > 0) {
+  if (backendDistribution && Object.values(backendDistribution).some((v) => v > 0)) {
+    for (let i = 1; i <= 5; i++) {
+      distribution[i] = backendDistribution[i] || 0;
+    }
+  } else if (reviews.length > 0) {
     reviews.forEach((r) => {
       const star = Math.max(1, Math.min(5, Math.round(r.rating || 5)));
       distribution[star] = (distribution[star] || 0) + 1;
@@ -35,7 +41,7 @@ export const ReviewSummary: React.FC<ReviewSummaryProps> = ({
     distribution[1] = Math.max(0, reviewCount - (distribution[5] + distribution[4] + distribution[3] + distribution[2]));
   }
 
-  const effectiveTotal = reviews.length > 0 ? reviews.length : Math.max(1, reviewCount);
+  const effectiveTotal = Object.values(distribution).reduce((sum, v) => sum + v, 0) || (reviews.length > 0 ? reviews.length : Math.max(1, reviewCount));
 
   return (
     <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-4 sm:p-6 mb-6">

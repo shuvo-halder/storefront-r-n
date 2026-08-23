@@ -115,7 +115,7 @@ export function getFallbackSvgUri(type: FallbackType = 'product', label?: string
           <circle cx="1000" cy="250" r="300" fill="#1E293B" opacity="0.6"/>
           <path d="M100 200H300M100 250H500M100 300H250" stroke="#334155" stroke-width="12" stroke-linecap="round"/>
           <path d="M950 150L1050 350" stroke="#E11D48" stroke-width="16" stroke-linecap="round"/>
-          <text x="100" y="380" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="32" fill="#FFFFFF" letter-spacing="2">${displayLabel || 'FLAGSHIP HARDWARE'}</text>
+          <text x="100" y="380" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="32" fill="#FFFFFF" letter-spacing="2">${displayLabel || 'FEATURED PROMOTION'}</text>
         </svg>
       `;
       break;
@@ -127,7 +127,7 @@ export function getFallbackSvgUri(type: FallbackType = 'product', label?: string
           <rect x="40" y="40" width="520" height="320" rx="20" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="2"/>
           <path d="M100 120H500M100 160H400M100 200H450" stroke="#CBD5E1" stroke-width="8" stroke-linecap="round"/>
           <circle cx="500" cy="280" r="30" fill="#E11D48"/>
-          <text x="100" y="290" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="18" fill="#334155">${displayLabel || 'TECH INSIGHTS'}</text>
+          <text x="100" y="290" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="18" fill="#334155">${displayLabel || 'FEATURED ARTICLE'}</text>
         </svg>
       `;
       break;

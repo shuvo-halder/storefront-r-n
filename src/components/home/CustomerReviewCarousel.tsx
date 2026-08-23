@@ -31,17 +31,39 @@ export const CustomerReviewCarousel: React.FC = () => {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
-  // 1. Fetch products using existing storefront API (shares React Query cache with HomePage)
-  const { data: productsData, isLoading, isError } = useQuery({
+  // 1. Fetch featured reviews from backend API (GET /reviews/featured)
+  const { data: featuredData, isLoading: isFeaturedLoading, isError: isFeaturedError } = useQuery({
+    queryKey: ['featured_reviews'],
+    queryFn: async () => {
+      const res = await storefrontApi.getFeaturedReviews(5);
+      return res || [];
+    },
+  });
+
+  // Fallback: Fetch products using existing storefront API if featured reviews are not populated yet
+  const { data: productsData, isLoading: isProductsLoading, isError: isProductsError } = useQuery({
     queryKey: ['home_products'],
     queryFn: async () => {
       const res = await storefrontApi.getProducts({ pageSize: 50 });
       return res.products || [];
     },
+    enabled: !featuredData || featuredData.length === 0,
   });
 
-  // 2. Extract all valid reviews from real product data
+  const isLoading = isFeaturedLoading && isProductsLoading;
+  const isError = isFeaturedError && isProductsError;
+
+  // 2. Extract valid reviews from featured reviews API or product fallback
   const allReviews = useMemo<CustomerReviewItem[]>(() => {
+    if (featuredData && Array.isArray(featuredData) && featuredData.length > 0) {
+      return featuredData.map((rev) => ({
+        ...rev,
+        productName: rev.productName,
+        productSlug: rev.productSlug,
+        productImage: rev.productImage,
+      }));
+    }
+
     if (!productsData || !Array.isArray(productsData)) return [];
     
     const extracted: CustomerReviewItem[] = [];
@@ -60,7 +82,7 @@ export const CustomerReviewCarousel: React.FC = () => {
       }
     }
     return extracted;
-  }, [productsData]);
+  }, [featuredData, productsData]);
 
   // 3. Shuffle once and select EXACTLY 5 reviews (stable for current page session)
   const reviews = useMemo<CustomerReviewItem[]>(() => {

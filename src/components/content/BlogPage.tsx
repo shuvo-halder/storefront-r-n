@@ -68,13 +68,13 @@ export const BlogPage: React.FC = () => {
         </div>
         <h2 className="text-2xl font-black text-slate-900 mb-2">No Articles Published Yet</h2>
         <p className="text-sm text-slate-500 max-w-md mb-6">
-          Check back soon for insights on high-performance audio hardware, engineering culture, and ergonomic workspace design.
+          Check back soon for new articles, shopping guides, and product stories.
         </p>
         <Link
           href="/products"
           className="px-6 py-3 bg-primary text-white font-bold text-xs rounded-xl shadow-md hover:bg-primary-hover transition-all"
         >
-          Explore Hardware Store
+          Explore Catalog
         </Link>
       </div>
     );
@@ -94,10 +94,10 @@ export const BlogPage: React.FC = () => {
             <span>Vyzobd Journal</span>
           </div>
           <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-            Engineering Insights & <span className="text-primary">Minimalist Culture</span>
+            Stories, News & <span className="text-primary">Buying Guides</span>
           </h1>
           <p className="text-sm text-slate-500 font-medium leading-relaxed">
-            Exploring the intersection of high-performance hardware, sustainable semiconductors, and the future of human-centric workspace design.
+            Explore expert guides, product highlights, and helpful shopping tips from our team.
           </p>
         </div>
 

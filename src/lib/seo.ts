@@ -38,15 +38,15 @@ export async function getHomepageMetadata(): Promise<Metadata> {
     settings?.general?.siteTitle ||
     settings?.branding?.siteTitle ||
     settings?.siteTitle ||
-    `${siteName} — Next-Gen Audio Equipment & Tech Hardware`;
+    `${siteName} — Official Store & Online Shopping`;
   const description =
     settings?.seo?.metaDescription ||
-    'Engineers of next-generation audio equipment, GaN fast chargers, and high-performance workstation peripherals for the modern professional.';
+    'Discover a wide range of quality products, best deals, and reliable customer service for all your shopping needs.';
   
   const rawKeywords = settings?.seo?.metaKeywords || (settings?.seo as any)?.keywords;
   const keywords = rawKeywords
     ? String(rawKeywords).split(',').map((k: string) => k.trim())
-    : ['audio equipment', 'tech hardware', siteName, 'workstation peripherals', 'headphone DAC', 'chargers'];
+    : ['online store', 'shopping', siteName, 'deals', 'new arrivals', 'products'];
 
   const ogTitle = settings?.seo?.ogTitle || title;
   const ogDescription = settings?.seo?.ogDescription || description;
@@ -134,8 +134,8 @@ export async function getProductsListingMetadata(): Promise<Metadata> {
 export async function getCategoriesIndexMetadata(): Promise<Metadata> {
   const settings = await getPublicSiteSettings();
   const siteName = getSiteName(settings);
-  const title = `Hardware Categories | ${siteName}`;
-  const description = `Browse specialized departments for precision workstation gear and audio hardware at ${siteName}.`;
+  const title = `Categories | ${siteName}`;
+  const description = `Browse all product categories and departments at ${siteName}.`;
   const canonical = `${DEFAULT_BASE_URL}/categories`;
   const favicon = getFaviconUrl(settings);
 
@@ -156,7 +156,7 @@ export async function getBrandsIndexMetadata(): Promise<Metadata> {
   const settings = await getPublicSiteSettings();
   const siteName = getSiteName(settings);
   const title = `Official Brands | ${siteName}`;
-  const description = `Explore hardware and audio equipment from verified technology manufacturers at ${siteName}.`;
+  const description = `Explore authentic collections and products from verified brand partners at ${siteName}.`;
   const canonical = `${DEFAULT_BASE_URL}/brands`;
   const favicon = getFaviconUrl(settings);
 
@@ -177,7 +177,7 @@ export async function getBlogIndexMetadata(): Promise<Metadata> {
   const settings = await getPublicSiteSettings();
   const siteName = getSiteName(settings);
   const title = `Journal & Articles | ${siteName}`;
-  const description = `Read the latest technology guides, audio hardware reviews, and news at ${siteName}.`;
+  const description = `Read the latest shopping guides, articles, product highlights, and news at ${siteName}.`;
   const canonical = `${DEFAULT_BASE_URL}/blog`;
   const favicon = getFaviconUrl(settings);
 
@@ -218,7 +218,7 @@ export async function getProductDetailMetadata(slug: string): Promise<Metadata> 
     const rawProduct = product as any;
     const entityTitle = product.name || rawProduct.title || rawProduct.seoTitle || rawProduct.productName || (product.slug ? product.slug.replace(/[-_]/g, ' ') : 'Product');
     const pageTitle = `${entityTitle} | ${siteName}`;
-    const description = rawProduct.seoDescription || product.description || product.subtitle || `Buy ${entityTitle} at ${siteName}. High performance tech hardware and audio equipment.`;
+    const description = rawProduct.seoDescription || product.description || product.subtitle || `Buy ${entityTitle} at ${siteName}. High quality and genuine products.`;
     const image = rawProduct.ogImage || (product.images && product.images.length > 0 ? product.images[0] : rawProduct.thumbnail) || `${DEFAULT_BASE_URL}/favicon.svg`;
 
     return {
@@ -296,7 +296,7 @@ export async function getCategoryDetailMetadata(slug: string): Promise<Metadata>
 
     const entityTitle = category.seoTitle || category.name || slug;
     const pageTitle = `${entityTitle} | ${siteName}`;
-    const description = category.seoDescription || category.description || `Shop the latest ${entityTitle} products and audio hardware at ${siteName}.`;
+    const description = category.seoDescription || category.description || `Shop the latest ${entityTitle} products and deals at ${siteName}.`;
     const image = category.ogImage || category.image || `${DEFAULT_BASE_URL}/favicon.svg`;
 
     return {
@@ -359,7 +359,7 @@ export async function getBrandDetailMetadata(slug: string): Promise<Metadata> {
 
     const entityTitle = brand.seoTitle || brand.name || slug;
     const pageTitle = `${entityTitle} | ${siteName}`;
-    const description = brand.seoDescription || brand.description || `Discover hardware and accessories from ${entityTitle} at ${siteName}.`;
+    const description = brand.seoDescription || brand.description || `Discover authentic products from ${entityTitle} at ${siteName}.`;
     const image = brand.ogImage || brand.logo || brand.logoUrl || `${DEFAULT_BASE_URL}/favicon.svg`;
 
     return {
@@ -527,8 +527,8 @@ export async function getSearchPageMetadata(query?: string): Promise<Metadata> {
 
   const title = q ? `Search results for "${q}" | ${siteName}` : `Search Products | ${siteName}`;
   const description = q 
-    ? `Browse search results for "${q}" across precision audio equipment and tech hardware at ${siteName}.` 
-    : `Search our entire catalog of workstation gear, audio hardware, and tech accessories at ${siteName}.`;
+    ? `Browse search results for "${q}" at ${siteName}.` 
+    : `Search our entire catalog of products, collections, and deals at ${siteName}.`;
   
   const canonical = q 
     ? `${DEFAULT_BASE_URL}/search?q=${encodeURIComponent(q)}` 

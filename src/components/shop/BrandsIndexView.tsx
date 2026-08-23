@@ -48,13 +48,13 @@ export const BrandsIndexView: React.FC = () => {
           <div className="relative z-10 max-w-2xl space-y-4">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/20 text-primary-light text-xs font-black uppercase tracking-wider border border-primary/30">
               <Award size={14} />
-              Verified Hardware Partners
+              Featured Brand Partners
             </div>
             <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
-              Official Tech Manufacturers
+              Official Brands & Partners
             </h1>
             <p className="text-slate-300 text-sm leading-relaxed font-normal">
-              Direct official authorization and 2-year warranty support for every featured global technology brand.
+              Explore authentic products and exclusive collections from our verified brand partners.
             </p>
           </div>
         </div>
@@ -78,7 +78,7 @@ export const BrandsIndexView: React.FC = () => {
             <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto">
               <PackageX size={24} />
             </div>
-            <h3 className="font-extrabold text-slate-900 text-base">Unable to Load Manufacturers</h3>
+            <h3 className="font-extrabold text-slate-900 text-base">Unable to Load Brands</h3>
             <p className="text-xs text-slate-600 leading-relaxed">{error}</p>
             <button 
               onClick={() => window.location.reload()} 
@@ -95,7 +95,7 @@ export const BrandsIndexView: React.FC = () => {
             <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center mx-auto">
               <PackageX size={32} />
             </div>
-            <h3 className="text-lg font-black text-slate-900">No Manufacturers Found</h3>
+            <h3 className="text-lg font-black text-slate-900">No Brands Found</h3>
             <p className="text-xs text-slate-500">Brand directory is currently being updated.</p>
             <Link 
               href="/products" 
@@ -134,7 +134,7 @@ export const BrandsIndexView: React.FC = () => {
                       <ArrowRight size={16} className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                     </h3>
                     <p className="text-xs text-slate-500 line-clamp-2 mt-1.5 font-medium">
-                      {brand.description || 'Verified manufacturer hardware.'}
+                      {brand.description || 'Official brand partner.'}
                     </p>
                   </div>
                 </div>

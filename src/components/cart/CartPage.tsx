@@ -84,7 +84,7 @@ export const CartPage: React.FC = () => {
           </div>
           <h2 className="text-xl font-bold text-[#111827]">Your Cart is Empty</h2>
           <p className="text-xs text-[#6B7280]">
-            Browse our catalog to discover premium audio equipment and accessories.
+            Browse our catalog to discover quality products and latest arrivals.
           </p>
           <button
             onClick={() => navigateTo('shop')}

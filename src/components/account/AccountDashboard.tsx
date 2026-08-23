@@ -46,7 +46,7 @@ export const AccountDashboard: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Hello, {user?.fullName?.split(' ')[0] || 'Customer'}!</h1>
             <p className="text-gray-600 text-sm leading-relaxed">
               Welcome back to your dashboard. You have <span className="text-primary font-semibold">{activeShipmentsCount} active shipments</span> in your account. 
-              Ready to explore more premium tech?
+              Ready to explore more products?
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link 

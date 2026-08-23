@@ -9,7 +9,7 @@ const DEFAULT_SETTINGS: PublicSettings = {
   },
   seo: {
     metaTitle: 'Vyzobd Store',
-    metaDescription: 'Modern Hardware & E-commerce Storefront'
+    metaDescription: 'Quality products, trusted service, and a seamless shopping experience.'
   },
   shipping: {
     freeShippingThreshold: 2000,

@@ -176,12 +176,12 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
   });
 
   const [searchHistory, setSearchHistory] = useState<string[]>(() => {
-    if (typeof window === 'undefined') return ['wireless headphones', 'smartwatch', 'gaming laptop', 'anc earphone'];
+    if (typeof window === 'undefined') return [];
     try {
       const saved = localStorage.getItem('vyzobd_search_history');
-      return saved ? JSON.parse(saved) : ['wireless headphones', 'smartwatch', 'gaming laptop', 'anc earphone'];
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return ['wireless headphones', 'smartwatch', 'gaming laptop', 'anc earphone'];
+      return [];
     }
   });
 

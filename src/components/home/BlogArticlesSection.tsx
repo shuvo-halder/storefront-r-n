@@ -24,10 +24,10 @@ export const BlogArticlesSection: React.FC = () => {
           <div>
             <div className="text-xs font-extrabold text-primary uppercase tracking-widest mb-1 flex items-center gap-1.5">
               <BookOpen size={14} />
-              Aura Tech Journal
+              Journal & Stories
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Hardware Reviews & Setup Guides
+              Latest Articles & Guides
             </h2>
           </div>
 

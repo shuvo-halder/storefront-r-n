@@ -7,6 +7,8 @@ import { ProductReview, ReviewFormState } from '../../../types/storefront';
 import { useAuth } from '../../../context/AuthContext';
 import { ReviewImageUploader } from './ReviewImageUploader';
 import { REVIEW_VALIDATION_MESSAGES } from './reviewConstants';
+import { reviewService } from '../../../services/reviewService';
+import { uploadService } from '../../../services/uploadService';
 
 export interface ReviewFormModalProps {
   isOpen: boolean;
@@ -38,6 +40,7 @@ export const ReviewFormModal: React.FC<ReviewFormModalProps> = ({
 
   const [hoverRating, setHoverRating] = useState<number | null>(null);
   const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [submissionStep, setSubmissionStep] = useState<string>('');
   const [validationError, setValidationError] = useState<string | null>(null);
 
   // Pre-fill authenticated customer details if logged in
@@ -52,6 +55,7 @@ export const ReviewFormModal: React.FC<ReviewFormModalProps> = ({
         }));
       }
       setFormStatus('idle');
+      setSubmissionStep('');
       setValidationError(null);
     }
   }, [isOpen, isAuthenticated, user]);
@@ -89,24 +93,33 @@ export const ReviewFormModal: React.FC<ReviewFormModalProps> = ({
       return false;
     }
 
-    // 3. Guest Phone validation (if not authenticated)
-    if (!isAuthenticated) {
-      const cleanPhone = formData.phone?.trim() || '';
-      if (!cleanPhone) {
-        setValidationError(REVIEW_VALIDATION_MESSAGES.PHONE_REQUIRED);
-        return false;
-      }
-      // BD Phone Regex: 01XXXXXXXXX or +8801XXXXXXXXX
-      const bdPhoneRegex = /^(?:\+8801|01)[3-9]\d{8}$/;
-      if (!bdPhoneRegex.test(cleanPhone.replace(/\s+/g, ''))) {
-        setValidationError(REVIEW_VALIDATION_MESSAGES.PHONE_INVALID);
-        return false;
-      }
+    // 3. Mobile Number validation
+    const cleanPhone = (formData.phone || user?.phone || '').trim();
+    if (!cleanPhone) {
+      setValidationError(REVIEW_VALIDATION_MESSAGES.PHONE_REQUIRED);
+      return false;
     }
 
-    // 4. Comment validation
+    // BD Phone Regex: 01XXXXXXXXX or +8801XXXXXXXXX
+    const bdPhoneRegex = /^(?:\+8801|01)[3-9]\d{8}$/;
+    if (!bdPhoneRegex.test(cleanPhone.replace(/\s+/g, ''))) {
+      setValidationError(REVIEW_VALIDATION_MESSAGES.PHONE_INVALID);
+      return false;
+    }
+
+    // 4. Headline validation (max 150)
+    if (formData.title && formData.title.length > 150) {
+      setValidationError('Review headline must not exceed 150 characters.');
+      return false;
+    }
+
+    // 5. Comment validation (between 5 and 1000)
     if (!formData.comment.trim() || formData.comment.trim().length < 5) {
       setValidationError(REVIEW_VALIDATION_MESSAGES.COMMENT_REQUIRED);
+      return false;
+    }
+    if (formData.comment.trim().length > 1000) {
+      setValidationError('Review comment must not exceed 1000 characters.');
       return false;
     }
 
@@ -121,33 +134,72 @@ export const ReviewFormModal: React.FC<ReviewFormModalProps> = ({
     }
 
     setFormStatus('submitting');
+    setValidationError(null);
+
+    const mobileNumber = (formData.phone || user?.phone || '').trim();
 
     try {
-      // NOTE: Prepared frontend simulation for future backend endpoint integration.
-      // The images File[] are ready in formData.images for multipart/form-data upload when backend is connected.
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      // Step 1: Verify Review Eligibility via POST /reviews/:productId/eligibility
+      setSubmissionStep('Verifying purchase eligibility...');
+      const eligibilityRes = await reviewService.checkReviewEligibility(productId, mobileNumber);
 
-      // Generate localized review object for instant optimistic preview
-      const localReview: ProductReview = {
+      // If explicit ineligible response received from backend
+      if (eligibilityRes.status === 'success' && eligibilityRes.data && eligibilityRes.data.eligible === false) {
+        setFormStatus('idle');
+        setSubmissionStep('');
+        setValidationError(
+          eligibilityRes.data.message ||
+          'You are not eligible to review this product. A delivered purchase matching this mobile number is required.'
+        );
+        return;
+      }
+
+      // Step 2: Upload selected review images to Cloudinary (producing string[] URLs)
+      let uploadedImageUrls: string[] = [];
+      if (formData.images && formData.images.length > 0) {
+        setSubmissionStep('Uploading photos...');
+        uploadedImageUrls = await uploadService.uploadReviewImages(formData.images);
+      }
+
+      // Step 3: Submit review to backend via POST /reviews/:productId
+      setSubmissionStep('Submitting your review...');
+      const submitRes = await reviewService.submitReview(productId, {
+        name: formData.name.trim(),
+        mobile: mobileNumber,
+        email: formData.email?.trim() || user?.email || undefined,
+        rating: formData.rating,
+        reviewHeadline: formData.title.trim() || undefined,
+        reviewComment: formData.comment.trim(),
+        images: uploadedImageUrls,
+      });
+
+      if (submitRes.status === 'error' && !submitRes.data?.id) {
+        setFormStatus('error');
+        setSubmissionStep('');
+        setValidationError(submitRes.message || 'Unable to submit your review. Please verify your order status.');
+        return;
+      }
+
+      const createdReview: ProductReview = submitRes.data || {
         id: `rev-${Date.now()}`,
         author: formData.name.trim(),
-        avatar: undefined,
         rating: formData.rating,
         date: 'Just now',
         title: formData.title.trim() || (formData.rating >= 4 ? 'Verified Quality Review' : 'Customer Review'),
         comment: formData.comment.trim(),
-        verifiedPurchase: isAuthenticated,
-        // Convert local files to object URLs for immediate optimistic rendering
-        images: formData.images.map((f) => URL.createObjectURL(f)),
-        phone: formData.phone,
+        verifiedPurchase: true,
+        images: uploadedImageUrls,
+        phone: mobileNumber,
         email: formData.email,
       };
 
       setFormStatus('success');
-      onReviewSubmitted?.(localReview);
-    } catch {
+      setSubmissionStep('');
+      onReviewSubmitted?.(createdReview);
+    } catch (err: any) {
       setFormStatus('error');
-      setValidationError('Unable to submit your review. Please try again.');
+      setSubmissionStep('');
+      setValidationError(err?.message || 'Unable to submit your review. Please try again.');
     }
   };
 
@@ -410,7 +462,7 @@ export const ReviewFormModal: React.FC<ReviewFormModalProps> = ({
                     {formStatus === 'submitting' ? (
                       <>
                         <Loader2 size={14} className="animate-spin" />
-                        Submitting...
+                        {submissionStep || 'Submitting...'}
                       </>
                     ) : (
                       <>

@@ -14,6 +14,7 @@ import { addressService } from './addressService';
 import { contentService } from './contentService';
 import { settingsService } from './settingsService';
 import { analyticsService } from './analyticsService';
+import { reviewService } from './reviewService';
 import { normalizeCart } from '../lib/api';
 import { LoginFormData, RegisterFormData, AuthResponse, RegisterResponse } from '../types/auth';
 import { CheckoutFormData } from '../types/checkout';
@@ -35,7 +36,12 @@ import {
   ReturnRequest, 
   UserProfile,
   SearchFacetsResponse,
-  Coupon
+  Coupon,
+  ProductReview,
+  ProductReviewsResponse,
+  ReviewEligibilityResponse,
+  ReviewSubmissionPayload,
+  FeaturedReview
 } from '../types/storefront';
 
 export const storefrontApi = {
@@ -348,5 +354,38 @@ export const storefrontApi = {
       throw new Error(res.message || 'Unable to set default address');
     }
     return res.data;
+  },
+
+  // REVIEWS
+  getProductReviews: async (
+    productId: string,
+    params?: { page?: number; limit?: number; rating?: number; hasImages?: boolean; sort?: string }
+  ): Promise<ProductReviewsResponse> => {
+    const res = await reviewService.getProductReviews(productId, params);
+    return res.data;
+  },
+
+  checkReviewEligibility: async (
+    productId: string,
+    mobile: string
+  ): Promise<ReviewEligibilityResponse> => {
+    const res = await reviewService.checkReviewEligibility(productId, mobile);
+    return res.data;
+  },
+
+  submitReview: async (
+    productId: string,
+    payload: ReviewSubmissionPayload
+  ): Promise<ProductReview> => {
+    const res = await reviewService.submitReview(productId, payload);
+    if (res.status === 'error') {
+      throw new Error(res.message || 'Unable to submit review');
+    }
+    return res.data;
+  },
+
+  getFeaturedReviews: async (limit = 5): Promise<FeaturedReview[]> => {
+    const res = await reviewService.getFeaturedReviews(limit);
+    return res.data || [];
   }
 };

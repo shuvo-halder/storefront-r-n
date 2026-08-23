@@ -49,7 +49,7 @@ export const FAQPage: React.FC = () => {
             How can we <span className="text-primary">help you?</span>
           </h1>
           <p className="text-sm text-slate-500 font-medium max-w-xl mx-auto leading-relaxed">
-            Search our knowledge base for answers to common questions about Vyzobd hardware, shipping, and warranty.
+            Search our knowledge base for answers to common questions about orders, shipping, returns, and account management.
           </p>
         </div>
 
@@ -130,7 +130,7 @@ export const FAQPage: React.FC = () => {
           </div>
           <div className="space-y-2">
             <h3 className="text-2xl font-black text-white">Still have questions?</h3>
-            <p className="text-slate-400 font-medium max-w-sm mx-auto">Our support engineers are available 24/7 to help with any technical or order issues.</p>
+            <p className="text-slate-400 font-medium max-w-sm mx-auto">Our support team is available to help with any product or order questions.</p>
           </div>
           <div className="pt-4">
             <button 

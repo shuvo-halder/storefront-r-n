@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Image as ImageIcon, Star, MessageSquare, Sparkles } from 'lucide-react';
+import { Image as ImageIcon, Star, MessageSquare, Sparkles, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { ProductReview } from '../../../types/storefront';
 import { ReviewCard } from './ReviewCard';
 
@@ -9,12 +9,22 @@ export interface ReviewListProps {
   reviews: ProductReview[];
   onOpenLightbox: (images: string[], index: number, author: string) => void;
   onWriteReview: () => void;
+  page?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
+  isLoading?: boolean;
+  totalReviews?: number;
 }
 
 export const ReviewList: React.FC<ReviewListProps> = ({
   reviews,
   onOpenLightbox,
   onWriteReview,
+  page = 1,
+  totalPages = 1,
+  onPageChange,
+  isLoading = false,
+  totalReviews,
 }) => {
   const [filterType, setFilterType] = useState<'all' | 'with-images' | '5-star' | '4-star'>('all');
 
@@ -36,6 +46,15 @@ export const ReviewList: React.FC<ReviewListProps> = ({
   const reviewsWithImagesCount = useMemo(() => {
     return reviews.filter((r) => r.images && r.images.length > 0).length;
   }, [reviews]);
+
+  if (isLoading && reviews.length === 0) {
+    return (
+      <div className="py-12 flex flex-col items-center justify-center space-y-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl text-center">
+        <Loader2 size={24} className="animate-spin text-[#DC2B53]" />
+        <p className="text-xs text-[#6B7280]">Loading verified reviews...</p>
+      </div>
+    );
+  }
 
   if (reviews.length === 0) {
     return (
@@ -74,7 +93,7 @@ export const ReviewList: React.FC<ReviewListProps> = ({
               : 'bg-[#F9FAFB] text-[#4B5563] border border-[#E5E7EB] hover:bg-gray-100'
           }`}
         >
-          All Reviews ({reviews.length})
+          All Reviews ({totalReviews ?? reviews.length})
         </button>
 
         {reviewsWithImagesCount > 0 && (
@@ -132,6 +151,35 @@ export const ReviewList: React.FC<ReviewListProps> = ({
         <p className="text-xs text-[#6B7280] py-6 text-center">
           No reviews match the selected filter.
         </p>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && onPageChange && (
+        <div className="flex items-center justify-between pt-4 border-t border-[#E5E7EB] text-xs">
+          <button
+            type="button"
+            onClick={() => onPageChange(Math.max(1, page - 1))}
+            disabled={page <= 1 || isLoading}
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#E5E7EB] bg-white text-[#4B5563] hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium transition-colors cursor-pointer"
+          >
+            <ChevronLeft size={14} />
+            Previous
+          </button>
+
+          <span className="text-[#6B7280] font-medium">
+            Page {page} of {totalPages}
+          </span>
+
+          <button
+            type="button"
+            onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+            disabled={page >= totalPages || isLoading}
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#E5E7EB] bg-white text-[#4B5563] hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium transition-colors cursor-pointer"
+          >
+            Next
+            <ChevronRight size={14} />
+          </button>
+        </div>
       )}
     </div>
   );

@@ -164,7 +164,7 @@ export const CartDrawer: React.FC = () => {
               <div>
                 <h4 className="font-bold text-[#111827] text-base">Your cart is empty</h4>
                 <p className="text-xs text-[#6B7280] mt-1 max-w-xs">
-                  Discover great tech accessories and electronics.
+                  Discover quality products and add items to your cart.
                 </p>
               </div>
               <button

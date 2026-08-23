@@ -91,7 +91,7 @@ export const SpecialOfferSection: React.FC<SpecialOfferSectionProps> = ({ produc
             onClick={() => navigateTo('deals')}
             className="inline-flex items-center gap-2 text-xs font-extrabold text-rose-400 hover:text-rose-300 transition-colors cursor-pointer"
           >
-            <span>View All Flash Sale Hardware Deals</span>
+            <span>View All Flash Deals & Special Offers</span>
             <ArrowRight size={16} />
           </button>
         </div>

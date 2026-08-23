@@ -256,14 +256,14 @@ export const ShopCatalogView: React.FC = () => {
           <div>
             <div className="text-xs font-bold text-[#DC2B53] uppercase tracking-wider mb-1 flex items-center gap-1.5">
               <Sparkles size={14} />
-              <span>Flagship Hardware Store</span>
+              <span>Official Store Catalog</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-[#111827] tracking-tight">
               {activeCategoryObj 
                 ? activeCategoryObj.name 
                 : activeBrandObj 
                   ? activeBrandObj.name 
-                  : 'All Products & Gear'}
+                  : 'All Products'}
             </h1>
             <div className="text-xs sm:text-sm text-[#374151] mt-1 max-w-xl font-normal leading-relaxed">
               {activeCategoryObj ? (
@@ -272,10 +272,10 @@ export const ShopCatalogView: React.FC = () => {
                 activeBrandObj.description ? (
                   <RichTextRenderer content={activeBrandObj.description} />
                 ) : (
-                  'Verified manufacturer hardware.'
+                  'Official brand partner products.'
                 )
               ) : (
-                'Browse our verified collection of pro spatial audio, GaN fast chargers, titanium smartwatches, and mechanical keyboards.'
+                'Browse our complete collection of quality products, latest arrivals, and best deals.'
               )}
             </div>
           </div>
@@ -468,7 +468,7 @@ export const ShopCatalogView: React.FC = () => {
                 </div>
                 <h3 className="text-lg font-bold text-[#111827]">No products match your criteria</h3>
                 <p className="text-xs text-[#6B7280] max-w-sm mx-auto leading-relaxed font-medium">
-                  We couldn't find any devices or gear matching your current filter settings. Try adjusting your search query, price range, or category filter.
+                  We couldn't find any products matching your current filter settings. Try adjusting your search query, price range, or category filter.
                 </p>
                 <div className="pt-2">
                   <button

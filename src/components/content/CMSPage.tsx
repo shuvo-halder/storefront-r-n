@@ -103,7 +103,7 @@ export const CMSPage: React.FC = () => {
                 <div className="bg-slate-50 rounded-[32px] p-8 sm:p-12 space-y-8">
                   <div className="space-y-2 text-center">
                     <h2 className="text-2xl font-black text-slate-900">Direct Support Line</h2>
-                    <p className="text-sm text-slate-500 font-medium">Have a technical hardware question? Send us a message.</p>
+                    <p className="text-sm text-slate-500 font-medium">Have a question or feedback? Send us a message.</p>
                   </div>
 
                   <form onSubmit={handleContactSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-6">

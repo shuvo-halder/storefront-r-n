@@ -750,7 +750,10 @@ export const SearchPageView: React.FC = () => {
                     Try searching for:
                   </div>
                   <div className="flex flex-wrap justify-center gap-2">
-                    {['Wireless Headphones', 'Smartwatch', '4K Webcam', 'GaN Charger', 'Mechanical Keyboard', 'Gaming Mouse'].map((term) => (
+                    {(categories && categories.length > 0 
+                      ? categories.slice(0, 6).map(c => c.name) 
+                      : ['Featured Products', 'New Arrivals', 'Best Sellers', 'Popular Deals', 'Top Rated']
+                    ).map((term) => (
                       <button
                         key={term}
                         onClick={() => {
