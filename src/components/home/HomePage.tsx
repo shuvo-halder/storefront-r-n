@@ -11,7 +11,7 @@ import { ProductSection } from './ProductSection';
 import { OfferBanner } from './OfferBanner';
 import { BrandSection } from './BrandSection';
 import { BlogSection } from './BlogSection';
-import { NewsletterSection } from './NewsletterSection';
+import { CustomerReviewCarousel } from './CustomerReviewCarousel';
 import { Sparkles, Flame, Zap, AlertCircle, RefreshCw } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
@@ -130,8 +130,8 @@ export const HomePage: React.FC = () => {
       {/* 9. BLOG */}
       <BlogSection />
 
-      {/* 10. NEWSLETTER */}
-      <NewsletterSection />
+      {/* 10. CUSTOMER REVIEWS & TESTIMONIALS */}
+      <CustomerReviewCarousel />
 
     </div>
   );
