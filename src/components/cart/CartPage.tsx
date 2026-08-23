@@ -38,7 +38,7 @@ export const CartPage: React.FC = () => {
 
   const currencyCode = publicSettings?.general?.currency || 'BDT';
   const currencySymbol = publicSettings?.general?.currencySymbol || (currencyCode === 'BDT' ? '৳' : '৳');
-  const freeShippingGoal = publicSettings?.shipping?.freeShippingThreshold ?? 2000;
+  const freeShippingGoal = publicSettings?.shipping?.freeShippingThreshold ?? 3000;
   const isFreeShipping = cart.subtotal >= freeShippingGoal || cart.shippingFee === 0;
   const netSubtotal = Math.max(0, cart.subtotal - cart.discount);
   const calculatedTax = netSubtotal * 0.10;

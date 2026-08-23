@@ -25,28 +25,28 @@ export const Footer: React.FC = () => {
             className="cursor-pointer inline-flex items-center group"
           >
             <img 
-              src="/logowhite.svg" 
-              alt="Vyzobd" 
+              src={publicSettings?.branding?.logoDarkUrl || "/logowhite.svg"} 
+              alt={publicSettings?.general?.siteName || "Vyzobd"} 
               className="h-8 lg:h-9 w-auto object-contain"
             />
           </Link>
 
           <p className="text-xs sm:text-sm text-gray-400 leading-relaxed max-w-sm font-normal">
-            {publicSettings?.seo.metaDescription || 'Quality products, trusted service, and a better shopping experience — all in one place.'}
+            {publicSettings?.seo?.metaDescription || 'Quality products, trusted service, and a better shopping experience — all in one place.'}
           </p>
 
           <div className="space-y-2.5 text-xs font-medium text-gray-300 pt-1">
             <div className="flex items-center gap-3">
               <Phone size={14} className="text-[#DC2B53]" />
-              <span>{publicSettings?.general.storePhone || '+880 1700 000000'}</span>
+              <span>{publicSettings?.general?.storePhone || publicSettings?.store?.callOrderNumber || '+8801710634144'}</span>
             </div>
             <div className="flex items-center gap-3">
               <Mail size={14} className="text-[#DC2B53]" />
-              <span className="lowercase">{publicSettings?.general.storeEmail || 'support@vyzobd.com'}</span>
+              <span className="lowercase">{publicSettings?.general?.storeEmail || 'support@vyzobd.com'}</span>
             </div>
             <div className="flex items-center gap-3">
               <MapPin size={14} className="text-[#DC2B53]" />
-              <span className="capitalize">{publicSettings?.general.storeAddress || 'Dhaka, Bangladesh'}</span>
+              <span className="capitalize">{publicSettings?.general?.storeAddress || 'Dhaka, Bangladesh'}</span>
             </div>
           </div>
         </div>
@@ -134,7 +134,7 @@ export const Footer: React.FC = () => {
       {/* Bottom Copyright & Payment Icons */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-5 text-xs text-gray-400">
         <div className="text-center md:text-left">
-          © {new Date().getFullYear()} Vyzobd. All rights reserved.
+          © {new Date().getFullYear()} {publicSettings?.general?.siteName || "Vyzobd"}. All rights reserved.
         </div>
 
         {/* Payment Gateway / SSLCOMMERZ Banner */}
@@ -142,7 +142,9 @@ export const Footer: React.FC = () => {
           <img 
             src="/images/sslcommerz-banner.png" 
             alt="Secure Payment Gateway powered by SSLCOMMERZ - Visa, Mastercard, bKash, Nagad, AMEX" 
-            className="h-8 sm:h-9 md:h-10 lg:h-11 max-w-full xs:max-w-[320px] sm:max-w-[380px] md:max-w-[440px] lg:max-w-[480px] w-auto object-contain opacity-95 hover:opacity-100 transition-opacity"
+            className="w-[265px] h-[50px] md:w-[315px] md:h-[58px] max-w-full object-contain opacity-95 hover:opacity-100 transition-opacity"
+            loading="lazy"
+            decoding="async"
           />
         </div>
       </div>

@@ -34,7 +34,7 @@ export const CheckoutPage: React.FC = () => {
 
   const currency = settings?.general?.currency || 'BDT';
   const currencySymbol = settings?.general?.currencySymbol || (currency === 'BDT' ? '৳' : '৳');
-  const freeShippingThreshold = settings?.shipping?.freeShippingThreshold ?? 2000;
+  const freeShippingThreshold = settings?.shipping?.freeShippingThreshold ?? 3000;
 
   const { 
     cart, 

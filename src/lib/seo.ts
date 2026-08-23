@@ -34,29 +34,37 @@ export async function getHomepageMetadata(): Promise<Metadata> {
   const settings = await getPublicSiteSettings();
   const siteName = getSiteName(settings);
   const title =
-    settings?.general?.siteTitle ||
-    settings?.siteTitle ||
     settings?.seo?.metaTitle ||
+    settings?.general?.siteTitle ||
+    settings?.branding?.siteTitle ||
+    settings?.siteTitle ||
     `${siteName} — Next-Gen Audio Equipment & Tech Hardware`;
   const description =
     settings?.seo?.metaDescription ||
     'Engineers of next-generation audio equipment, GaN fast chargers, and high-performance workstation peripherals for the modern professional.';
   
-  const rawKeywords = (settings?.seo as any)?.metaKeywords || (settings?.seo as any)?.keywords;
+  const rawKeywords = settings?.seo?.metaKeywords || (settings?.seo as any)?.keywords;
   const keywords = rawKeywords
     ? String(rawKeywords).split(',').map((k: string) => k.trim())
     : ['audio equipment', 'tech hardware', siteName, 'workstation peripherals', 'headphone DAC', 'chargers'];
 
+  const ogTitle = settings?.seo?.ogTitle || title;
+  const ogDescription = settings?.seo?.ogDescription || description;
   const ogImage =
     settings?.seo?.ogImageUrl ||
-    (settings?.seo as any)?.ogImage ||
+    settings?.seo?.ogImage ||
     settings?.branding?.logoUrl ||
     settings?.logoUrl ||
     `${DEFAULT_BASE_URL}/favicon.svg`;
 
+  const twitterTitle = settings?.seo?.twitterTitle || title;
+  const twitterDescription = settings?.seo?.twitterDescription || description;
+  const twitterImage = settings?.seo?.twitterImage || ogImage;
+
   const favicon = getFaviconUrl(settings);
 
   return {
+    metadataBase: new URL(DEFAULT_BASE_URL),
     title,
     description,
     keywords,
@@ -66,8 +74,8 @@ export async function getHomepageMetadata(): Promise<Metadata> {
       apple: favicon,
     },
     openGraph: {
-      title,
-      description,
+      title: ogTitle,
+      description: ogDescription,
       url: DEFAULT_BASE_URL,
       siteName,
       images: [{ url: ogImage }],
@@ -75,12 +83,16 @@ export async function getHomepageMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title,
-      description,
-      images: [ogImage],
+      title: twitterTitle,
+      description: twitterDescription,
+      images: [twitterImage],
     },
     alternates: {
       canonical: DEFAULT_BASE_URL,
+    },
+    robots: {
+      index: true,
+      follow: true,
     },
   };
 }

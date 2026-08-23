@@ -22,7 +22,11 @@ export const HeroSection: React.FC = () => {
         setLoading(true);
         const heroes = await storefrontApi.getBanners('hero');
         if (isMounted) {
-          setHeroBanners(heroes || []);
+          // Strictly exclude priority 99 at the data-selection layer
+          const validHeroes = (heroes || []).filter(
+            (b) => b.isActive !== false && (b.priority === undefined || b.priority === null || Number(b.priority) !== 99)
+          );
+          setHeroBanners(validHeroes);
         }
       } catch (err) {
         console.error('Failed to fetch hero banners:', err);
@@ -133,17 +137,17 @@ export const HeroSection: React.FC = () => {
       </div>
 
       {/* Top Bar: Badge & Navigation Controls */}
-      <div className="relative z-10 flex items-center justify-between gap-4">
+      <div className="relative z-10 flex items-center justify-between gap-2 sm:gap-4">
         {activeHero.badge ? (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/30 border border-white/20 text-white text-xs font-semibold backdrop-blur-md">
-            <Sparkles size={13} className="text-[#DC2B53]" />
+          <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-black/40 border border-white/20 text-white text-[10px] sm:text-xs font-semibold backdrop-blur-md">
+            <Sparkles size={11} className="text-[#DC2B53] sm:w-[13px] sm:h-[13px]" />
             {activeHero.badge}
           </span>
         ) : <div />}
 
         {/* Slide Next/Prev Buttons (Interactive - stops propagation to parent link) */}
         {heroBanners.length > 1 && (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 sm:gap-1.5">
             <button
               type="button"
               onClick={(e) => {
@@ -151,10 +155,10 @@ export const HeroSection: React.FC = () => {
                 e.stopPropagation();
                 setCurrentSlide((prev) => (prev === 0 ? heroBanners.length - 1 : prev - 1));
               }}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-[#DC2B53] text-white border border-white/20 flex items-center justify-center transition-colors cursor-pointer backdrop-blur-xs"
+              className="w-6 h-6 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-[#DC2B53] text-white border border-white/20 flex items-center justify-center transition-colors cursor-pointer backdrop-blur-xs"
               aria-label="Previous Slide"
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={14} className="sm:w-4 sm:h-4" />
             </button>
             <button
               type="button"
@@ -163,44 +167,44 @@ export const HeroSection: React.FC = () => {
                 e.stopPropagation();
                 setCurrentSlide((prev) => (prev + 1) % heroBanners.length);
               }}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-[#DC2B53] text-white border border-white/20 flex items-center justify-center transition-colors cursor-pointer backdrop-blur-xs"
+              className="w-6 h-6 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-[#DC2B53] text-white border border-white/20 flex items-center justify-center transition-colors cursor-pointer backdrop-blur-xs"
               aria-label="Next Slide"
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={14} className="sm:w-4 sm:h-4" />
             </button>
           </div>
         )}
       </div>
 
       {/* Hero Content Body (No CTA button - entire card is clickable) */}
-      <div className="relative z-10 mt-auto pt-3 sm:pt-6 pb-1 sm:pb-2 space-y-1 sm:space-y-2 max-w-2xl">
+      <div className="relative z-10 mt-auto pt-1 sm:pt-6 pb-0.5 sm:pb-2 space-y-0.5 sm:space-y-2 max-w-2xl">
         {activeHero.title && (
-          <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight drop-shadow-xs line-clamp-2">
+          <h1 className="text-sm xs:text-base sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight drop-shadow-xs line-clamp-1 sm:line-clamp-2">
             {activeHero.title}
           </h1>
         )}
         
         {(activeHero.subtitle || activeHero.description) && (
-          <p className="text-xs sm:text-sm md:text-base text-gray-100 font-normal leading-snug sm:leading-relaxed line-clamp-1 sm:line-clamp-2 max-w-xl drop-shadow-xs">
+          <p className="text-[11px] sm:text-sm md:text-base text-gray-100 font-normal leading-snug sm:leading-relaxed line-clamp-1 sm:line-clamp-2 max-w-xl drop-shadow-xs">
             {activeHero.subtitle || activeHero.description}
           </p>
         )}
 
         {/* Price Tag & Discount */}
         {(activeHero.price || activeHero.comparePrice || activeHero.discount) && (
-          <div className="flex items-center gap-2 pt-0.5">
+          <div className="flex items-center gap-1.5 sm:gap-2 pt-0.5">
             {activeHero.price && (
-              <span className="text-lg sm:text-2xl font-bold text-white drop-shadow-xs">
+              <span className="text-xs xs:text-sm sm:text-2xl font-bold text-white drop-shadow-xs">
                 {activeHero.price}
               </span>
             )}
             {activeHero.comparePrice && (
-              <span className="text-xs font-medium text-gray-300 line-through">
+              <span className="text-[10px] sm:text-xs font-medium text-gray-300 line-through">
                 {activeHero.comparePrice}
               </span>
             )}
             {activeHero.discount && (
-              <span className="px-2 py-0.5 bg-[#DC2B53] text-white text-[11px] sm:text-xs font-bold rounded-md">
+              <span className="px-1.5 py-0.5 sm:px-2 bg-[#DC2B53] text-white text-[9px] sm:text-xs font-bold rounded-sm sm:rounded-md">
                 {activeHero.discount}
               </span>
             )}
@@ -209,9 +213,9 @@ export const HeroSection: React.FC = () => {
       </div>
 
       {/* Bottom Bar: Slide Indicators & Value Badges */}
-      <div className="relative z-10 flex items-center justify-between pt-2 sm:pt-3 mt-1 sm:mt-2 border-t border-white/10">
+      <div className="relative z-10 flex items-center justify-between pt-1 sm:pt-3 mt-0.5 sm:mt-2 border-t border-white/10">
         {heroBanners.length > 1 ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {heroBanners.map((_, idx) => (
               <button
                 key={idx}
@@ -221,8 +225,8 @@ export const HeroSection: React.FC = () => {
                   e.stopPropagation();
                   setCurrentSlide(idx);
                 }}
-                className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                  currentSlide === idx ? 'w-6 bg-[#DC2B53]' : 'w-2 bg-white/40 hover:bg-white/70'
+                className={`h-1 sm:h-1.5 rounded-full transition-all cursor-pointer ${
+                  currentSlide === idx ? 'w-4 sm:w-6 bg-[#DC2B53]' : 'w-1.5 sm:w-2 bg-white/40 hover:bg-white/70'
                 }`}
                 aria-label={`Go to slide ${idx + 1}`}
               />
@@ -245,7 +249,7 @@ export const HeroSection: React.FC = () => {
   );
 
   return (
-    <section className="w-full px-[1px] sm:px-[2px] py-2 sm:py-3 md:py-4">
+    <section className="w-full px-[1px] sm:px-[2px] py-1.5 sm:py-3 md:py-4">
       {isExternal ? (
         <a
           href={bannerHref}
@@ -253,7 +257,7 @@ export const HeroSection: React.FC = () => {
           rel="noopener noreferrer"
           onClick={() => handleBannerClick(activeHero)}
           aria-label={activeHero.title || 'Promotional Banner'}
-          className="relative w-full rounded-[2px] sm:rounded-[3px] overflow-hidden bg-[#111827] text-white border border-[#E5E7EB] shadow-xs flex flex-col justify-between min-h-[235px] max-h-[245px] sm:max-h-none sm:min-h-[340px] md:min-h-[380px] lg:min-h-[420px] p-3.5 sm:p-8 lg:p-10 group block focus:outline-none focus:ring-2 focus:ring-[#DC2B53] focus:ring-offset-2 transition-shadow"
+          className="relative w-full rounded-[2px] sm:rounded-[3px] overflow-hidden bg-[#111827] text-white border border-[#E5E7EB] shadow-xs flex flex-col justify-between h-[170px] min-h-[170px] max-h-[170px] sm:h-auto sm:max-h-none sm:min-h-[340px] md:min-h-[380px] lg:min-h-[420px] p-2.5 xs:p-3 sm:p-8 lg:p-10 group block focus:outline-none focus:ring-2 focus:ring-[#DC2B53] focus:ring-offset-2 transition-shadow"
         >
           {bannerContent}
         </a>
@@ -262,7 +266,7 @@ export const HeroSection: React.FC = () => {
           href={bannerHref}
           onClick={() => handleBannerClick(activeHero)}
           aria-label={activeHero.title || 'Promotional Banner'}
-          className="relative w-full rounded-[2px] sm:rounded-[3px] overflow-hidden bg-[#111827] text-white border border-[#E5E7EB] shadow-xs flex flex-col justify-between min-h-[235px] max-h-[245px] sm:max-h-none sm:min-h-[340px] md:min-h-[380px] lg:min-h-[420px] p-3.5 sm:p-8 lg:p-10 group block focus:outline-none focus:ring-2 focus:ring-[#DC2B53] focus:ring-offset-2 transition-shadow"
+          className="relative w-full rounded-[2px] sm:rounded-[3px] overflow-hidden bg-[#111827] text-white border border-[#E5E7EB] shadow-xs flex flex-col justify-between h-[170px] min-h-[170px] max-h-[170px] sm:h-auto sm:max-h-none sm:min-h-[340px] md:min-h-[380px] lg:min-h-[420px] p-2.5 xs:p-3 sm:p-8 lg:p-10 group block focus:outline-none focus:ring-2 focus:ring-[#DC2B53] focus:ring-offset-2 transition-shadow"
         >
           {bannerContent}
         </Link>

@@ -217,18 +217,35 @@ export interface Coupon {
 }
 
 export interface StoreBranding {
+  siteName?: string | null;
+  siteTitle?: string | null;
+  siteTagline?: string | null;
   logoUrl: string;
-  logoDarkUrl?: string;
+  logoDarkUrl?: string | null;
   faviconUrl: string;
-  primaryColor?: string;
-  secondaryColor?: string;
+  adminPanelName?: string | null;
+  adminPanelLogo?: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+  footerText?: string | null;
+  defaultLanguage?: string;
+  defaultCurrency?: string;
+  defaultTimezone?: string;
 }
 
 export interface StoreSEO {
   metaTitle: string;
   metaDescription: string;
+  metaKeywords?: string | null;
+  ogTitle?: string | null;
+  ogDescription?: string | null;
+  ogImage?: string | null;
   ogImageUrl?: string;
-  twitterHandle?: string;
+  twitterTitle?: string | null;
+  twitterDescription?: string | null;
+  twitterImage?: string | null;
+  twitterHandle?: string | null;
+  customHeadCode?: string | null;
 }
 
 export interface StoreShipping {
@@ -238,12 +255,15 @@ export interface StoreShipping {
   outsideDhakaCharge?: number;
   freeShippingEnabled?: boolean;
   estimatedDeliveryDays: string;
+  currency?: string;
 }
 
 export interface StoreTax {
   taxEnabled: boolean;
   taxRate: number; // e.g. 0.08 for 8%
+  defaultTaxRate?: number;
   pricesIncludeTax: boolean;
+  enableTax?: boolean;
 }
 
 export interface StoreMarketing {

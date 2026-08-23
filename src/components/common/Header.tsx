@@ -398,9 +398,13 @@ function HeaderContent() {
         <div className="bg-white border-b border-[#E5E7EB] py-2 hidden lg:block">
           <div className="container-vyzobd flex items-center justify-between text-xs font-medium text-[#6B7280]">
             <div className="flex items-center gap-6">
-              <a href="tel:+8801700000000" className="flex items-center gap-1.5 group cursor-pointer hover:text-[#DC2B53] transition-colors">
+              <a 
+                href={`tel:${publicSettings?.store?.callOrderNumber || publicSettings?.general?.storePhone || publicSettings?.callOrderNumber || '+8801710634144'}`} 
+                className="flex items-center gap-1.5 group cursor-pointer hover:text-[#DC2B53] transition-colors"
+                title="Customer Support"
+              >
                 <PhoneCall size={13} className="text-[#DC2B53]" />
-                <span>Customer Support</span>
+                <span>{publicSettings?.store?.callOrderNumber || publicSettings?.general?.storePhone || publicSettings?.callOrderNumber || '+8801710634144'}</span>
               </a>
               <a href={`mailto:${publicSettings?.general?.storeEmail || 'support@vyzobd.com'}`} className="flex items-center gap-1.5 group cursor-pointer hover:text-[#DC2B53] transition-colors">
                 <Mail size={13} className="text-[#DC2B53]" />
@@ -459,7 +463,7 @@ function HeaderContent() {
             className="max-lg:absolute max-lg:left-1/2 max-lg:top-1/2 max-lg:-translate-x-1/2 max-lg:-translate-y-1/2 flex items-center justify-center group select-none shrink-0 z-10"
           >
             <img 
-              src="/logo.svg" 
+              src={publicSettings?.branding?.logoUrl || "/logo.svg"} 
               alt={publicSettings?.general?.siteName || "Vyzobd"} 
               className="h-7 sm:h-8 lg:h-9 xl:h-10 w-auto object-contain shrink-0 block max-w-[120px] xs:max-w-[135px] sm:max-w-[155px] lg:max-w-[165px] xl:max-w-[180px]"
             />
@@ -913,7 +917,11 @@ function HeaderContent() {
           size="md"
           title={
             <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 group min-w-0">
-              <img src="/logo.svg" alt={publicSettings?.general?.siteName || "Vyzobd"} className="h-7 w-auto flex-shrink-0" />
+              <img 
+                src={publicSettings?.branding?.logoUrl || "/logo.svg"} 
+                alt={publicSettings?.general?.siteName || "Vyzobd"} 
+                className="h-7 w-auto flex-shrink-0" 
+              />
             </Link>
           }
           footer={

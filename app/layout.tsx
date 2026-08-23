@@ -8,25 +8,13 @@ import { CartDrawer } from '../src/components/common/CartDrawer';
 import { QuickViewModal } from '../src/components/common/QuickViewModal';
 import { ToastContainer } from '../src/components/common/ToastContainer';
 import { AuthModal } from '../src/components/account/AuthModal';
+import { getHomepageMetadata } from '../src/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Vyzobd — Next-Gen Audio Equipment & Tech Hardware',
-  description: 'Engineers of next-generation audio equipment, GaN fast chargers, and high-performance workstation peripherals for the modern professional.',
-  icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
-  },
-  openGraph: {
-    title: 'Vyzobd — Next-Gen Audio Equipment & Tech Hardware',
-    description: 'Engineers of next-generation audio equipment and high-performance workstation peripherals.',
-    url: 'https://vyzobd.com',
-    siteName: 'Vyzobd',
-    type: 'website',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return await getHomepageMetadata();
+}
 
 export default function RootLayout({
   children,

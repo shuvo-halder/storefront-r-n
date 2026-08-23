@@ -1,6 +1,11 @@
 import { apiClient, unwrapApiResponse, extractApiError, ApiResponse } from '../lib/api';
 import { Banner, BlogArticle, CMSPage } from '../types/storefront';
 
+let cachedBanners: Banner[] | null = null;
+let cachedBannersTimestamp = 0;
+let inFlightBannersPromise: Promise<ApiResponse<Banner[]>> | null = null;
+const BANNER_CACHE_TTL_MS = 30000; // 30 seconds
+
 export const contentService = {
   // Helper: Normalize raw banner data from backend API
   normalizeBanner(raw: any): Banner | null {
@@ -42,32 +47,76 @@ export const contentService = {
   },
 
   // GET /banners
-  getBanners: async (type?: 'hero' | 'promo' | 'offer'): Promise<ApiResponse<Banner[]>> => {
-    try {
-      const res = await apiClient.get('/banners', { params: { type } });
-      const unwrapped = unwrapApiResponse<any>(res);
-
-      if (unwrapped.status === 'error') {
-        return { status: 'success', message: null, data: [] };
+  getBanners: async (type?: 'hero' | 'promo' | 'offer', bypassCache = false): Promise<ApiResponse<Banner[]>> => {
+    const now = Date.now();
+    
+    // Fetch all active banners from backend with deduplication and caching
+    const fetchAllBanners = async (): Promise<Banner[]> => {
+      if (!bypassCache && cachedBanners && (now - cachedBannersTimestamp < BANNER_CACHE_TTL_MS)) {
+        return cachedBanners;
       }
 
-      const list = Array.isArray(unwrapped.data) ? unwrapped.data : (unwrapped.data?.banners || unwrapped.data?.data || []);
-      
-      let normalizedList = list
-        .map((item: any) => contentService.normalizeBanner(item))
-        .filter((item: Banner | null): item is Banner => item !== null && (item.isActive ?? true));
+      if (!bypassCache && inFlightBannersPromise) {
+        const res = await inFlightBannersPromise;
+        return res.data || [];
+      }
 
-      if (type) {
-        const filtered = normalizedList.filter(b => !b.type || b.type === type);
-        if (filtered.length > 0) {
-          normalizedList = filtered;
+      const fetchPromise = (async (): Promise<ApiResponse<Banner[]>> => {
+        try {
+          const res = await apiClient.get('/banners');
+          const unwrapped = unwrapApiResponse<any>(res);
+
+          if (unwrapped.status === 'error') {
+            return { status: 'success', message: null, data: [] };
+          }
+
+          const list = Array.isArray(unwrapped.data) 
+            ? unwrapped.data 
+            : (unwrapped.data?.banners || unwrapped.data?.data || []);
+          
+          const normalizedList = list
+            .map((item: any) => contentService.normalizeBanner(item))
+            .filter((item: Banner | null): item is Banner => item !== null && (item.isActive ?? true));
+
+          // Sort by priority ascending (undefined priority placed at the end)
+          normalizedList.sort((a, b) => {
+            const pA = a.priority !== undefined ? a.priority : 9999;
+            const pB = b.priority !== undefined ? b.priority : 9999;
+            return pA - pB;
+          });
+
+          cachedBanners = normalizedList;
+          cachedBannersTimestamp = Date.now();
+          return { status: 'success', message: null, data: normalizedList };
+        } catch {
+          return { status: 'success', message: null, data: [] };
+        } finally {
+          inFlightBannersPromise = null;
         }
+      })();
+
+      inFlightBannersPromise = fetchPromise;
+      const response = await fetchPromise;
+      return response.data || [];
+    };
+
+    try {
+      const allBanners = await fetchAllBanners();
+
+      if (type === 'hero') {
+        // Strict business rule: priority 99 must NEVER appear in hero slider
+        const heroBanners = allBanners.filter(
+          b => b.priority === undefined || b.priority === null || Number(b.priority) !== 99
+        );
+        return { status: 'success', message: null, data: heroBanners };
       }
 
-      // Sort by priority if provided
-      normalizedList.sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0));
+      if (type === 'offer') {
+        // Return full list for offer filtering or offer-specific items
+        return { status: 'success', message: null, data: allBanners };
+      }
 
-      return { status: 'success', message: null, data: normalizedList };
+      return { status: 'success', message: null, data: allBanners };
     } catch {
       return { status: 'success', message: null, data: [] };
     }
