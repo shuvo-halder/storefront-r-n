@@ -132,17 +132,17 @@ export const Footer: React.FC = () => {
       </div>
 
       {/* Bottom Copyright & Payment Icons */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-gray-400">
-        <div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-5 text-xs text-gray-400">
+        <div className="text-center md:text-left">
           © {new Date().getFullYear()} Vyzobd. All rights reserved.
         </div>
 
         {/* Payment Gateway / SSLCOMMERZ Banner */}
-        <div className="flex items-center justify-start sm:justify-end shrink-0 w-full sm:w-auto">
+        <div className="flex items-center justify-center md:justify-end shrink-0 w-full md:w-auto">
           <img 
-            src="/images/sslcommerz-banner.svg" 
+            src="/images/sslcommerz-banner.png" 
             alt="Secure Payment Gateway powered by SSLCOMMERZ - Visa, Mastercard, bKash, Nagad, AMEX" 
-            className="h-7 sm:h-8 max-w-[280px] xs:max-w-[320px] sm:max-w-[360px] md:max-w-[400px] w-auto object-contain opacity-95 hover:opacity-100 transition-opacity"
+            className="h-8 sm:h-9 md:h-10 lg:h-11 max-w-full xs:max-w-[320px] sm:max-w-[380px] md:max-w-[440px] lg:max-w-[480px] w-auto object-contain opacity-95 hover:opacity-100 transition-opacity"
           />
         </div>
       </div>
