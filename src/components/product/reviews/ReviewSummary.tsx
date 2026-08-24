@@ -49,10 +49,10 @@ export const ReviewSummary: React.FC<ReviewSummaryProps> = ({
         {/* Left: Overall Rating & Stars */}
         <div className="md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left border-b md:border-b-0 md:border-r border-[#E5E7EB] pb-4 md:pb-0 md:pr-6">
           <span className="text-3xl sm:text-4xl font-extrabold text-[#111827] tracking-tight">
-            {rating ? rating.toFixed(1) : '5.0'}
+            {reviewCount > 0 ? rating.toFixed(1) : '0.0'}
           </span>
           <div className="mt-1">
-            <RatingStars rating={rating || 5} showNumber={false} size={18} />
+            <RatingStars rating={reviewCount > 0 ? rating : 0} showNumber={false} size={18} />
           </div>
           <span className="text-xs text-[#6B7280] font-medium mt-1">
             Based on {reviewCount} verified {reviewCount === 1 ? 'review' : 'reviews'}

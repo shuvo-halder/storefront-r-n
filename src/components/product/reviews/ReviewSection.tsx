@@ -75,6 +75,15 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
     fetchReviews(1);
   }, [fetchReviews]);
 
+  // Reset local state on product transition to prevent flashing old product reviews
+  useEffect(() => {
+    setReviews(product.reviews || []);
+    setStats(undefined);
+    setPage(1);
+    setTotalPages(1);
+    setTotalCount(product.reviewCount || (product.reviews?.length ?? 0));
+  }, [product.id, product.reviews, product.reviewCount]);
+
   const handleOpenLightbox = (images: string[], index: number, author: string) => {
     setLightboxState({
       isOpen: true,

@@ -121,6 +121,23 @@ export const ProductDetailPage: React.FC = () => {
           setProduct(data);
           setSelectedImage(data.images && data.images.length > 0 ? data.images[0] : '/placeholder-product.png');
           
+          // Fetch live reviews and stats from the API on initial load to keep the top-level star rating accurate
+          try {
+            const reviewsRes = await storefrontApi.getProductReviews(data.id, { page: 1, limit: 1 });
+            if (reviewsRes && isMounted) {
+              const realCount = reviewsRes.total ?? 0;
+              const realRating = reviewsRes.stats?.averageRating ?? data.rating ?? 0.0;
+              setProduct(prev => prev ? {
+                ...prev,
+                reviewCount: realCount,
+                rating: realRating,
+                reviews: reviewsRes.reviews || []
+              } : null);
+            }
+          } catch (e) {
+            console.warn('Could not pre-load live review stats on mount:', e);
+          }
+          
           // Select default variant if available
           if (data.variants && data.variants.length > 0) {
             const firstVariant = data.variants[0];

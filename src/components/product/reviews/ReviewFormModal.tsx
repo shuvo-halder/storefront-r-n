@@ -321,21 +321,42 @@ export const ReviewFormModal: React.FC<ReviewFormModalProps> = ({
 
                 {/* 2. Customer / Guest Identity Fields */}
                 {isAuthenticated && user ? (
-                  <div className="flex items-center justify-between p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
-                        <ShieldCheck size={16} />
-                      </div>
-                      <div>
-                        <div className="font-bold text-xs text-[#111827] flex items-center gap-1.5">
-                          <span>{formData.name || user.fullName || 'Verified Customer'}</span>
-                          <span className="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 text-[9px] font-semibold rounded">
-                            Verified Member
-                          </span>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
+                          <ShieldCheck size={16} />
                         </div>
-                        <span className="text-[10px] text-emerald-700">{user.email || user.phone}</span>
+                        <div>
+                          <div className="font-bold text-xs text-[#111827] flex items-center gap-1.5">
+                            <span>{formData.name || user.fullName || 'Verified Customer'}</span>
+                            <span className="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 text-[9px] font-semibold rounded">
+                              Verified Member
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-emerald-700">{user.email || user.phone}</span>
+                        </div>
                       </div>
                     </div>
+
+                    {!user?.phone && (
+                      <div className="space-y-1 bg-[#F9FAFB] p-3 rounded-xl border border-[#E5E7EB]">
+                        <label className="font-medium text-[11px] text-[#4B5563] block mb-1">
+                          Mobile Number <span className="text-[#DC2B53]">*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          placeholder="e.g. 017XXXXXXXX"
+                          className="w-full p-2 bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:border-[#DC2B53] text-[#111827] text-xs font-normal"
+                        />
+                        <p className="text-[10px] text-[#6B7280] mt-1">
+                          Please enter your mobile number used during purchase to verify review eligibility.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-3 bg-[#F9FAFB] p-3.5 rounded-xl border border-[#E5E7EB]">
