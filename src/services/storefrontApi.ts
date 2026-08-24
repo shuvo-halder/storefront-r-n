@@ -367,17 +367,19 @@ export const storefrontApi = {
 
   checkReviewEligibility: async (
     productId: string,
-    mobile: string
+    mobile?: string,
+    isAuthenticated?: boolean
   ): Promise<ReviewEligibilityResponse> => {
-    const res = await reviewService.checkReviewEligibility(productId, mobile);
+    const res = await reviewService.checkReviewEligibility(productId, mobile, isAuthenticated);
     return res.data;
   },
 
   submitReview: async (
     productId: string,
-    payload: ReviewSubmissionPayload
+    payload: ReviewSubmissionPayload,
+    isAuthenticated?: boolean
   ): Promise<ProductReview> => {
-    const res = await reviewService.submitReview(productId, payload);
+    const res = await reviewService.submitReview(productId, payload, isAuthenticated);
     if (res.status === 'error') {
       throw new Error(res.message || 'Unable to submit review');
     }

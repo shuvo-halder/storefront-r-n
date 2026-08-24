@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { apiClient, unwrapApiResponse, extractApiError } from '../lib/api';
 import {
   MAX_REVIEW_IMAGES,
   MAX_REVIEW_IMAGE_SIZE,
@@ -25,8 +25,8 @@ export function validateImageFile(file: File): { valid: boolean; error?: string 
 }
 
 /**
- * Uploads a single file to Cloudinary via unauthenticated/unsigned preset or configured upload endpoint.
- * Returns the secure Cloudinary image URL.
+ * Uploads a single file to the backend review upload endpoint.
+ * Returns the secure uploaded image URL.
  */
 export async function uploadToCloudinary(file: File): Promise<string> {
   const validation = validateImageFile(file);
@@ -34,49 +34,30 @@ export async function uploadToCloudinary(file: File): Promise<string> {
     throw new Error(validation.error || 'Invalid image file.');
   }
 
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  const formData = new FormData();
+  formData.append('file', file);
 
-  // 1. Direct Cloudinary upload if client-side credentials are provided
-  if (cloudName && uploadPreset) {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', uploadPreset);
-    formData.append('folder', 'vyzobd/reviews');
+  try {
+    const response = await apiClient.post('/reviews/upload-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 30000,
+    });
 
-    try {
-      const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          timeout: 20000,
-        }
-      );
+    const unwrapped = unwrapApiResponse<any>(response);
 
-      if (response.data && response.data.secure_url) {
-        return response.data.secure_url as string;
-      }
-    } catch (err: any) {
-      console.error('Cloudinary direct upload error:', err?.response?.data || err?.message);
-      throw new Error(err?.response?.data?.error?.message || 'Failed to upload photo to Cloudinary.');
+    if (unwrapped.status === 'error' || !unwrapped.data?.url) {
+      throw new Error(unwrapped.message || 'Failed to upload photo.');
     }
-  }
 
-  // 2. Convert to persistent base64 data URL if remote upload preset is not yet configured in local environment
-  // This ensures preview and submission flow work smoothly without sending volatile Blob URLs.
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        resolve(reader.result);
-      } else {
-        reject(new Error('Failed to read image file.'));
-      }
-    };
-    reader.onerror = () => reject(new Error('Failed to read image file.'));
-    reader.readAsDataURL(file);
-  });
+    return unwrapped.data.url as string;
+  } catch (err: any) {
+    console.error('Review image upload error:', err);
+    if (err.response?.status === 429) {
+      throw new Error('Image upload limit exceeded. Please try again in 15 minutes.');
+    }
+    const { message } = extractApiError(err, 'Failed to upload photo to server.');
+    throw new Error(message);
+  }
 }
 
 /**

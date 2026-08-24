@@ -65,6 +65,8 @@ export interface ReviewEligibilityResponse {
   message?: string;
   reason?: string;
   orderItemId?: string;
+  availableSlots?: number;
+  qualifyingOrderIds?: string[];
 }
 
 export interface ReviewFormState {

@@ -87,24 +87,27 @@ export const ReviewFormModal: React.FC<ReviewFormModalProps> = ({
       return false;
     }
 
-    // 2. Name validation
-    if (!formData.name.trim()) {
-      setValidationError(REVIEW_VALIDATION_MESSAGES.NAME_REQUIRED);
-      return false;
-    }
+    // 2. Guest/Customer validation
+    if (!isAuthenticated) {
+      // Name validation
+      if (!formData.name.trim()) {
+        setValidationError(REVIEW_VALIDATION_MESSAGES.NAME_REQUIRED);
+        return false;
+      }
 
-    // 3. Mobile Number validation
-    const cleanPhone = (formData.phone || user?.phone || '').trim();
-    if (!cleanPhone) {
-      setValidationError(REVIEW_VALIDATION_MESSAGES.PHONE_REQUIRED);
-      return false;
-    }
+      // Mobile Number validation
+      const cleanPhone = formData.phone.trim();
+      if (!cleanPhone) {
+        setValidationError(REVIEW_VALIDATION_MESSAGES.PHONE_REQUIRED);
+        return false;
+      }
 
-    // BD Phone Regex: 01XXXXXXXXX or +8801XXXXXXXXX
-    const bdPhoneRegex = /^(?:\+8801|01)[3-9]\d{8}$/;
-    if (!bdPhoneRegex.test(cleanPhone.replace(/\s+/g, ''))) {
-      setValidationError(REVIEW_VALIDATION_MESSAGES.PHONE_INVALID);
-      return false;
+      // BD Phone Regex: 01XXXXXXXXX or +8801XXXXXXXXX
+      const bdPhoneRegex = /^(?:\+8801|01)[3-9]\d{8}$/;
+      if (!bdPhoneRegex.test(cleanPhone.replace(/\s+/g, ''))) {
+        setValidationError(REVIEW_VALIDATION_MESSAGES.PHONE_INVALID);
+        return false;
+      }
     }
 
     // 4. Headline validation (max 150)
@@ -141,7 +144,7 @@ export const ReviewFormModal: React.FC<ReviewFormModalProps> = ({
     try {
       // Step 1: Verify Review Eligibility via POST /reviews/:productId/eligibility
       setSubmissionStep('Verifying purchase eligibility...');
-      const eligibilityRes = await reviewService.checkReviewEligibility(productId, mobileNumber);
+      const eligibilityRes = await reviewService.checkReviewEligibility(productId, mobileNumber, isAuthenticated);
 
       // If explicit ineligible response received from backend
       if (eligibilityRes.status === 'success' && eligibilityRes.data && eligibilityRes.data.eligible === false) {
@@ -171,7 +174,7 @@ export const ReviewFormModal: React.FC<ReviewFormModalProps> = ({
         reviewHeadline: formData.title.trim() || undefined,
         reviewComment: formData.comment.trim(),
         images: uploadedImageUrls,
-      });
+      }, isAuthenticated);
 
       if (submitRes.status === 'error' && !submitRes.data?.id) {
         setFormStatus('error');
@@ -338,25 +341,6 @@ export const ReviewFormModal: React.FC<ReviewFormModalProps> = ({
                         </div>
                       </div>
                     </div>
-
-                    {!user?.phone && (
-                      <div className="space-y-1 bg-[#F9FAFB] p-3 rounded-xl border border-[#E5E7EB]">
-                        <label className="font-medium text-[11px] text-[#4B5563] block mb-1">
-                          Mobile Number <span className="text-[#DC2B53]">*</span>
-                        </label>
-                        <input
-                          type="tel"
-                          required
-                          value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          placeholder="e.g. 017XXXXXXXX"
-                          className="w-full p-2 bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:border-[#DC2B53] text-[#111827] text-xs font-normal"
-                        />
-                        <p className="text-[10px] text-[#6B7280] mt-1">
-                          Please enter your mobile number used during purchase to verify review eligibility.
-                        </p>
-                      </div>
-                    )}
                   </div>
                 ) : (
                   <div className="space-y-3 bg-[#F9FAFB] p-3.5 rounded-xl border border-[#E5E7EB]">

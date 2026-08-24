@@ -39,12 +39,15 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
 
   const fetchReviews = useCallback(async (targetPage = 1) => {
     if (!product.id) return;
+    const currentFetchProductId = product.id;
     setIsLoading(true);
     try {
-      const res = await reviewService.getProductReviews(product.id, {
+      const res = await reviewService.getProductReviews(currentFetchProductId, {
         page: targetPage,
         limit: 10,
       });
+
+      if (product.id !== currentFetchProductId) return;
 
       if (res.status === 'success' && res.data) {
         if (res.data.reviews && res.data.reviews.length > 0) {
@@ -67,7 +70,9 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
     } catch (err) {
       console.warn('Could not load reviews from API, using fallback product reviews:', err);
     } finally {
-      setIsLoading(false);
+      if (product.id === currentFetchProductId) {
+        setIsLoading(false);
+      }
     }
   }, [product.id, product.reviews]);
 
