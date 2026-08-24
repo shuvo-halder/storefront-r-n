@@ -301,6 +301,20 @@ export function normalizeProduct(raw: any): Product {
     }
   }
 
+  // Deduplicate images while preserving original order and filtering out invalid images
+  const uniqueImages: string[] = [];
+  const seenUrls = new Set<string>();
+  
+  for (const img of rawImages) {
+    if (img && typeof img === 'string') {
+      const trimmed = img.trim();
+      if (trimmed && !seenUrls.has(trimmed)) {
+        seenUrls.add(trimmed);
+        uniqueImages.push(trimmed);
+      }
+    }
+  }
+
   const id = String(raw.id || raw._id || raw.productId || raw.product_id || raw.sku || '');
   const slug = String(raw.slug || raw.handle || raw.url_slug || raw.urlSlug || id);
 
@@ -387,7 +401,7 @@ export function normalizeProduct(raw: any): Product {
     discountPercent,
     rating: Number(raw.rating ?? raw.average_rating ?? raw.avg_rating ?? 5),
     reviewCount: Number(raw.reviewCount ?? raw.reviews_count ?? raw.review_count ?? 0),
-    images: rawImages.filter(Boolean),
+    images: uniqueImages,
     description: String(raw.description || raw.details || raw.body || raw.content || ''),
     features: Array.isArray(raw.features) ? raw.features : [],
     specifications: Array.isArray(raw.specifications) ? raw.specifications : [],
