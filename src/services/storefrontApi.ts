@@ -1,4 +1,5 @@
 import { authService } from './authService';
+import { customerService } from './customerService';
 import { productService } from './productService';
 import { categoryService } from './categoryService';
 import { brandService } from './brandService';
@@ -203,41 +204,75 @@ export const storefrontApi = {
   },
 
   // AUTH
-  login: async (data: LoginFormData): Promise<AuthResponse> => {
-    const res = await authService.login(data);
-    if (res.status === 'error' || !res.data) {
-      const errorObj: any = new Error(res.message || 'Login failed');
-      errorObj.errors = res.errors;
-      throw errorObj;
-    }
-    return res.data;
+  login: async (data: any) => {
+    return authService.login(data);
   },
 
-  register: async (data: RegisterFormData): Promise<RegisterResponse> => {
-    const res = await authService.register(data);
-    if (res.status === 'error' || !res.data) {
-      const errorObj: any = new Error(res.message || 'Registration failed');
-      errorObj.errors = res.errors;
-      throw errorObj;
-    }
-    return res.data;
+  register: async (data: any) => {
+    return authService.register(data);
   },
 
-  getCurrentUser: async (): Promise<UserProfile | null> => {
+  registerMobile: async (data: any) => {
+    return authService.registerMobile(data);
+  },
+
+  verifyMobileRegister: async (data: any) => {
+    return authService.verifyMobileRegister(data);
+  },
+
+  loginMobile: async (data: any) => {
+    return authService.loginMobile(data);
+  },
+
+  verifyMobileLogin: async (data: any) => {
+    return authService.verifyMobileLogin(data);
+  },
+
+  getCurrentUser: async (): Promise<any> => {
     const res = await authService.me();
-    return res.data;
+    return res.data?.customer || null;
+  },
+
+  getMe: async () => {
+    return authService.me();
+  },
+
+  refreshSession: async () => {
+    return authService.refresh();
   },
 
   logout: async (): Promise<void> => {
     await authService.logout();
   },
 
-  updateProfile: async (data: Partial<UserProfile>): Promise<UserProfile> => {
-    const res = await authService.updateProfile(data);
-    if (res.data) return res.data;
-    const current = await authService.me();
-    if (current.data) return current.data;
-    throw new Error('Failed to update profile');
+  updateProfile: async (data: any): Promise<any> => {
+    const res = await customerService.updateProfile({
+      firstName: data.firstName || data.fullName?.split(' ')[0] || '',
+      lastName: data.lastName || data.fullName?.split(' ').slice(1).join(' ') || '',
+      avatarUrl: data.avatarUrl || data.avatar,
+    });
+    return res.data?.profile || null;
+  },
+
+  // CUSTOMER MODULE (Step 2 & Step 3)
+  getCustomerDashboard: async () => {
+    return customerService.getDashboard();
+  },
+
+  getCustomerProfile: async () => {
+    return customerService.getProfile();
+  },
+
+  updateCustomerProfile: async (payload: { firstName: string; lastName: string; avatarUrl?: string }) => {
+    return customerService.updateProfile(payload);
+  },
+
+  getCustomerOrders: async (params?: { page?: number; limit?: number; status?: string; search?: string }) => {
+    return customerService.getOrders(params);
+  },
+
+  getCustomerOrderById: async (orderId: string) => {
+    return customerService.getOrderById(orderId);
   },
 
   forgotPassword: async (email: string): Promise<boolean> => {

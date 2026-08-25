@@ -22,6 +22,18 @@ export function normalizeBDPhone(phone: string): string {
 }
 
 /**
+ * Converts any Bangladesh mobile number to standard E.164 format (+8801XXXXXXXXX).
+ */
+export function formatBDPhoneE164(phone: string): string {
+  if (!phone) return '';
+  const normalized = normalizeBDPhone(phone);
+  if (normalized.startsWith('01') && normalized.length === 11) {
+    return `+88${normalized}`;
+  }
+  return phone.trim();
+}
+
+/**
  * Validates whether a given string is a valid Bangladesh mobile number.
  * Ensures the normalized format contains exactly 11 numeric digits starting with 01
  * and a valid operator prefix (013-019).
@@ -31,3 +43,4 @@ export function isValidBDPhone(phone: string): boolean {
   const normalized = normalizeBDPhone(phone);
   return /^01[3-9]\d{8}$/.test(normalized);
 }
+

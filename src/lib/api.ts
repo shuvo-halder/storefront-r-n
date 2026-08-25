@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { Cart, Product, ProductVariant } from '../types/storefront';
+import { tokenStorage } from './tokenStorage';
 
 // Base URL from environment or default
 const getRawApiUrl = (): string => {
@@ -54,7 +55,7 @@ export const apiClient: AxiosInstance = axios.create({
 
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('vyzobd_auth_token');
+    const token = tokenStorage.getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -80,6 +81,20 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
+// Check if a request URL is an auth-entry endpoint that should not trigger refresh loops
+const isAuthEntryEndpoint = (url?: string): boolean => {
+  if (!url) return false;
+  return (
+    url.includes('/auth/login') ||
+    url.includes('/auth/register') ||
+    url.includes('/auth/refresh') ||
+    url.includes('/auth/login-mobile') ||
+    url.includes('/auth/verify-mobile-login') ||
+    url.includes('/auth/register-mobile') ||
+    url.includes('/auth/verify-mobile-register')
+  );
+};
+
 apiClient.interceptors.response.use(
   (response) => {
     if (typeof window !== 'undefined') {
@@ -92,16 +107,16 @@ apiClient.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
+    
     if (
       error.response?.status === 401 && 
       originalRequest && 
       !originalRequest._retry &&
-      !originalRequest.url?.includes('/auth/login') &&
-      !originalRequest.url?.includes('/auth/register') &&
-      !originalRequest.url?.includes('/auth/refresh')
+      !isAuthEntryEndpoint(originalRequest.url)
     ) {
+      // If a refresh is already in progress, queue this request until completed
       if (isRefreshing) {
-        return new Promise((resolve, reject) => {
+        return new Promise<string | null>((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         }).then(token => {
           if (token) {
@@ -115,26 +130,37 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('vyzobd_refresh_token') : null;
+        const refreshToken = tokenStorage.getRefreshToken();
         if (refreshToken) {
-          const res = await axios.post<ApiResponse>(`${API_BASE_URL}/auth/refresh`, { refreshToken });
-          const newToken = res.data?.data?.token;
+          const res = await axios.post<ApiResponse<{ accessToken?: string; token?: string }>>(
+            `${API_BASE_URL}/auth/refresh`,
+            { refreshToken }
+          );
+          
+          const newAccessToken = res.data?.data?.accessToken || res.data?.data?.token;
 
-          if (newToken) {
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('vyzobd_auth_token', newToken);
-            }
-            apiClient.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
-            processQueue(null, newToken);
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          if (newAccessToken) {
+            tokenStorage.setAccessToken(newAccessToken);
+            apiClient.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+            processQueue(null, newAccessToken);
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
             return apiClient(originalRequest);
           }
         }
+        
+        // If no refresh token or refresh did not return an access token, throw to fail block
+        throw new Error('Refresh token invalid or expired');
       } catch (refreshErr) {
         processQueue(refreshErr, null);
+        tokenStorage.clearTokens();
+        
         if (typeof window !== 'undefined') {
-          localStorage.removeItem('vyzobd_auth_token');
-          localStorage.removeItem('vyzobd_refresh_token');
+          window.dispatchEvent(new CustomEvent('customer:session_expired'));
+          if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
+            const currentPath = window.location.pathname + window.location.search;
+            const redirectParam = currentPath && currentPath !== '/' ? `&redirect=${encodeURIComponent(currentPath)}` : '';
+            window.location.href = `/login?session_expired=true${redirectParam}`;
+          }
         }
       } finally {
         isRefreshing = false;
@@ -151,7 +177,7 @@ apiClient.interceptors.response.use(
     
     return Promise.reject({
       status: 'error',
-      message: error.message || 'An unknown network error occurred',
+      message: error.response?.data?.message || error.message || 'An unknown network error occurred',
       data: null
     });
   }

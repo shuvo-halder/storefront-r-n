@@ -15,6 +15,7 @@ import {
 import { ToastMessage, ToastOptions, ToastVariant, ToastAction } from '../types/feedback';
 import { createToastPayload, sanitizeErrorMessage } from '../utils/feedback';
 import { storefrontApi } from '../services/storefrontApi';
+import { tokenStorage } from '../lib/tokenStorage';
 import { trackGA4AddToWishlist } from '../utils/analytics';
 import confetti from 'canvas-confetti';
 
@@ -431,7 +432,7 @@ export const StorefrontProvider: React.FC<{ children: ReactNode }> = ({ children
         const brandsData = await storefrontApi.getBrands().catch(() => []);
         setBrands(brandsData);
         
-        const hasAuthToken = typeof window !== 'undefined' && Boolean(localStorage.getItem('vyzobd_auth_token'));
+        const hasAuthToken = typeof window !== 'undefined' && tokenStorage.hasAccessToken();
         if (hasAuthToken) {
           const ordersData = await storefrontApi.getOrders().catch(() => []);
           setUserOrders(ordersData);

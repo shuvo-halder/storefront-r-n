@@ -1,4 +1,5 @@
 import { apiClient, unwrapApiResponse, extractApiError, ApiResponse } from '../lib/api';
+import { tokenStorage } from '../lib/tokenStorage';
 import {
   ProductReview,
   ProductReviewsResponse,
@@ -250,7 +251,7 @@ export const reviewService = {
         };
       }
 
-      const isAuth = isAuthenticated !== undefined ? isAuthenticated : (typeof window !== 'undefined' && !!localStorage.getItem('vyzobd_auth_token'));
+      const isAuth = isAuthenticated !== undefined ? isAuthenticated : (typeof window !== 'undefined' && tokenStorage.hasAccessToken());
 
       if (isAuth) {
         // Authenticated Customer Eligibility
@@ -366,7 +367,7 @@ export const reviewService = {
         };
       }
 
-      const isAuth = isAuthenticated !== undefined ? isAuthenticated : (typeof window !== 'undefined' && !!localStorage.getItem('vyzobd_auth_token'));
+      const isAuth = isAuthenticated !== undefined ? isAuthenticated : (typeof window !== 'undefined' && tokenStorage.hasAccessToken());
 
       if (isAuth) {
         // Authenticated Customer Review Submission

@@ -25,12 +25,16 @@ import {
   Package,
   Loader2,
   LayoutGrid,
+  LayoutDashboard,
   Star,
   ShieldCheck,
   Truck,
   HelpCircle,
-  Box
+  Box,
+  Bell
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { customerService } from '../../services/customerService';
 import { storefrontApi } from '../../services/storefrontApi';
 import { Product } from '../../types/storefront';
 import { Badge } from '../ui/Badge';
@@ -59,6 +63,20 @@ function HeaderContent() {
 
   const { user, logout } = useAuth();
   const { cart } = useCart();
+
+  // TanStack Query for authoritative customer unread notifications count
+  const { data: customerDashboardData } = useQuery({
+    queryKey: ['customer', 'dashboard'],
+    queryFn: async () => {
+      const res = await customerService.getDashboard();
+      if (res.status === 'error' || !res.data) return null;
+      return res.data;
+    },
+    enabled: Boolean(user),
+    staleTime: 60 * 1000,
+  });
+
+  const unreadNotificationsCount = customerDashboardData?.metrics?.unreadNotifications || 0;
 
   const [selectedCategory, setSelectedCategory] = useState<string>('All Categories');
   const [searchInput, setSearchInput] = useState<string>('');
@@ -548,6 +566,22 @@ function HeaderContent() {
               <Search size={20} />
             </button>
 
+            {/* Mobile Notifications Button (if logged in) */}
+            {user && (
+              <Link
+                href="/account/notifications"
+                className="p-1.5 text-[#111827] hover:text-[#DC2B53] hover:bg-gray-50 rounded-lg transition-colors cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center relative lg:hidden"
+                aria-label={`Notifications ${unreadNotificationsCount > 0 ? `(${unreadNotificationsCount} unread)` : ''}`}
+              >
+                <Bell size={20} />
+                {unreadNotificationsCount > 0 && (
+                  <span className="absolute top-0.5 right-0.5 bg-[#DC2B53] text-white text-[10px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center border border-white leading-none">
+                    {unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount}
+                  </span>
+                )}
+              </Link>
+            )}
+
             {/* User Account Button & Dropdown */}
             <div className="relative" ref={accountMenuRef}>
               {/* Mobile Profile Button */}
@@ -578,15 +612,29 @@ function HeaderContent() {
                 }}
                 className="hidden lg:flex items-center gap-2 p-2 text-[#111827] hover:text-[#DC2B53] hover:bg-gray-50 rounded-lg transition-colors cursor-pointer min-h-[40px]"
               >
-                <div className="w-8 h-8 rounded-full bg-[#F9FAFB] border border-[#E5E7EB] flex items-center justify-center text-[#111827] font-semibold text-xs">
-                  {user ? user.fullName.charAt(0).toUpperCase() : <User size={16} />}
+                <div className="w-8 h-8 rounded-full bg-[#F9FAFB] border border-[#E5E7EB] flex items-center justify-center text-[#111827] font-semibold text-xs overflow-hidden relative">
+                  {user ? (
+                    user.avatar || user.avatarUrl ? (
+                      <SmartImage
+                        src={user.avatar || user.avatarUrl}
+                        alt={user.fullName || 'User'}
+                        fill
+                        fallbackType="avatar"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      user.fullName ? user.fullName.charAt(0).toUpperCase() : <User size={16} />
+                    )
+                  ) : (
+                    <User size={16} />
+                  )}
                 </div>
                 <div className="hidden xl:block text-left">
                   <div className="text-[10px] text-[#6B7280] uppercase font-medium leading-tight">
                     {user ? 'Welcome' : 'Account'}
                   </div>
                   <div className="text-xs font-semibold text-[#111827] leading-tight truncate max-w-[110px]">
-                    {user ? user.fullName.split(' ')[0] : 'Sign In'}
+                    {user ? (user.firstName || user.fullName?.split(' ')[0] || 'Customer') : 'Sign In'}
                   </div>
                 </div>
                 {user && <ChevronDown size={13} className="text-[#6B7280] hidden xl:block" />}
@@ -596,11 +644,20 @@ function HeaderContent() {
               {user && isAccountMenuOpen && (
                 <div className="absolute right-0 top-full mt-2 w-56 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-lg border border-[#E5E7EB] p-1.5 z-50">
                   <div className="p-2.5 bg-[#F9FAFB] rounded-lg mb-1 border border-[#E5E7EB]">
-                    <div className="text-xs font-bold text-[#111827]">{user.fullName}</div>
-                    <div className="text-[11px] text-[#6B7280] truncate">{user.email}</div>
+                    <div className="text-xs font-bold text-[#111827]">{user.fullName || 'Customer'}</div>
+                    <div className="text-[11px] text-[#6B7280] truncate">{user.email || user.phone || ''}</div>
                   </div>
 
                   <div className="space-y-0.5">
+                    <Link
+                      href="/account"
+                      onClick={() => setIsAccountMenuOpen(false)}
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-[#111827] hover:text-[#DC2B53] hover:bg-[#FDF0F3] rounded-lg transition-colors flex items-center gap-2"
+                    >
+                      <LayoutDashboard size={14} />
+                      <span>Dashboard</span>
+                    </Link>
+
                     <Link
                       href="/account/profile"
                       onClick={() => setIsAccountMenuOpen(false)}
@@ -617,6 +674,22 @@ function HeaderContent() {
                     >
                       <Package size={14} />
                       <span>Order History</span>
+                    </Link>
+
+                    <Link
+                      href="/account/notifications"
+                      onClick={() => setIsAccountMenuOpen(false)}
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-[#111827] hover:text-[#DC2B53] hover:bg-[#FDF0F3] rounded-lg transition-colors flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Bell size={14} />
+                        <span>Notifications</span>
+                      </div>
+                      {unreadNotificationsCount > 0 && (
+                        <span className="text-[10px] bg-[#DC2B53] text-white font-bold px-1.5 py-0.2 rounded-full">
+                          {unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount}
+                        </span>
+                      )}
                     </Link>
 
                     <Link
@@ -652,6 +725,27 @@ function HeaderContent() {
                 </div>
               )}
             </div>
+
+            {/* Notifications Button (Visible on Desktop if Logged In) */}
+            {user && (
+              <Link
+                href="/account/notifications"
+                className="hidden lg:flex relative p-2 text-[#111827] hover:text-[#DC2B53] hover:bg-gray-50 rounded-lg transition-colors items-center gap-1.5 min-h-[40px]"
+                aria-label={`Notifications ${unreadNotificationsCount > 0 ? `(${unreadNotificationsCount} unread)` : ''}`}
+              >
+                <div className="relative">
+                  <Bell size={20} />
+                  {unreadNotificationsCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-[#DC2B53] text-white text-[10px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center border border-white leading-none">
+                      {unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount}
+                    </span>
+                  )}
+                </div>
+                <span className="hidden xl:inline text-xs font-medium text-[#111827]">
+                  Notifications
+                </span>
+              </Link>
+            )}
 
             {/* Wishlist Button (Hidden on Mobile, Visible on Desktop) */}
             <Link

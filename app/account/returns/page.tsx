@@ -1,6 +1,7 @@
 'use client';
-import { ReturnRequestPage } from '../../../src/components/account/ReturnRequestPage';
+
+import { ReturnsPage } from '../../../src/components/account/ReturnsPage';
 
 export default function AccountReturnsPage() {
-  return <ReturnRequestPage />;
+  return <ReturnsPage />;
 }

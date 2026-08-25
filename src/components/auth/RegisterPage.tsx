@@ -1,120 +1,228 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { registerSchema, RegisterFormData } from '../../types/auth';
+import { 
+  registerSchema, 
+  RegisterFormData,
+  mobileRegisterRequestSchema,
+  MobileRegisterRequestFormData,
+  mobileRegisterVerifySchema,
+  MobileRegisterVerifyFormData
+} from '../../types/auth';
 import { useAuth } from '../../context/AuthContext';
-import { Loader2, Mail, Lock, User, Phone, ShieldCheck, ArrowRight, CheckCircle2, Info } from 'lucide-react';
+import { useStorefront } from '../../context/StorefrontContext';
+import { 
+  Loader2, 
+  Mail, 
+  Lock, 
+  User, 
+  Phone, 
+  ShieldCheck, 
+  ArrowRight, 
+  CheckCircle2, 
+  Smartphone, 
+  KeyRound, 
+  RotateCw, 
+  AlertCircle,
+  Eye,
+  EyeOff
+} from 'lucide-react';
+import { formatBDPhoneE164 } from '../../utils/phone';
 
-const GoogleIcon = () => (
-  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-    <path
-      fill="#4285F4"
-      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-    />
-    <path
-      fill="#34A853"
-      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-    />
-    <path
-      fill="#FBBC05"
-      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-    />
-    <path
-      fill="#EA4335"
-      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-    />
-  </svg>
-);
-
-const FacebookIcon = () => (
-  <svg className="w-5 h-5 shrink-0 fill-[#1877F2]" viewBox="0 0 24 24">
-    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-  </svg>
-);
+function getSafeRedirectUrl(rawRedirect: string | null): string {
+  if (!rawRedirect) return '/account';
+  const decoded = decodeURIComponent(rawRedirect).trim();
+  if (decoded.startsWith('/') && !decoded.startsWith('//') && !decoded.includes('://')) {
+    return decoded;
+  }
+  return '/account';
+}
 
 export const RegisterPage: React.FC = () => {
   const router = useRouter();
-  const { register: registerAccount } = useAuth();
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [socialNotice, setSocialNotice] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const { register: registerAccount, registerWithMobile, verifyMobileRegister, isAuthenticated } = useAuth();
+  const { notifySuccess, notifyError } = useStorefront();
 
+  const [authMethod, setAuthMethod] = useState<'email' | 'mobile'>('email');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  // Mobile OTP registration state
+  const [otpStep, setOtpStep] = useState<'request' | 'verify'>('request');
+  const [mobilePhone, setMobilePhone] = useState<string>('');
+  const [resendCooldown, setResendCooldown] = useState<number>(0);
+  const [isSubmittingOtp, setIsSubmittingOtp] = useState<boolean>(false);
+
+  const redirectTarget = getSafeRedirectUrl(searchParams?.get('redirect'));
+
+  // If already authenticated, redirect immediately
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace(redirectTarget);
+    }
+  }, [isAuthenticated, redirectTarget, router]);
+
+  // Resend cooldown timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  // ----------------------------------------------------
+  // Email & Password Registration Hook
+  // ----------------------------------------------------
   const {
-    register,
-    handleSubmit,
-    setError: setErrorField,
-    formState: { errors, isSubmitting },
+    register: registerEmail,
+    handleSubmit: handleSubmitEmail,
+    setError: setErrorEmail,
+    formState: { errors: emailErrors, isSubmitting: isSubmittingEmail },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = async (data: RegisterFormData) => {
-    setError(null);
-    setSuccessMessage(null);
-    setSocialNotice(null);
+  const onEmailSubmit = async (data: RegisterFormData) => {
+    setServerError(null);
     try {
-      const res = await registerAccount(data);
-      setSuccessMessage(res.message || 'Registration successful. Please check your email to verify your account.');
+      await registerAccount({
+        email: data.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+      });
+
+      notifySuccess('Account Created!', 'Your account has been registered successfully.');
+      router.push(redirectTarget);
     } catch (err: any) {
       if (err?.errors && Array.isArray(err.errors)) {
         err.errors.forEach((e: any) => {
           if (e.field) {
-            setErrorField(e.field as any, { type: 'server', message: e.message });
+            setErrorEmail(e.field as any, { type: 'server', message: e.message });
           }
         });
       }
-      setError(err?.message || 'Registration failed. Please try again.');
+      const msg = err?.message || 'Registration failed. Please check your information and try again.';
+      setServerError(msg);
+      notifyError(err, 'Registration Failed', msg);
     }
   };
 
-  const handleSocialClick = (provider: string) => {
-    setError(null);
-    setSocialNotice(`Continue with ${provider} is currently coming soon. Please register using your details below.`);
+  // ----------------------------------------------------
+  // Mobile OTP Registration Hooks
+  // ----------------------------------------------------
+  const {
+    register: registerMobileReq,
+    handleSubmit: handleSubmitMobileReq,
+    setError: setErrorMobileReq,
+    formState: { errors: mobileReqErrors },
+  } = useForm<MobileRegisterRequestFormData>({
+    resolver: zodResolver(mobileRegisterRequestSchema),
+  });
+
+  const {
+    register: registerMobileVerify,
+    handleSubmit: handleSubmitMobileVerify,
+    setValue: setMobileVerifyValue,
+    setError: setErrorMobileVerify,
+    formState: { errors: mobileVerifyErrors },
+  } = useForm<MobileRegisterVerifyFormData>({
+    resolver: zodResolver(mobileRegisterVerifySchema),
+  });
+
+  const onMobileRequestSubmit = async (data: MobileRegisterRequestFormData) => {
+    setServerError(null);
+    setIsSubmittingOtp(true);
+    try {
+      const formatted = formatBDPhoneE164(data.phone);
+      await registerWithMobile(formatted);
+      setMobilePhone(formatted);
+      setMobileVerifyValue('phone', formatted);
+      setOtpStep('verify');
+      setResendCooldown(60);
+      notifySuccess('Code Sent', `A 6-digit verification code was sent to ${formatted}`);
+    } catch (err: any) {
+      if (err?.errors && Array.isArray(err.errors)) {
+        err.errors.forEach((e: any) => {
+          if (e.field) {
+            setErrorMobileReq(e.field as any, { type: 'server', message: e.message });
+          }
+        });
+      }
+      const msg = err?.message || 'Failed to send verification SMS to mobile number.';
+      setServerError(msg);
+      notifyError(err, 'Verification Code Error', msg);
+    } finally {
+      setIsSubmittingOtp(false);
+    }
   };
 
-  if (successMessage) {
-    return (
-      <div className="min-h-screen bg-[#F9FAFB] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-6 sm:px-8 shadow-xs rounded-xl border border-[#E5E7EB] text-center space-y-5">
-            <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-600 border border-emerald-200">
-              <CheckCircle2 size={24} />
-            </div>
-            
-            <div className="space-y-1.5">
-              <h2 className="text-xl font-bold text-[#111827]">Account Created!</h2>
-              <p className="text-xs text-[#6B7280] leading-relaxed">
-                {successMessage}
-              </p>
-            </div>
+  const onMobileVerifySubmit = async (data: MobileRegisterVerifyFormData) => {
+    setServerError(null);
+    setIsSubmittingOtp(true);
+    try {
+      const formatted = formatBDPhoneE164(data.phone || mobilePhone);
+      await verifyMobileRegister({
+        phone: formatted,
+        code: data.code.trim(),
+        firstName: data.firstName.trim(),
+        lastName: data.lastName.trim(),
+        password: data.password ? data.password : undefined,
+      });
 
-            <div className="pt-2">
-              <Link
-                href="/login"
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#DC2B53] hover:bg-[#C52247] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
-              >
-                <span>Continue to Sign In</span>
-                <ArrowRight size={16} />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+      notifySuccess('Registration Verified!', 'Welcome to Vyzobd.');
+      router.push(redirectTarget);
+    } catch (err: any) {
+      if (err?.errors && Array.isArray(err.errors)) {
+        err.errors.forEach((e: any) => {
+          if (e.field) {
+            setErrorMobileVerify(e.field as any, { type: 'server', message: e.message });
+          }
+        });
+      }
+      const msg = err?.message || 'Invalid or expired verification code.';
+      setServerError(msg);
+      notifyError(err, 'Verification Failed', msg);
+    } finally {
+      setIsSubmittingOtp(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0 || !mobilePhone) return;
+    setServerError(null);
+    setIsSubmittingOtp(true);
+    try {
+      await registerWithMobile(mobilePhone);
+      setResendCooldown(60);
+      notifySuccess('Code Resent', `A fresh code has been sent to ${mobilePhone}`);
+    } catch (err: any) {
+      const msg = err?.message || 'Failed to resend verification code.';
+      setServerError(msg);
+    } finally {
+      setIsSubmittingOtp(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
-        <h2 className="text-xl font-bold text-[#111827]">Create Account</h2>
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#FDF0F3] mb-4 border border-[#DC2B53]/20">
+          <ShieldCheck size={24} className="text-[#DC2B53]" />
+        </div>
+        <h1 className="text-2xl font-bold text-[#111827]">Create an Account</h1>
         <p className="mt-1 text-xs text-[#6B7280]">
           Already have an account?{' '}
           <Link
-            href="/login"
+            href={`/login${redirectTarget !== '/account' ? `?redirect=${encodeURIComponent(redirectTarget)}` : ''}`}
             className="text-[#DC2B53] font-semibold hover:text-[#C52247] transition-colors"
           >
             Sign in here
@@ -125,160 +233,379 @@ export const RegisterPage: React.FC = () => {
       <div className="sm:mx-auto sm:w-full sm:max-w-lg">
         <div className="bg-white py-8 px-6 sm:px-8 shadow-xs rounded-xl border border-[#E5E7EB]">
           
-          {/* Social Registration Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-5">
+          {/* Registration Method Switcher */}
+          <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#F3F4F6] rounded-lg mb-6">
             <button
               type="button"
-              onClick={() => handleSocialClick('Google')}
-              className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-white hover:bg-[#F9FAFB] border border-[#E5E7EB] text-[#111827] text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+              onClick={() => {
+                setAuthMethod('email');
+                setServerError(null);
+              }}
+              className={`py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
+                authMethod === 'email'
+                  ? 'bg-white text-[#111827] shadow-xs'
+                  : 'text-[#6B7280] hover:text-[#111827]'
+              }`}
             >
-              <GoogleIcon />
-              <span>Continue with Google</span>
+              <Mail size={14} />
+              <span>Email & Password</span>
             </button>
 
             <button
               type="button"
-              onClick={() => handleSocialClick('Facebook')}
-              className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-white hover:bg-[#F9FAFB] border border-[#E5E7EB] text-[#111827] text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+              onClick={() => {
+                setAuthMethod('mobile');
+                setServerError(null);
+              }}
+              className={`py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
+                authMethod === 'mobile'
+                  ? 'bg-white text-[#111827] shadow-xs'
+                  : 'text-[#6B7280] hover:text-[#111827]'
+              }`}
             >
-              <FacebookIcon />
-              <span>Continue with Facebook</span>
+              <Smartphone size={14} />
+              <span>Mobile OTP</span>
             </button>
           </div>
 
-          <div className="relative my-5 text-center">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#E5E7EB]"></div>
-            </div>
-            <span className="relative bg-white px-3 text-[11px] font-medium text-[#6B7280]">
-              Or register with email
-            </span>
-          </div>
-
-          {socialNotice && (
-            <div className="p-3 mb-5 bg-amber-50 border border-amber-200 rounded-lg text-xs font-medium text-amber-800 flex items-start gap-2.5">
-              <Info size={16} className="text-amber-600 shrink-0 mt-0.5" />
-              <span>{socialNotice}</span>
+          {/* Server Error Alert */}
+          {serverError && (
+            <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-xs font-medium text-[#DC2626] flex items-center gap-2">
+              <AlertCircle size={16} className="shrink-0" />
+              <span>{serverError}</span>
             </div>
           )}
 
-          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-[#111827] mb-1">Full Name</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
-                    <User size={16} />
+          {/* ==================================================== */}
+          {/* METHOD 1: STANDARD EMAIL REGISTRATION */}
+          {/* ==================================================== */}
+          {authMethod === 'email' && (
+            <form className="space-y-4" onSubmit={handleSubmitEmail(onEmailSubmit)}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-[#111827] mb-1">First Name</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                      <User size={16} />
+                    </div>
+                    <input
+                      {...registerEmail('firstName')}
+                      type="text"
+                      className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
+                      placeholder="Jane"
+                    />
                   </div>
-                  <input
-                    {...register('fullName')}
-                    className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
-                    placeholder="Full Name"
-                  />
+                  {emailErrors.firstName && (
+                    <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{emailErrors.firstName.message}</p>
+                  )}
                 </div>
-                {errors.fullName && <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{errors.fullName.message}</p>}
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#111827] mb-1">Last Name</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                      <User size={16} />
+                    </div>
+                    <input
+                      {...registerEmail('lastName')}
+                      type="text"
+                      className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
+                      placeholder="Doe"
+                    />
+                  </div>
+                  {emailErrors.lastName && (
+                    <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{emailErrors.lastName.message}</p>
+                  )}
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-[#111827] mb-1">Email Address</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                      <Mail size={16} />
+                    </div>
+                    <input
+                      {...registerEmail('email')}
+                      type="email"
+                      className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
+                      placeholder="jane.doe@example.com"
+                    />
+                  </div>
+                  {emailErrors.email && (
+                    <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{emailErrors.email.message}</p>
+                  )}
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-[#111827] mb-1">
+                    Bangladesh Mobile Number
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                      <Phone size={16} />
+                    </div>
+                    <input
+                      {...registerEmail('phone')}
+                      type="tel"
+                      className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
+                      placeholder="017XXXXXXXX"
+                    />
+                  </div>
+                  {emailErrors.phone && (
+                    <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{emailErrors.phone.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#111827] mb-1">Password</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                      <Lock size={16} />
+                    </div>
+                    <input
+                      {...registerEmail('password')}
+                      type={showPassword ? 'text' : 'password'}
+                      className="block w-full pl-10 pr-10 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#6B7280] hover:text-[#111827] transition-colors cursor-pointer"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  {emailErrors.password && (
+                    <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{emailErrors.password.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#111827] mb-1">Confirm Password</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                      <Lock size={16} />
+                    </div>
+                    <input
+                      {...registerEmail('confirmPassword')}
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      className="block w-full pl-10 pr-10 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#6B7280] hover:text-[#111827] transition-colors cursor-pointer"
+                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  {emailErrors.confirmPassword && (
+                    <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{emailErrors.confirmPassword.message}</p>
+                  )}
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-[#111827] mb-1">Email Address</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
-                    <Mail size={16} />
-                  </div>
+              <div className="flex items-start pt-2">
+                <div className="flex items-center h-5">
                   <input
-                    {...register('email')}
-                    type="email"
-                    className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
-                    placeholder="name@example.com"
+                    {...registerEmail('agreeTerms')}
+                    id="agree-terms"
+                    type="checkbox"
+                    className="h-4 w-4 text-[#DC2B53] focus:ring-[#DC2B53] border-[#E5E7EB] rounded accent-[#DC2B53]"
                   />
                 </div>
-                {errors.email && <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{errors.email.message}</p>}
+                <div className="ml-2.5 text-xs">
+                  <label htmlFor="agree-terms" className="font-medium text-[#6B7280]">
+                    I agree to the <Link href="/pages/terms" className="text-[#DC2B53] hover:underline font-semibold">Terms of Service</Link> and <Link href="/pages/privacy" className="text-[#DC2B53] hover:underline font-semibold">Privacy Policy</Link>
+                  </label>
+                  {emailErrors.agreeTerms && (
+                    <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{emailErrors.agreeTerms.message}</p>
+                  )}
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-[#111827] mb-1">Phone Number</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
-                    <Phone size={16} />
-                  </div>
-                  <input
-                    {...register('phone')}
-                    className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
-                    placeholder="+8801..."
-                  />
-                </div>
-                {errors.phone && <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{errors.phone.message}</p>}
-              </div>
+              <button
+                type="submit"
+                disabled={isSubmittingEmail}
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#DC2B53] hover:bg-[#C52247] disabled:bg-gray-300 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs mt-2"
+              >
+                {isSubmittingEmail ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
+                <span>{isSubmittingEmail ? 'Creating Account...' : 'Create Account'}</span>
+              </button>
+            </form>
+          )}
 
-              <div>
-                <label className="block text-xs font-semibold text-[#111827] mb-1">Password</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
-                    <Lock size={16} />
+          {/* ==================================================== */}
+          {/* METHOD 2: MOBILE OTP REGISTRATION */}
+          {/* ==================================================== */}
+          {authMethod === 'mobile' && (
+            <div>
+              {otpStep === 'request' ? (
+                <form className="space-y-4" onSubmit={handleSubmitMobileReq(onMobileRequestSubmit)}>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#111827] mb-1">
+                      Bangladesh Mobile Number
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                        <Smartphone size={16} />
+                      </div>
+                      <input
+                        {...registerMobileReq('phone')}
+                        type="tel"
+                        className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
+                        placeholder="017XXXXXXXX"
+                      />
+                    </div>
+                    <p className="mt-1 text-[11px] text-[#6B7280]">
+                      We will send a 6-digit verification code to this mobile number.
+                    </p>
+                    {mobileReqErrors.phone && (
+                      <p className="mt-1 text-[11px] font-medium text-[#DC2626]">
+                        {mobileReqErrors.phone.message}
+                      </p>
+                    )}
                   </div>
-                  <input
-                    {...register('password')}
-                    type="password"
-                    className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
-                    placeholder="••••••••"
-                  />
-                </div>
-                {errors.password && <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{errors.password.message}</p>}
-              </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-[#111827] mb-1">Confirm Password</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
-                    <CheckCircle2 size={16} />
+                  <button
+                    type="submit"
+                    disabled={isSubmittingOtp}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#DC2B53] hover:bg-[#C52247] disabled:bg-gray-300 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
+                  >
+                    {isSubmittingOtp ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
+                    <span>{isSubmittingOtp ? 'Sending SMS Code...' : 'Send Verification Code'}</span>
+                  </button>
+                </form>
+              ) : (
+                <form className="space-y-4" onSubmit={handleSubmitMobileVerify(onMobileVerifySubmit)}>
+                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between">
+                    <div className="min-w-0">
+                      <span className="text-[11px] text-[#6B7280] block">Code sent to</span>
+                      <span className="text-xs font-bold text-[#111827] truncate block">{mobilePhone}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOtpStep('request');
+                        setServerError(null);
+                      }}
+                      className="text-xs font-semibold text-[#DC2B53] hover:underline cursor-pointer"
+                    >
+                      Change
+                    </button>
                   </div>
-                  <input
-                    {...register('confirmPassword')}
-                    type="password"
-                    className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
-                    placeholder="••••••••"
-                  />
-                </div>
-                {errors.confirmPassword && <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{errors.confirmPassword.message}</p>}
-              </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#111827] mb-1">
+                      6-Digit Verification Code
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                        <KeyRound size={16} />
+                      </div>
+                      <input
+                        {...registerMobileVerify('code')}
+                        type="text"
+                        maxLength={6}
+                        autoFocus
+                        inputMode="numeric"
+                        className="block w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-lg text-xs font-bold tracking-widest text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53] text-center"
+                        placeholder="123456"
+                      />
+                    </div>
+                    {mobileVerifyErrors.code && (
+                      <p className="mt-1 text-[11px] font-medium text-[#DC2626]">
+                        {mobileVerifyErrors.code.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-[#111827] mb-1">First Name</label>
+                      <input
+                        {...registerMobileVerify('firstName')}
+                        type="text"
+                        className="block w-full px-3.5 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] focus:outline-none focus:border-[#DC2B53]"
+                        placeholder="Jane"
+                      />
+                      {mobileVerifyErrors.firstName && (
+                        <p className="mt-1 text-[11px] font-medium text-[#DC2626]">
+                          {mobileVerifyErrors.firstName.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-[#111827] mb-1">Last Name</label>
+                      <input
+                        {...registerMobileVerify('lastName')}
+                        type="text"
+                        className="block w-full px-3.5 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] focus:outline-none focus:border-[#DC2B53]"
+                        placeholder="Doe"
+                      />
+                      {mobileVerifyErrors.lastName && (
+                        <p className="mt-1 text-[11px] font-medium text-[#DC2626]">
+                          {mobileVerifyErrors.lastName.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#111827] mb-1">
+                      Password <span className="text-gray-400 font-normal">(Optional)</span>
+                    </label>
+                    <input
+                      {...registerMobileVerify('password')}
+                      type="password"
+                      className="block w-full px-3.5 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] placeholder:text-[#6B7280] focus:outline-none focus:border-[#DC2B53]"
+                      placeholder="Set password (optional)"
+                    />
+                    {mobileVerifyErrors.password && (
+                      <p className="mt-1 text-[11px] font-medium text-[#DC2626]">
+                        {mobileVerifyErrors.password.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#6B7280]">Didn't receive the code?</span>
+                    <button
+                      type="button"
+                      disabled={resendCooldown > 0 || isSubmittingOtp}
+                      onClick={handleResendOtp}
+                      className="font-semibold text-[#DC2B53] hover:underline disabled:text-[#9CA3AF] disabled:no-underline cursor-pointer flex items-center gap-1"
+                    >
+                      <RotateCw size={12} className={isSubmittingOtp ? 'animate-spin' : ''} />
+                      <span>{resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend OTP'}</span>
+                    </button>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmittingOtp}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#DC2B53] hover:bg-[#C52247] disabled:bg-gray-300 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
+                  >
+                    {isSubmittingOtp ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                    <span>{isSubmittingOtp ? 'Verifying...' : 'Complete Registration'}</span>
+                  </button>
+                </form>
+              )}
             </div>
+          )}
 
-            <div className="flex items-start pt-1">
-              <div className="flex items-center h-5">
-                <input
-                  {...register('agreeTerms')}
-                  id="agree-terms"
-                  type="checkbox"
-                  className="h-4 w-4 text-[#DC2B53] focus:ring-[#DC2B53] border-[#E5E7EB] rounded accent-[#DC2B53]"
-                />
-              </div>
-              <div className="ml-2.5 text-xs">
-                <label htmlFor="agree-terms" className="font-medium text-[#6B7280]">
-                  I agree to the <Link href="/pages/terms" className="text-[#DC2B53] hover:underline font-semibold">Terms of Service</Link> and <Link href="/pages/privacy" className="text-[#DC2B53] hover:underline font-semibold">Privacy Policy</Link>
-                </label>
-                {errors.agreeTerms && <p className="mt-1 text-[11px] font-medium text-[#DC2626]">{errors.agreeTerms.message}</p>}
-              </div>
-            </div>
-
-            {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs font-medium text-[#DC2626] flex items-center gap-2">
-                <ShieldCheck size={16} className="rotate-180 flex-shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#DC2B53] hover:bg-[#C52247] disabled:bg-gray-300 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
-            >
-              {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
-              <span>{isSubmitting ? 'Creating Account...' : 'Create Account'}</span>
-            </button>
-          </form>
+          <div className="mt-6 pt-5 border-t border-[#E5E7EB]">
+            <p className="text-[11px] text-center text-[#6B7280]">
+              By registering, you agree to Vyzobd's Terms of Service and Privacy Policy.
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
 };
-

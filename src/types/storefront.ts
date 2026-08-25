@@ -276,11 +276,15 @@ export interface Refund {
 
 export interface UserProfile {
   id: string;
+  firstName?: string;
+  lastName?: string;
   fullName: string;
   email: string;
   avatar?: string;
   avatarUrl?: string;
   phone?: string;
+  emailVerified?: boolean;
+  phoneVerified?: boolean;
   defaultAddress?: ShippingAddress;
 }
 
