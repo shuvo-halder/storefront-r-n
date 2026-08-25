@@ -42,7 +42,14 @@ export const CartPage: React.FC = () => {
   const freeShippingGoal = publicSettings?.shipping?.freeShippingThreshold ?? 3000;
   const isFreeShipping = cart.subtotal >= freeShippingGoal || (cart.shippingFee !== undefined && cart.shippingFee === 0);
   const netSubtotal = Math.max(0, cart.subtotal - cart.discount);
-  const calculatedTax = cart.estimatedTax > 0 ? cart.estimatedTax : (netSubtotal * 0.10);
+
+  const rawTaxRate = publicSettings?.tax?.enableTax || publicSettings?.tax?.taxEnabled
+    ? (publicSettings?.tax?.taxRate ?? publicSettings?.tax?.defaultTaxRate ?? 0)
+    : 0;
+  const taxFraction = rawTaxRate > 1 ? rawTaxRate / 100 : rawTaxRate;
+  const taxPercentDisplay = Math.round(taxFraction * 100);
+
+  const calculatedTax = cart.estimatedTax !== undefined ? cart.estimatedTax : (netSubtotal * taxFraction);
   const estimatedTotal = cart.total > 0 ? cart.total : (netSubtotal + (isFreeShipping ? 0 : (cart.shippingFee || 0)) + calculatedTax);
 
   // GA4 Tracking
@@ -220,7 +227,7 @@ export const CartPage: React.FC = () => {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Estimated Tax (10%)</span>
+                <span>Estimated Tax ({taxPercentDisplay}%)</span>
                 <span className="font-semibold text-[#111827]">{formatPrice(calculatedTax, currencyCode, currencySymbol)}</span>
               </div>
               <div className="flex justify-between text-base font-bold text-[#111827] pt-2.5 border-t border-[#E5E7EB]">

@@ -22,6 +22,7 @@ import {
   ArrowLeft, 
   Loader2, 
   ShieldCheck, 
+  ShieldAlert,
   ShoppingBag,
   Trash2,
   Tag
@@ -171,17 +172,54 @@ export const CheckoutPage: React.FC = () => {
   const netSubtotal = Math.max(0, cart.subtotal - cart.discount);
   const isFreeShipping = cart.subtotal >= freeShippingThreshold || (checkoutSession && checkoutSession.shippingFee === 0);
 
+  const rawTaxRate = settings?.tax?.enableTax || settings?.tax?.taxEnabled
+    ? (settings?.tax?.taxRate ?? settings?.tax?.defaultTaxRate ?? 0)
+    : 0;
+  const taxFraction = rawTaxRate > 1 ? rawTaxRate / 100 : rawTaxRate;
+  const taxPercentDisplay = Math.round(taxFraction * 100);
+
   const effectiveShippingFee = checkoutSession
     ? checkoutSession.shippingFee
     : (isFreeShipping ? 0 : 60);
 
   const effectiveTax = checkoutSession
     ? checkoutSession.tax
-    : netSubtotal * 0.10;
+    : netSubtotal * taxFraction;
 
   const effectiveTotal = checkoutSession
     ? checkoutSession.totalAmount
     : netSubtotal + (isFreeShipping ? 0 : effectiveShippingFee) + effectiveTax;
+
+  // Pre-fill logged in user info (customer fields and basic contact info)
+  useEffect(() => {
+    if (user) {
+      setValue('customer.email', user.email || '');
+      const parts = (user.fullName || '').split(' ');
+      setValue('customer.firstName', parts[0] || '');
+      setValue('customer.lastName', parts.slice(1).join(' ') || '');
+      setValue('customer.phone', user.phone || '');
+
+      // Pre-fill shipping/billing address basic contact if currently empty
+      if (!watch('shippingAddress.fullName')) {
+        setValue('shippingAddress.fullName', user.fullName || '');
+      }
+      if (!watch('shippingAddress.email')) {
+        setValue('shippingAddress.email', user.email || '');
+      }
+      if (!watch('shippingAddress.phone')) {
+        setValue('shippingAddress.phone', user.phone || '');
+      }
+      if (!watch('billingAddress.fullName')) {
+        setValue('billingAddress.fullName', user.fullName || '');
+      }
+      if (!watch('billingAddress.email')) {
+        setValue('billingAddress.email', user.email || '');
+      }
+      if (!watch('billingAddress.phone')) {
+        setValue('billingAddress.phone', user.phone || '');
+      }
+    }
+  }, [user, setValue]);
 
   // Auto-fill saved default address for authenticated users
   useEffect(() => {
@@ -386,6 +424,29 @@ export const CheckoutPage: React.FC = () => {
           </div>
         )}
 
+        {user && (!user.phone || !user.fullName) && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <span className="p-2 bg-amber-100 rounded-lg text-amber-800 shrink-0 mt-0.5 animate-pulse">
+                <ShieldAlert size={18} />
+              </span>
+              <div>
+                <h3 className="text-sm font-bold text-amber-900">Incomplete Customer Profile</h3>
+                <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
+                  Your profile is missing some required contact information (like your phone number). Please make sure to complete the contact info in the checkout form below or update your profile in the Account page.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigateTo('account')}
+              className="px-4 py-2 bg-amber-800 hover:bg-amber-900 text-white rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer"
+            >
+              Go to Account
+            </button>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit(onPlaceOrder)} className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           
           {/* Main Left Column */}
@@ -558,7 +619,7 @@ export const CheckoutPage: React.FC = () => {
                   </div>
                   
                   <div className="flex justify-between text-[#6B7280]">
-                    <span>Tax (10%)</span>
+                    <span>Tax ({taxPercentDisplay}%)</span>
                     <span className="font-semibold text-[#111827]">
                       {isSessionLoading ? (
                         <span className="text-xs text-[#6B7280] italic flex items-center gap-1">

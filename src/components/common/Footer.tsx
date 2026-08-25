@@ -56,6 +56,11 @@ function sanitizeSocialUrl(url: string | undefined): string | null {
 
 export const Footer: React.FC = () => {
   const { publicSettings } = useStorefront();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const socialPlatforms = [
     { id: 'facebook', label: 'Facebook', url: publicSettings?.socialLinks?.facebook, Icon: Facebook },
@@ -75,7 +80,7 @@ export const Footer: React.FC = () => {
     .filter((platform): platform is typeof platform & { sanitizedUrl: string } => Boolean(platform.sanitizedUrl));
 
   return (
-    <footer className="bg-[#111827] text-[#9CA3AF] pt-12 sm:pt-14 pb-8">
+    <footer className="bg-[#111827] text-[#9CA3AF] pt-12 sm:pt-14 pb-5">
       
       {/* Main Footer Links & Newsletter */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-10 pb-10 border-b border-gray-800">
@@ -97,37 +102,39 @@ export const Footer: React.FC = () => {
             {publicSettings?.seo?.metaDescription || 'Quality products, trusted service, and a better shopping experience — all in one place.'}
           </p>
 
-          <div className="flex flex-row lg:flex-col items-start justify-between lg:justify-start gap-4 pt-1">
+          <div className="grid grid-cols-[1.3fr_1fr] sm:grid-cols-[1.5fr_1fr] lg:flex lg:flex-col items-start justify-between lg:justify-start gap-4 pt-1 w-full">
             <div className="space-y-2.5 text-xs font-medium text-gray-300 min-w-0">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 min-w-0">
                 <Phone size={14} className="text-[#DC2B53] shrink-0" />
-                <span>{publicSettings?.general?.storePhone || publicSettings?.store?.callOrderNumber || '+8801710634144'}</span>
+                <span className="truncate">{publicSettings?.general?.storePhone || publicSettings?.store?.callOrderNumber || '+8801710634144'}</span>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 min-w-0">
                 <Mail size={14} className="text-[#DC2B53] shrink-0" />
                 <span className="lowercase truncate">{publicSettings?.general?.storeEmail || 'support@vyzobd.com'}</span>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 min-w-0">
                 <MapPin size={14} className="text-[#DC2B53] shrink-0" />
-                <span className="capitalize">{publicSettings?.general?.storeAddress || 'Dhaka, Bangladesh'}</span>
+                <span className="capitalize truncate">{publicSettings?.general?.storeAddress || 'Dhaka, Bangladesh'}</span>
               </div>
             </div>
 
-            {/* Social Media Icons (Desktop: below contact info; Mobile: right side of contact info row) */}
-            {activeSocialLinks.length > 0 && (
-              <div className="flex flex-wrap items-center justify-end lg:justify-start gap-2 shrink-0 pt-0.5 lg:pt-2">
-                {activeSocialLinks.map((social) => (
-                  <a
-                    key={social.id}
-                    href={social.sanitizedUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={social.label}
-                    className="w-8 h-8 rounded-lg bg-gray-800/80 hover:bg-[#DC2B53] text-gray-400 hover:text-white border border-gray-700/60 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#DC2B53]/50"
-                  >
-                    <social.Icon className="w-4 h-4" />
-                  </a>
-                ))}
+            {/* Social Media Icons (Desktop: below contact info; Mobile: right side of contact info row, formatted in a clean right-aligned grid/flex structure) */}
+            {mounted && activeSocialLinks.length > 0 && (
+              <div className="flex justify-end lg:justify-start w-full lg:w-auto">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap gap-2 pt-0.5 lg:pt-2">
+                  {activeSocialLinks.map((social) => (
+                    <a
+                      key={social.id}
+                      href={social.sanitizedUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={social.label}
+                      className="w-8 h-8 rounded-lg bg-gray-800/80 hover:bg-[#DC2B53] text-gray-400 hover:text-white border border-gray-700/60 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#DC2B53]/50 shrink-0"
+                    >
+                      <social.Icon className="w-4 h-4" />
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -214,7 +221,7 @@ export const Footer: React.FC = () => {
       </div>
 
       {/* Bottom Copyright & Payment Icons */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 flex flex-col-reverse md:flex-row items-center justify-between gap-4 sm:gap-6 text-xs sm:text-sm text-gray-400">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-1 flex flex-col-reverse md:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-gray-400">
         <div className="text-center md:text-left text-xs sm:text-sm text-gray-400 font-normal leading-relaxed">
           © {new Date().getFullYear()} {publicSettings?.general?.siteName || "Vyzobd"}. All rights reserved.
         </div>
@@ -224,7 +231,7 @@ export const Footer: React.FC = () => {
           <img 
             src="/images/sslcommerz-banner.png" 
             alt="Secure Payment Gateway powered by SSLCOMMERZ - Visa, Mastercard, bKash, Nagad, AMEX" 
-            className="w-[calc(100%-4px)] max-w-[500px] h-auto md:w-[500px] md:h-[74px] object-contain select-none transition-opacity duration-200"
+            className="w-[calc(100%-4px)] max-w-[450px] h-auto md:w-[450px] md:h-[42px] object-contain select-none transition-opacity duration-200"
             loading="lazy"
             decoding="async"
           />
