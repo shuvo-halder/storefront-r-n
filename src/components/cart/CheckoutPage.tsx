@@ -90,7 +90,7 @@ export const CheckoutPage: React.FC = () => {
         country: 'Bangladesh',
       },
       billingAddress: {
-        sameAsShipping: true,
+        sameAsShipping: false,
         fullName: user?.fullName || '',
         email: user?.email || '',
         phone: user?.phone || '',
