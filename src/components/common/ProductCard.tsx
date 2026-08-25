@@ -9,6 +9,7 @@ import { RatingStars } from './RatingStars';
 import { trackGA4SelectItem } from '../../utils/analytics';
 import { formatPrice } from '../../utils/formatters';
 import { Heart, Eye, ShoppingCart, Sparkles, Zap, Loader2 } from 'lucide-react';
+import { RichTextRenderer } from './RichTextRenderer';
 
 interface ProductCardProps {
   product: Product;
@@ -100,9 +101,11 @@ export const ProductCard = React.memo(({
               {product.name}
             </h3>
 
-            <p className="text-sm text-[#6B7280] line-clamp-2 mt-1.5 leading-relaxed">
-              {product.description}
-            </p>
+            {product.description ? (
+              <div className="text-sm text-[#6B7280] line-clamp-2 mt-1.5 leading-relaxed overflow-hidden [&_p]:mb-0 [&_p]:inline [&_ul]:inline [&_ol]:inline [&_li]:inline [&_h1]:inline [&_h2]:inline [&_h3]:inline [&_h4]:inline [&_h5]:inline [&_h6]:inline [&_blockquote]:my-0 [&_pre]:my-0 [&_img]:hidden [&_table]:hidden [&_*]:text-sm [&_*]:text-[#6B7280] [&_strong]:font-semibold [&_b]:font-semibold">
+                <RichTextRenderer content={product.description} />
+              </div>
+            ) : null}
           </div>
 
           <div className="flex items-center justify-between pt-3 border-t border-[#E5E7EB] mt-3">

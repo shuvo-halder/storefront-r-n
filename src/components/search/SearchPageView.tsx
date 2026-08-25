@@ -722,6 +722,7 @@ export const SearchPageView: React.FC = () => {
                   <ProductCard 
                     key={prod.id} 
                     product={prod} 
+                    viewMode={viewMode}
                     itemListId="search_results"
                     itemListName={`Search Results: ${searchQuery || 'All'}`}
                     index={idx + 1}
