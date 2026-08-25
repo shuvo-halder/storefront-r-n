@@ -351,6 +351,10 @@ export interface StoreMarketing {
   pixelId?: string;
   googleAdsId?: string;
   adsId?: string;
+  googleAdsConversionId?: string;
+  googleAdsConversionLabel?: string;
+  tiktokPixelId?: string;
+  hotjarId?: string;
 }
 
 export interface AnalyticsConfig {
@@ -358,6 +362,10 @@ export interface AnalyticsConfig {
   gtmContainerId: string;
   metaPixelId: string;
   googleAdsId: string;
+  googleAdsConversionId: string;
+  googleAdsConversionLabel: string;
+  tiktokPixelId: string;
+  hotjarId: string;
   enableAnalytics: boolean;
 }
 

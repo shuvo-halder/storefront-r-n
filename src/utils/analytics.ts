@@ -1,6 +1,7 @@
 // Centralized Analytics, DataLayer, Standalone GA4, Meta Pixel & Google Ads helper
 
 import { AnalyticsConfig, PublicSettings, StoreMarketing } from '../types/storefront';
+import { analyticsService } from '../services/analyticsService';
 export { getGA4ClientAndSessionId, extractGA4ClientId, extractGA4SessionId, type GA4ClientAndSessionId } from '../lib/ga4';
 
 declare global {
@@ -9,6 +10,8 @@ declare global {
     gtag?: (...args: any[]) => void;
     fbq?: (...args: any[]) => void;
     _fbq?: any;
+    _meta_q?: any[];
+    ttq?: any;
   }
 }
 
@@ -82,6 +85,50 @@ export const getGoogleAdsId = (source?: ConfigSource): string => {
 };
 
 /**
+ * Get Google Ads Conversion ID safely from dynamic backend settings
+ */
+export const getGoogleAdsConversionId = (source?: ConfigSource): string => {
+  const marketing = extractMarketing(source);
+  if (marketing && marketing.googleAdsConversionId && typeof marketing.googleAdsConversionId === 'string') {
+    return marketing.googleAdsConversionId.trim();
+  }
+  return '';
+};
+
+/**
+ * Get Google Ads Conversion Label safely from dynamic backend settings
+ */
+export const getGoogleAdsConversionLabel = (source?: ConfigSource): string => {
+  const marketing = extractMarketing(source);
+  if (marketing && marketing.googleAdsConversionLabel && typeof marketing.googleAdsConversionLabel === 'string') {
+    return marketing.googleAdsConversionLabel.trim();
+  }
+  return '';
+};
+
+/**
+ * Get TikTok Pixel ID safely from dynamic backend settings
+ */
+export const getTikTokPixelId = (source?: ConfigSource): string => {
+  const marketing = extractMarketing(source);
+  if (marketing && marketing.tiktokPixelId && typeof marketing.tiktokPixelId === 'string') {
+    return marketing.tiktokPixelId.trim();
+  }
+  return '';
+};
+
+/**
+ * Get Hotjar ID safely from dynamic backend settings
+ */
+export const getHotjarId = (source?: ConfigSource): string => {
+  const marketing = extractMarketing(source);
+  if (marketing && marketing.hotjarId && typeof marketing.hotjarId === 'string') {
+    return marketing.hotjarId.trim();
+  }
+  return '';
+};
+
+/**
  * Push an event or payload to window.dataLayer cleanly, GTM-compliant, and SSR-safely.
  * 1. Pushes { ecommerce: null } prior to any ecommerce event to prevent state leakage.
  * 2. Pushes payload to window.dataLayer (for GTM).
@@ -101,7 +148,10 @@ export const pushToDataLayer = (payload: Record<string, any>) => {
   window.dataLayer.push(payload);
 
   // Standalone GA4 Event Bridge: if window.gtag exists, dispatch directly to gtag
-  if (typeof window.gtag === 'function' && payload.event) {
+  if (payload.event) {
+    if (typeof window.gtag !== 'function') {
+      window.gtag = function() { window.dataLayer.push(arguments); };
+    }
     if (payload.ecommerce) {
       window.gtag('event', payload.event, payload.ecommerce);
     } else {
@@ -125,6 +175,110 @@ export const trackMetaEvent = (eventName: string, params?: Record<string, any>) 
     if (process.env.NODE_ENV === 'development') {
       console.log('[Meta Pixel Track]', eventName, params);
     }
+  } else {
+    window._meta_q = window._meta_q || [];
+    window._meta_q.push(params ? ['track', eventName, params] : ['track', eventName]);
+  }
+};
+
+/**
+ * Safely dispatch an event to TikTok Pixel (ttq) if initialized.
+ */
+export const trackTikTokEvent = (eventName: string, params?: Record<string, any>) => {
+  if (typeof window === 'undefined') return;
+  if (window.ttq && typeof window.ttq.track === 'function') {
+    window.ttq.track(eventName, params);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[TikTok Pixel Track]', eventName, params);
+    }
+  } else {
+    window.ttq = window.ttq || [];
+    window.ttq.push(['track', eventName, params || {}]);
+  }
+};
+
+/**
+ * Safely dispatch pageview to TikTok Pixel (ttq).
+ */
+export const trackTikTokPageView = () => {
+  if (typeof window === 'undefined') return;
+  if (window.ttq && typeof window.ttq.page === 'function') {
+    window.ttq.page();
+  } else {
+    window.ttq = window.ttq || [];
+    window.ttq.push(['page']);
+  }
+};
+
+/**
+ * Safely dispatch a purchase conversion to Google Ads.
+ */
+export const trackGoogleAdsPurchaseConversion = (
+  order: any, 
+  currency: string = 'BDT', 
+  conversionId: string, 
+  conversionLabel: string
+) => {
+  if (typeof window === 'undefined') return;
+  if (!order || !conversionId || !conversionLabel) return;
+
+  const rawOrderNumber = order.orderNumber;
+  const transactionId = rawOrderNumber && typeof rawOrderNumber === 'string'
+    ? rawOrderNumber.trim()
+    : rawOrderNumber
+    ? String(rawOrderNumber).trim()
+    : '';
+
+  if (!transactionId) return;
+
+  // Deduplication check
+  const storageKey = `gads_purchase_tracked_${transactionId}`;
+  try {
+    if (
+      window.sessionStorage.getItem(storageKey) === 'true' ||
+      window.localStorage.getItem(storageKey) === 'true'
+    ) {
+      return;
+    }
+  } catch (e) {
+    // Storage access blocked or restricted
+  }
+
+  const rawItems = Array.isArray(order.items) ? order.items : [];
+  const value = typeof order.total === 'number' 
+    ? order.total 
+    : parseFloat(order.total || '0');
+
+  // Push to gtag
+  if (typeof window.gtag === 'function') {
+    window.gtag('event', 'conversion', {
+      send_to: `${conversionId}/${conversionLabel}`,
+      value: isNaN(value) ? 0 : value,
+      currency: currency,
+      transaction_id: transactionId,
+    });
+    
+    try {
+      window.sessionStorage.setItem(storageKey, 'true');
+      window.localStorage.setItem(storageKey, 'true');
+    } catch (e) {
+      // Storage access blocked
+    }
+  } else {
+    // Queue it
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'conversion',
+      send_to: `${conversionId}/${conversionLabel}`,
+      value: isNaN(value) ? 0 : value,
+      currency: currency,
+      transaction_id: transactionId,
+    });
+
+    try {
+      window.sessionStorage.setItem(storageKey, 'true');
+      window.localStorage.setItem(storageKey, 'true');
+    } catch (e) {}
   }
 };
 
@@ -269,6 +423,24 @@ export const cartItemToGA4Item = (
  * 1. view_item_list
  * Structure: { event: "view_item_list", ecommerce: { item_list_id, item_list_name, items } }
  */
+export const trackGA4Search = (searchTerm: string) => {
+  try {
+    if (!searchTerm) return;
+    pushToDataLayer({
+      event: 'search',
+      search_term: searchTerm,
+    });
+
+    trackMetaEvent('Search', { search_string: searchTerm });
+    
+    trackTikTokEvent('Search', {
+      query: searchTerm,
+    });
+  } catch (err) {
+    console.error('[GA4 search error]', err);
+  }
+};
+
 export const trackGA4ViewItemList = (
   listId: string,
   listName: string,
@@ -356,6 +528,19 @@ export const trackGA4ViewItem = (
       value: val,
       currency: currency || 'BDT',
     });
+
+    // TikTok ViewContent mapping
+    trackTikTokEvent('ViewContent', {
+      contents: [{
+        content_id: item.item_id,
+        content_name: item.item_name,
+        price: val,
+        quantity: 1,
+      }],
+      content_type: 'product',
+      value: val,
+      currency: currency || 'BDT',
+    });
   } catch (err) {
     console.error('[GA4 view_item error]', err);
   }
@@ -425,6 +610,19 @@ export const trackGA4AddToCart = (
     trackMetaEvent('AddToCart', {
       content_ids: [formattedItem.item_id],
       content_name: formattedItem.item_name,
+      content_type: 'product',
+      value: totalVal,
+      currency: currency || 'BDT',
+    });
+
+    // TikTok AddToCart mapping
+    trackTikTokEvent('AddToCart', {
+      contents: [{
+        content_id: formattedItem.item_id,
+        content_name: formattedItem.item_name,
+        price: unitPrice,
+        quantity: quantity,
+      }],
       content_type: 'product',
       value: totalVal,
       currency: currency || 'BDT',
@@ -531,6 +729,19 @@ export const trackGA4BeginCheckout = (
       content_type: 'product',
       value: val,
       num_items: formattedItems.length,
+      currency: currency || 'BDT',
+    });
+
+    // TikTok InitiateCheckout mapping
+    trackTikTokEvent('InitiateCheckout', {
+      contents: formattedItems.map((i) => ({
+        content_id: i.item_id,
+        content_name: i.item_name,
+        price: i.price || 0,
+        quantity: i.quantity || 1,
+      })),
+      content_type: 'product',
+      value: val,
       currency: currency || 'BDT',
     });
   } catch (err) {
@@ -710,6 +921,31 @@ export const trackGA4Purchase = (order: any, currency: string = 'BDT') => {
       num_items: formattedItems.length,
     });
 
+    // TikTok Purchase mapping
+    trackTikTokEvent('CompletePayment', {
+      contents: formattedItems.map((i) => ({
+        content_id: i.item_id,
+        content_name: i.item_name,
+        price: i.price || 0,
+        quantity: i.quantity || 1,
+      })),
+      content_type: 'product',
+      value: isNaN(value) ? 0 : value,
+      currency: currency || 'BDT',
+    });
+
+    // Dispatch Google Ads conversion asynchronously
+    analyticsService.getAnalyticsConfig().then((res) => {
+      if (res?.data && res.data.googleAdsConversionId && res.data.googleAdsConversionLabel) {
+        trackGoogleAdsPurchaseConversion(
+          order,
+          currency,
+          res.data.googleAdsConversionId,
+          res.data.googleAdsConversionLabel
+        );
+      }
+    }).catch(console.error);
+    
     // Mark transaction as tracked
     if (typeof window !== 'undefined') {
       try {

@@ -39,6 +39,7 @@ import { MegaMenu } from './MegaMenu';
 import { motion, AnimatePresence } from 'motion/react';
 
 import { formatPrice } from '../../utils/formatters';
+import { trackGA4Search } from '../../utils/analytics';
 
 function HeaderContent() {
   const router = useRouter();
@@ -245,6 +246,7 @@ function HeaderContent() {
 
     if (query) {
       addSearchHistory(query);
+      trackGA4Search(query);
     }
     
     router.push(url);

@@ -7,6 +7,10 @@ const DEFAULT_ANALYTICS_CONFIG: AnalyticsConfig = {
   gtmContainerId: '',
   metaPixelId: '',
   googleAdsId: '',
+  googleAdsConversionId: '',
+  googleAdsConversionLabel: '',
+  tiktokPixelId: '',
+  hotjarId: '',
   enableAnalytics: false,
 };
 
@@ -22,10 +26,14 @@ export const analyticsService = {
       if (res.data && res.data.data) {
         const raw = res.data.data;
         const config: AnalyticsConfig = {
-          ga4MeasurementId: String(raw.ga4MeasurementId || raw.ga4Id || '').trim(),
-          gtmContainerId: String(raw.gtmContainerId || raw.gtmId || '').trim(),
-          metaPixelId: String(raw.metaPixelId || raw.pixelId || '').trim(),
+          ga4MeasurementId: String(raw.ga4MeasurementId || raw.ga4Id || raw.googleAnalyticsId || '').trim(),
+          gtmContainerId: String(raw.gtmContainerId || raw.gtmId || raw.googleTagManagerId || '').trim(),
+          metaPixelId: String(raw.metaPixelId || raw.pixelId || raw.facebookPixelId || '').trim(),
           googleAdsId: String(raw.googleAdsId || raw.adsId || '').trim(),
+          googleAdsConversionId: String(raw.googleAdsConversionId || '').trim(),
+          googleAdsConversionLabel: String(raw.googleAdsConversionLabel || '').trim(),
+          tiktokPixelId: String(raw.tiktokPixelId || '').trim(),
+          hotjarId: String(raw.hotjarId || '').trim(),
           enableAnalytics: raw.enableAnalytics !== undefined ? Boolean(raw.enableAnalytics) : true,
         };
         return {
