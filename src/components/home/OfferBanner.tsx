@@ -6,7 +6,6 @@ import { Banner } from '../../types/storefront';
 import { storefrontApi } from '../../services/storefrontApi';
 import { useStorefront } from '../../context/StorefrontContext';
 import { HOME_PROMOTIONAL_BANNER_PRIORITY } from '../../config/bannerConfig';
-import { ArrowRight, Sparkles } from 'lucide-react';
 import { Skeleton } from '../ui/Skeleton';
 
 interface OfferBannerProps {
@@ -81,8 +80,6 @@ export const OfferBanner: React.FC<OfferBannerProps> = ({
     }
   };
 
-  const ctaText = offerBanner.ctaText || offerBanner.buttonText;
-  const descriptionText = offerBanner.subtitle || offerBanner.description;
   const mobileImg = offerBanner.mobileImage || offerBanner.desktopImage || offerBanner.image;
   const desktopImg = offerBanner.desktopImage || offerBanner.image;
 
@@ -90,60 +87,27 @@ export const OfferBanner: React.FC<OfferBannerProps> = ({
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div 
         onClick={handleClick}
-        className="group relative overflow-hidden rounded-2xl bg-[#111827] border border-gray-800 text-white p-5 sm:p-8 lg:p-10 cursor-pointer shadow-xs transition-all duration-300 hover:border-[#DC2B53]/50"
+        className="group relative overflow-hidden rounded-2xl bg-slate-100 cursor-pointer shadow-xs transition-all duration-300 hover:shadow-md"
       >
-        {/* Background Image & Gradient */}
-        <div className="absolute inset-0 z-0">
-          <div className="block sm:hidden absolute inset-0">
-            <SmartImage 
-              src={mobileImg} 
-              alt={offerBanner.title} 
-              fill
-              fallbackType="banner"
-              fallbackLabel={offerBanner.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-25" 
-            />
-          </div>
-          <div className="hidden sm:block absolute inset-0">
-            <SmartImage 
-              src={desktopImg} 
-              alt={offerBanner.title} 
-              fill
-              fallbackType="banner"
-              fallbackLabel={offerBanner.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-25" 
-            />
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#111827] via-[#111827]/90 to-transparent" />
+        <div className="block sm:hidden w-full">
+          <SmartImage 
+            src={mobileImg} 
+            alt={offerBanner.title || 'Promotional Banner'} 
+            fill={false}
+            fallbackType="banner"
+            fallbackLabel={offerBanner.title}
+            className="w-full h-auto block group-hover:scale-[1.01] transition-transform duration-700" 
+          />
         </div>
-
-        {/* Banner Content */}
-        <div className="relative z-10 max-w-xl space-y-2.5">
-          {offerBanner.badge && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-[#DC2B53]/20 border border-[#DC2B53]/30 text-rose-300 text-[11px] font-semibold uppercase tracking-wider backdrop-blur-xs">
-              <Sparkles size={12} className="text-amber-300 animate-pulse" />
-              {offerBanner.badge}
-            </span>
-          )}
-
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight leading-tight group-hover:text-rose-200 transition-colors">
-            {offerBanner.title}
-          </h2>
-
-          {descriptionText && (
-            <p className="text-xs sm:text-sm text-gray-300 font-normal leading-relaxed line-clamp-2">
-              {descriptionText}
-            </p>
-          )}
-
-          {ctaText && (
-            <div className="pt-1">
-              <button className="px-4 py-2 sm:px-5 sm:py-2.5 bg-[#DC2B53] hover:bg-[#C52247] text-white font-semibold text-xs sm:text-sm rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-xs min-h-[36px]">
-                <span>{ctaText}</span>
-                <ArrowRight size={14} />
-              </button>
-            </div>
-          )}
+        <div className="hidden sm:block w-full">
+          <SmartImage 
+            src={desktopImg} 
+            alt={offerBanner.title || 'Promotional Banner'} 
+            fill={false}
+            fallbackType="banner"
+            fallbackLabel={offerBanner.title}
+            className="w-full h-auto block group-hover:scale-[1.01] transition-transform duration-700" 
+          />
         </div>
       </div>
     </section>
