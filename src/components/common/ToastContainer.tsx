@@ -13,23 +13,23 @@ export const ToastContainer: React.FC = () => {
 
   return (
     <div 
-      className="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2.5 max-w-sm sm:max-w-md w-full px-4 sm:px-0 pointer-events-none"
+      className="fixed top-4 right-4 sm:top-5 sm:right-5 z-[9999] flex flex-col gap-2 max-w-[calc(100vw-2rem)] sm:max-w-[360px] w-full pointer-events-none"
       aria-label="Notifications"
     >
       {toasts.length > 2 && (
-        <div className="flex justify-end pointer-events-auto pr-1">
+        <div className="flex justify-end pointer-events-auto pb-0.5 pr-0.5">
           <button
             type="button"
             onClick={clearAllToasts}
-            className="text-[11px] font-semibold text-gray-500 hover:text-gray-900 bg-white/95 backdrop-blur-xs px-2.5 py-1 rounded-full border border-[#E5E7EB] shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="text-[10px] font-semibold text-gray-600 hover:text-gray-900 bg-white px-2.5 py-1 rounded-full border border-[#E5E7EB] shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <Trash2 size={12} />
+            <Trash2 size={11} />
             <span>Clear all ({toasts.length})</span>
           </button>
         </div>
       )}
 
-      <div className="flex flex-col-reverse gap-2.5 w-full">
+      <div className="flex flex-col gap-2 w-full">
         <AnimatePresence mode="popLayout">
           {toasts.slice(0, 4).map((toast) => (
             <ToastItem

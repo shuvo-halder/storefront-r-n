@@ -69,36 +69,36 @@ export const ToastItem: React.FC<ToastItemProps> = ({ toast, onDismiss }) => {
     switch (type) {
       case 'success':
         return (
-          <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center flex-shrink-0 shadow-xs">
-            <CheckCircle2 size={18} strokeWidth={2.5} />
+          <div className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/60 flex items-center justify-center flex-shrink-0 shadow-2xs">
+            <CheckCircle2 size={14} strokeWidth={2.5} />
           </div>
         );
       case 'error':
         return (
-          <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center flex-shrink-0 shadow-xs">
-            <AlertCircle size={18} strokeWidth={2.5} />
+          <div className="w-6 h-6 rounded-full bg-rose-50 text-rose-600 border border-rose-200/60 flex items-center justify-center flex-shrink-0 shadow-2xs">
+            <AlertCircle size={14} strokeWidth={2.5} />
           </div>
         );
       case 'warning':
         return (
-          <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center flex-shrink-0 shadow-xs">
-            <AlertTriangle size={18} strokeWidth={2.5} />
+          <div className="w-6 h-6 rounded-full bg-amber-50 text-amber-600 border border-amber-200/60 flex items-center justify-center flex-shrink-0 shadow-2xs">
+            <AlertTriangle size={14} strokeWidth={2.5} />
           </div>
         );
       case 'info':
       default:
         return (
-          <div className="w-8 h-8 rounded-full bg-[#FDF0F3] text-[#DC2B53] border border-[#DC2B53]/20 flex items-center justify-center flex-shrink-0 shadow-xs">
-            <Info size={18} strokeWidth={2.5} />
+          <div className="w-6 h-6 rounded-full bg-[#FDF0F3] text-[#DC2B53] border border-[#DC2B53]/20 flex items-center justify-center flex-shrink-0 shadow-2xs">
+            <Info size={14} strokeWidth={2.5} />
           </div>
         );
     }
   };
 
   const borderColor = 
-    type === 'success' ? 'border-emerald-100' :
-    type === 'error' ? 'border-rose-100' :
-    type === 'warning' ? 'border-amber-100' :
+    type === 'success' ? 'border-emerald-200/80' :
+    type === 'error' ? 'border-rose-200/80' :
+    type === 'warning' ? 'border-amber-200/80' :
     'border-[#E5E7EB]';
 
   const progressBg =
@@ -112,20 +112,20 @@ export const ToastItem: React.FC<ToastItemProps> = ({ toast, onDismiss }) => {
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 16, scale: 0.96 }}
+      initial={{ opacity: 0, y: -12, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.94, transition: { duration: 0.18 } }}
-      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+      exit={{ opacity: 0, scale: 0.94, y: -8, transition: { duration: 0.16 } }}
+      transition={{ type: 'spring', stiffness: 450, damping: 32 }}
       role="status"
       aria-live="polite"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`pointer-events-auto w-full bg-white rounded-xl shadow-lg border ${borderColor} overflow-hidden transition-shadow duration-200 hover:shadow-xl relative flex flex-col group`}
+      className={`pointer-events-auto w-full bg-white rounded-xl shadow-md border ${borderColor} overflow-hidden transition-shadow duration-200 hover:shadow-lg relative flex flex-col group`}
     >
-      <div className="p-4 flex items-start gap-3.5">
+      <div className="p-3 flex items-start gap-2.5">
         {/* Product Image if available, else variant icon */}
         {toast.image ? (
-          <div className="w-12 h-12 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] flex-shrink-0 relative overflow-hidden shadow-2xs">
+          <div className="w-9 h-9 rounded-md border border-[#E5E7EB] bg-[#F9FAFB] flex-shrink-0 relative overflow-hidden shadow-2xs">
             <SmartImage
               src={toast.image}
               alt={toast.title}
@@ -141,26 +141,26 @@ export const ToastItem: React.FC<ToastItemProps> = ({ toast, onDismiss }) => {
 
         {/* Content Body */}
         <div className="flex-1 min-w-0 pr-1">
-          <div className="flex items-center gap-2 mb-0.5">
-            <h4 className="text-xs sm:text-sm font-bold text-[#111827] leading-snug truncate">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <h4 className="text-xs font-bold text-[#111827] leading-snug truncate">
               {toast.title}
             </h4>
             {toast.badge && (
-              <span className="text-[10px] font-semibold tracking-wide uppercase px-1.5 py-0.2 rounded bg-gray-100 text-gray-700 border border-gray-200">
+              <span className="text-[9px] font-semibold tracking-wide uppercase px-1.5 py-0.2 rounded bg-gray-100 text-gray-700 border border-gray-200">
                 {toast.badge}
               </span>
             )}
           </div>
 
           {messageText && (
-            <p className="text-xs text-[#6B7280] font-normal leading-relaxed line-clamp-2">
+            <p className="text-[11px] text-[#4B5563] font-normal leading-snug line-clamp-2">
               {messageText}
             </p>
           )}
 
           {/* Action Button */}
           {toast.action && (
-            <div className="mt-2.5 flex items-center gap-2">
+            <div className="mt-2 flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => {
@@ -168,7 +168,7 @@ export const ToastItem: React.FC<ToastItemProps> = ({ toast, onDismiss }) => {
                   onDismiss(toast.id);
                 }}
                 className={`
-                  inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer shadow-2xs
+                  inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors cursor-pointer shadow-2xs
                   ${toast.action.variant === 'secondary'
                     ? 'bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-200'
                     : toast.action.variant === 'outline'
@@ -178,7 +178,7 @@ export const ToastItem: React.FC<ToastItemProps> = ({ toast, onDismiss }) => {
                 `}
               >
                 <span>{toast.action.label}</span>
-                <ArrowRight size={12} />
+                <ArrowRight size={11} />
               </button>
             </div>
           )}

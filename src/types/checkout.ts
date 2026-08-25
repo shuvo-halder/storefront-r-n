@@ -1,9 +1,24 @@
 import { z } from 'zod';
+import { normalizeBDPhone, isValidBDPhone } from '../utils/phone';
+
+export const bdPhoneSchema = z.string()
+  .transform((val) => normalizeBDPhone(val))
+  .refine((val) => isValidBDPhone(val), {
+    message: 'Please enter a valid Bangladesh mobile number.',
+  });
+
+export const optionalBdPhoneSchema = z.string()
+  .transform((val) => normalizeBDPhone(val))
+  .refine((val) => !val || isValidBDPhone(val), {
+    message: 'Please enter a valid Bangladesh mobile number.',
+  })
+  .optional()
+  .or(z.literal(''));
 
 export const shippingAddressSchema = z.object({
   fullName: z.string().min(3, 'Full name is required (min 3 chars)'),
   email: z.string().email('Invalid email address').optional().or(z.literal('')),
-  phone: z.string().min(10, 'Valid phone number is required'),
+  phone: bdPhoneSchema,
   addressLine1: z.string().min(5, 'Address line 1 is required'),
   addressLine2: z.string().optional().nullable(),
   city: z.string().min(2, 'District / City is required'),
@@ -21,7 +36,7 @@ export const checkoutSchema = z.object({
     email: z.string().email('Invalid email').optional().or(z.literal('')),
     firstName: z.string().min(2, 'First name is required').optional().or(z.literal('')),
     lastName: z.string().min(2, 'Last name is required').optional().or(z.literal('')),
-    phone: z.string().min(10, 'Valid phone is required').optional().or(z.literal('')),
+    phone: optionalBdPhoneSchema,
   }),
   shippingAddress: shippingAddressSchema,
   billingAddress: billingAddressSchema,
