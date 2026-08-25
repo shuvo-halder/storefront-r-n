@@ -45,6 +45,22 @@ export function useCart() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
+  const cartItemsHash = (cart.items || []).map(i => `${i.id}_${i.quantity}_${i.totalPrice}`).join(',');
+
+  const { data: checkoutSession, isLoading: isSessionLoading, isFetching: isSessionFetching } = useQuery({
+    queryKey: ['checkoutSession_base', cartItemsHash, cart.subtotal, cart.appliedCoupon],
+    queryFn: () => storefrontApi.getCheckoutSession({ couponCode: cart.appliedCoupon }),
+    enabled: cart.items.length > 0,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const mergedCart: Cart = checkoutSession && cart.items.length > 0 ? {
+    ...cart,
+    shippingFee: checkoutSession.shippingFee,
+    estimatedTax: checkoutSession.tax,
+    total: checkoutSession.totalAmount,
+  } : cart;
+
   // POST /cart/items
   const addToCartMutation = useMutation({
     mutationFn: async ({ productId, quantity = 1, variantId }: { productId: string; quantity?: number; variantId?: string }) => {
@@ -181,9 +197,10 @@ export function useCart() {
   };
 
   return {
-    cart,
+    cart: mergedCart,
     isLoading,
     isFetching,
+    isSessionLoading: (isSessionLoading || isSessionFetching) && cart.items.length > 0,
     error,
     refetch,
     totalItemCount,

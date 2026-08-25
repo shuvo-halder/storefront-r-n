@@ -38,7 +38,8 @@ export const CartDrawer: React.FC = () => {
     viewCartGA4,
     isUpdatingQuantity,
     isRemovingItem,
-    isClearingCart
+    isClearingCart,
+    isSessionLoading
   } = useCart();
 
   const [couponInput, setCouponInput] = useState('');
@@ -67,10 +68,10 @@ export const CartDrawer: React.FC = () => {
   const amountNeeded = Math.max(0, freeShippingGoal - currentSubtotal);
   const shippingPercent = freeShippingGoal > 0 ? Math.min(100, Math.round((currentSubtotal / freeShippingGoal) * 100)) : 100;
   
-  const isFreeShipping = currentSubtotal >= freeShippingGoal || cart.shippingFee === 0;
+  const isFreeShipping = currentSubtotal >= freeShippingGoal || (cart.shippingFee !== undefined && cart.shippingFee === 0);
   const netSubtotal = Math.max(0, currentSubtotal - cart.discount);
-  const calculatedTax = netSubtotal * 0.10;
-  const estimatedTotal = netSubtotal + (isFreeShipping ? 0 : (cart.shippingFee || 0)) + calculatedTax;
+  const calculatedTax = cart.estimatedTax > 0 ? cart.estimatedTax : (netSubtotal * 0.10);
+  const estimatedTotal = cart.total > 0 ? cart.total : (netSubtotal + (isFreeShipping ? 0 : (cart.shippingFee || 0)) + calculatedTax);
 
   const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -238,9 +239,13 @@ export const CartDrawer: React.FC = () => {
               <div className="flex justify-between">
                 <span>Shipping</span>
                 <span className="font-semibold text-[#111827]">
-                  {isFreeShipping ? (
+                  {isSessionLoading && cart.shippingFee === undefined ? (
+                    <span className="text-[#6B7280] font-normal text-xs flex items-center gap-1 justify-end">
+                      <Loader2 size={12} className="animate-spin text-[#DC2B53]" /> Calculating...
+                    </span>
+                  ) : isFreeShipping ? (
                     <span className="text-[#16A34A] font-semibold">FREE</span>
-                  ) : cart.shippingFee > 0 ? (
+                  ) : cart.shippingFee !== undefined && cart.shippingFee > 0 ? (
                     formatPrice(cart.shippingFee, currencyCode, currencySymbol)
                   ) : (
                     <span className="text-[#6B7280] font-normal text-xs">Calculated at checkout</span>
