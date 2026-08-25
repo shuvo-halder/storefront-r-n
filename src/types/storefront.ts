@@ -415,6 +415,10 @@ export interface PublicSettings {
     facebook?: string;
     instagram?: string;
     youtube?: string;
+    linkedin?: string;
+    tiktok?: string;
+    whatsapp?: string;
+    x?: string;
   };
 }
 

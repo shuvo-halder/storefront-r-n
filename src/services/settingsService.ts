@@ -123,6 +123,28 @@ export const settingsService = {
           raw.general?.currencySymbol || 
           (defaultCurrency === 'USD' ? '$' : '৳');
 
+        const rawSocial = raw.socialLinks || raw.social || raw.socials || raw.branding?.socialLinks || raw.general?.socialLinks || {};
+
+        const extractSocialUrl = (...keys: string[]): string | undefined => {
+          for (const k of keys) {
+            if (rawSocial && typeof rawSocial[k] === 'string' && rawSocial[k].trim()) return rawSocial[k].trim();
+            if (raw.branding && typeof raw.branding[k] === 'string' && raw.branding[k].trim()) return raw.branding[k].trim();
+            if (raw.general && typeof raw.general[k] === 'string' && raw.general[k].trim()) return raw.general[k].trim();
+            if (typeof raw[k] === 'string' && raw[k].trim()) return raw[k].trim();
+          }
+          return undefined;
+        };
+
+        const socialLinks = {
+          facebook: extractSocialUrl('facebook', 'facebookUrl', 'social_facebook'),
+          instagram: extractSocialUrl('instagram', 'instagramUrl', 'social_instagram'),
+          youtube: extractSocialUrl('youtube', 'youtubeUrl', 'social_youtube'),
+          twitter: extractSocialUrl('twitter', 'twitterUrl', 'x', 'xUrl', 'social_twitter', 'social_x'),
+          linkedin: extractSocialUrl('linkedin', 'linkedinUrl', 'social_linkedin'),
+          tiktok: extractSocialUrl('tiktok', 'tiktokUrl', 'social_tiktok'),
+          whatsapp: extractSocialUrl('whatsapp', 'whatsappUrl', 'social_whatsapp'),
+        };
+
         const settings: PublicSettings = {
           branding: {
             siteName: raw.branding?.siteName || siteName,
@@ -244,7 +266,8 @@ export const settingsService = {
             3000
           ),
           supportEmail: storeEmail,
-          supportPhone: storePhone
+          supportPhone: storePhone,
+          socialLinks
         };
 
         cachedSettings = settings;
