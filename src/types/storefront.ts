@@ -170,7 +170,7 @@ export interface Cart {
   subtotal: number;
   discount: number;
   appliedCoupon?: string;
-  shippingFee: number;
+  shippingFee?: number;
   estimatedTax: number;
   total: number;
 }
@@ -240,7 +240,7 @@ export interface Order {
   paymentMethod: string;
   subtotal: number;
   discount: number;
-  shippingFee: number;
+  shippingFee?: number;
   tax: number;
   totalAmount: number;
   total?: number;

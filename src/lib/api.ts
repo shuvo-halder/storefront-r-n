@@ -444,7 +444,6 @@ export function normalizeCart(rawCart: any): Cart {
       subtotal: 0,
       discount: 0,
       appliedCoupon: undefined,
-      shippingFee: 0,
       estimatedTax: 0,
       total: 0
     };
@@ -485,9 +484,9 @@ export function normalizeCart(rawCart: any): Cart {
 
   const subtotal = Number(rawCart.subtotal ?? items.reduce((sum: number, it: any) => sum + it.totalPrice, 0));
   const discount = Number(rawCart.discount ?? 0);
-  const shippingFee = Number(rawCart.shippingFee ?? 0);
+  const shippingFee = rawCart.shippingFee !== undefined && rawCart.shippingFee !== null ? Number(rawCart.shippingFee) : undefined;
   const estimatedTax = Number(rawCart.estimatedTax ?? rawCart.tax ?? 0);
-  const total = Number(rawCart.total ?? rawCart.totalAmount ?? Math.max(0, subtotal - discount + shippingFee + estimatedTax));
+  const total = Number(rawCart.total ?? rawCart.totalAmount ?? Math.max(0, subtotal - discount + (shippingFee || 0) + estimatedTax));
 
   return {
     items,

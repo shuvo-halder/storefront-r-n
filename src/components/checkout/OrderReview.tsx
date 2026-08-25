@@ -81,7 +81,7 @@ export const OrderReview: React.FC<OrderReviewProps> = ({ cart, formData }) => {
         <div className="flex justify-between text-xs text-gray-300">
           <span>Shipping</span>
           <span className="font-semibold text-white">
-            {cart.shippingFee === 0 ? 'FREE' : formatPrice(cart.shippingFee)}
+            {cart.shippingFee === 0 ? 'FREE' : cart.shippingFee ? formatPrice(cart.shippingFee) : 'Calculated at checkout'}
           </span>
         </div>
         <div className="flex justify-between text-xs text-gray-300">

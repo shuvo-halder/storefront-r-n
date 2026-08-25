@@ -32,7 +32,6 @@ export function useCart() {
       items: [],
       subtotal: 0,
       discount: 0,
-      shippingFee: 0,
       estimatedTax: 0,
       total: 0,
     }, 
