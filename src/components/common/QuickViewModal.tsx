@@ -7,6 +7,7 @@ import { useCart } from '../../hooks/useCart';
 import { storefrontApi } from '../../services/storefrontApi';
 import { Product, ProductVariant } from '../../types/storefront';
 import { RatingStars } from './RatingStars';
+import { RichTextRenderer } from './RichTextRenderer';
 import { formatPrice } from '../../utils/formatters';
 import { 
   X, 
@@ -244,9 +245,9 @@ export const QuickViewModal: React.FC = () => {
                   )}
                 </div>
 
-                <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed pt-1">
-                  {currentProduct.description}
-                </p>
+                <div className="text-xs text-slate-600 line-clamp-3 leading-relaxed pt-1 overflow-hidden">
+                  <RichTextRenderer content={currentProduct.description} />
+                </div>
               </div>
 
               {/* Variants Selector */}

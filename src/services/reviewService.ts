@@ -83,6 +83,7 @@ export function normalizeReview(raw: any): ProductReview {
     productName: raw.productName || raw.product?.name || undefined,
     productSlug: raw.productSlug || raw.product?.slug || undefined,
     productImage: raw.productImage || raw.product?.image || raw.product?.images?.[0] || undefined,
+    adminResponse: String(raw.adminResponse || raw.adminReply || raw.merchantResponse || raw.merchantReply || raw.reply || raw.response || '').trim() || undefined,
   };
 }
 

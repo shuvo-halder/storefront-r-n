@@ -24,6 +24,7 @@ export interface ProductReview {
   productName?: string;
   productSlug?: string;
   productImage?: string;
+  adminResponse?: string;
 }
 
 export interface ReviewRatingDistribution {

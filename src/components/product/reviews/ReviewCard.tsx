@@ -102,7 +102,6 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
                     objectFit="cover"
                     className="transition-transform duration-200 group-hover:scale-105"
                   />
-
                   {/* Plus More Overlay on the last thumbnail */}
                   {showOverlay && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white text-xs font-bold transition-opacity group-hover:bg-black/70">
@@ -113,6 +112,18 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* Admin Response */}
+      {review.adminResponse && (
+        <div className="mt-3 bg-slate-50 border-l-2 border-slate-300 p-3 rounded-r-lg">
+          <div className="flex items-center gap-1.5 mb-1 text-slate-800 font-semibold text-xs">
+            Admin Response
+          </div>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            {review.adminResponse}
+          </p>
         </div>
       )}
     </article>
