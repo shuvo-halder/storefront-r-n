@@ -1,4 +1,12 @@
-export default function robots() {
+import { MetadataRoute } from 'next';
+
+const BASE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  'https://vyzobd.com'
+).replace(/\/+$/, '');
+
+export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: '*',
@@ -14,9 +22,10 @@ export default function robots() {
         '/activity',
         '/login',
         '/register',
-        '/forgot-password'
+        '/forgot-password',
+        '/api/*',
       ],
     },
-    sitemap: 'https://ais-dev-y3sr6cgyjnc4jmfcjlybeh-129344856109.asia-southeast1.run.app/sitemap.xml',
+    sitemap: `${BASE_URL}/sitemap.xml`,
   };
 }

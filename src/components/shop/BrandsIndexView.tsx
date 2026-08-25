@@ -44,16 +44,16 @@ export const BrandsIndexView: React.FC = () => {
         </nav>
 
         {/* Header Banner */}
-        <div className="bg-slate-900 text-white rounded-[32px] p-8 sm:p-12 mb-10 relative overflow-hidden border border-slate-800 shadow-xl">
-          <div className="relative z-10 max-w-2xl space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/20 text-primary-light text-xs font-black uppercase tracking-wider border border-primary/30">
-              <Award size={14} />
-              Featured Brand Partners
+        <div className="bg-white rounded-3xl p-6 sm:p-8 lg:p-10 mb-8 sm:mb-10 relative overflow-hidden border border-slate-200/80 shadow-xs">
+          <div className="relative z-10 max-w-2xl space-y-3 sm:space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 text-[#DC2B53] text-xs font-bold uppercase tracking-wider border border-rose-100">
+              <Award size={14} className="text-[#DC2B53]" />
+              <span>Featured Brand Partners</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
               Official Brands & Partners
             </h1>
-            <p className="text-slate-300 text-sm leading-relaxed font-normal">
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed font-normal">
               Explore authentic products and exclusive collections from our verified brand partners.
             </p>
           </div>
