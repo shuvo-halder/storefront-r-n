@@ -123,11 +123,12 @@ export const settingsService = {
           raw.general?.currencySymbol || 
           (defaultCurrency === 'USD' ? '$' : '৳');
 
-        const rawSocial = raw.socialLinks || raw.social || raw.socials || raw.branding?.socialLinks || raw.general?.socialLinks || {};
+        const rawSocial = raw.socialLinks || raw.social || raw.socials || raw.store?.socialLinks || raw.store?.social || raw.branding?.socialLinks || raw.general?.socialLinks || {};
 
         const extractSocialUrl = (...keys: string[]): string | undefined => {
           for (const k of keys) {
             if (rawSocial && typeof rawSocial[k] === 'string' && rawSocial[k].trim()) return rawSocial[k].trim();
+            if (raw.store && typeof raw.store[k] === 'string' && raw.store[k].trim()) return raw.store[k].trim();
             if (raw.branding && typeof raw.branding[k] === 'string' && raw.branding[k].trim()) return raw.branding[k].trim();
             if (raw.general && typeof raw.general[k] === 'string' && raw.general[k].trim()) return raw.general[k].trim();
             if (typeof raw[k] === 'string' && raw[k].trim()) return raw[k].trim();
@@ -142,7 +143,7 @@ export const settingsService = {
           twitter: extractSocialUrl('twitter', 'twitterUrl', 'x', 'xUrl', 'social_twitter', 'social_x'),
           linkedin: extractSocialUrl('linkedin', 'linkedinUrl', 'social_linkedin'),
           tiktok: extractSocialUrl('tiktok', 'tiktokUrl', 'social_tiktok'),
-          whatsapp: extractSocialUrl('whatsapp', 'whatsappUrl', 'social_whatsapp'),
+          whatsapp: extractSocialUrl('whatsapp', 'whatsappUrl', 'social_whatsapp', 'whatsappOrderNumber'),
         };
 
         const settings: PublicSettings = {
