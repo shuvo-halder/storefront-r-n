@@ -63,13 +63,13 @@ export const Footer: React.FC = () => {
   }, []);
 
   const socialPlatforms = [
-    { id: 'facebook', label: 'Facebook', url: publicSettings?.socialLinks?.facebook, Icon: Facebook },
-    { id: 'instagram', label: 'Instagram', url: publicSettings?.socialLinks?.instagram, Icon: Instagram },
-    { id: 'youtube', label: 'YouTube', url: publicSettings?.socialLinks?.youtube, Icon: Youtube },
-    { id: 'twitter', label: 'X (Twitter)', url: publicSettings?.socialLinks?.twitter || publicSettings?.socialLinks?.x, Icon: X },
-    { id: 'linkedin', label: 'LinkedIn', url: publicSettings?.socialLinks?.linkedin, Icon: Linkedin },
-    { id: 'tiktok', label: 'TikTok', url: publicSettings?.socialLinks?.tiktok, Icon: TikTokIcon },
-    { id: 'whatsapp', label: 'WhatsApp', url: publicSettings?.socialLinks?.whatsapp, Icon: WhatsAppIcon },
+    { id: 'facebook', label: 'Facebook', url: publicSettings?.socialLinks?.facebook, Icon: Facebook, colorClass: "text-[#1877F2] group-hover:text-white bg-[#1877F2]/10 group-hover:bg-[#1877F2]" },
+    { id: 'instagram', label: 'Instagram', url: publicSettings?.socialLinks?.instagram, Icon: Instagram, colorClass: "text-[#E4405F] group-hover:text-white bg-[#E4405F]/10 group-hover:bg-[#E4405F]" },
+    { id: 'youtube', label: 'YouTube', url: publicSettings?.socialLinks?.youtube, Icon: Youtube, colorClass: "text-[#FF0000] group-hover:text-white bg-[#FF0000]/10 group-hover:bg-[#FF0000]" },
+    { id: 'twitter', label: 'X (Twitter)', url: publicSettings?.socialLinks?.twitter || publicSettings?.socialLinks?.x, Icon: X, colorClass: "text-[#1DA1F2] group-hover:text-white bg-[#1DA1F2]/10 group-hover:bg-[#1DA1F2]" },
+    { id: 'linkedin', label: 'LinkedIn', url: publicSettings?.socialLinks?.linkedin, Icon: Linkedin, colorClass: "text-[#0A66C2] group-hover:text-white bg-[#0A66C2]/10 group-hover:bg-[#0A66C2]" },
+    { id: 'tiktok', label: 'TikTok', url: publicSettings?.socialLinks?.tiktok, Icon: TikTokIcon, colorClass: "text-[#69C9D0] group-hover:text-white bg-[#69C9D0]/10 group-hover:bg-gray-800" }, // specific hover adjustments for contrast
+    { id: 'whatsapp', label: 'WhatsApp', url: publicSettings?.socialLinks?.whatsapp, Icon: WhatsAppIcon, colorClass: "text-[#25D366] group-hover:text-white bg-[#25D366]/10 group-hover:bg-[#25D366]" },
   ];
 
   const activeSocialLinks = socialPlatforms
