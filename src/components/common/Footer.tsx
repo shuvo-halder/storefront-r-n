@@ -132,17 +132,17 @@ export const Footer: React.FC = () => {
       </div>
 
       {/* Bottom Copyright & Payment Icons */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-5 text-xs text-gray-400">
-        <div className="text-center md:text-left">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 flex flex-col-reverse md:flex-row items-center justify-between gap-4 sm:gap-6 text-xs sm:text-sm text-gray-400">
+        <div className="text-center md:text-left text-xs sm:text-sm text-gray-400 font-normal leading-relaxed">
           © {new Date().getFullYear()} {publicSettings?.general?.siteName || "Vyzobd"}. All rights reserved.
         </div>
 
         {/* Payment Gateway / SSLCOMMERZ Banner */}
-        <div className="flex items-center justify-center md:justify-end shrink-0 w-full md:w-auto">
+        <div className="flex items-center justify-center md:justify-end shrink-0 w-full md:w-auto px-0.5 sm:px-0">
           <img 
             src="/images/sslcommerz-banner.png" 
             alt="Secure Payment Gateway powered by SSLCOMMERZ - Visa, Mastercard, bKash, Nagad, AMEX" 
-            className="w-[265px] h-[50px] md:w-[315px] md:h-[58px] max-w-full object-contain opacity-95 hover:opacity-100 transition-opacity"
+            className="w-[calc(100%-4px)] max-w-[500px] h-auto md:w-[500px] md:h-[74px] object-contain select-none transition-opacity duration-200"
             loading="lazy"
             decoding="async"
           />
