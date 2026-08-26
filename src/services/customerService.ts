@@ -90,6 +90,10 @@ export const customerService = {
         sanitizedBody.avatarUrl = payload.avatarUrl.trim();
       }
 
+      if (payload.phone !== undefined && payload.phone !== null) {
+        sanitizedBody.phone = payload.phone.trim();
+      }
+
       const res = await apiClient.patch('/customer/profile', sanitizedBody);
       const unwrapped = unwrapApiResponse<CustomerProfileData>(res);
       return unwrapped;

@@ -233,7 +233,8 @@ export const RegisterPage: React.FC = () => {
       <div className="sm:mx-auto sm:w-full sm:max-w-lg">
         <div className="bg-white py-8 px-6 sm:px-8 shadow-xs rounded-xl border border-[#E5E7EB]">
           
-          {/* Registration Method Switcher */}
+          {/* Registration Method Switcher - Mobile OTP registration is temporarily disabled until backend SMS integration is available */}
+          {/*
           <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#F3F4F6] rounded-lg mb-6">
             <button
               type="button"
@@ -267,6 +268,7 @@ export const RegisterPage: React.FC = () => {
               <span>Mobile OTP</span>
             </button>
           </div>
+          */}
 
           {/* Server Error Alert */}
           {serverError && (

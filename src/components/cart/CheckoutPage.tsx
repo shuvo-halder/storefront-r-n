@@ -25,7 +25,8 @@ import {
   ShieldAlert,
   ShoppingBag,
   Trash2,
-  Tag
+  Tag,
+  AlertCircle
 } from 'lucide-react';
 
 export const CheckoutPage: React.FC = () => {
@@ -77,7 +78,7 @@ export const CheckoutPage: React.FC = () => {
       customer: {
         email: user?.email || '',
         firstName: user?.fullName?.split(' ')[0] || '',
-        lastName: user?.fullName?.split(' ')[1] || '',
+        lastName: user?.fullName?.split(' ').slice(1).join(' ') || '',
         phone: user?.phone || '',
       },
       shippingAddress: {
@@ -91,7 +92,7 @@ export const CheckoutPage: React.FC = () => {
         country: 'Bangladesh',
       },
       billingAddress: {
-        sameAsShipping: false,
+        sameAsShipping: false, // Billing address fields are visible and unchecked by default
         fullName: user?.fullName || '',
         email: user?.email || '',
         phone: user?.phone || '',
@@ -104,6 +105,7 @@ export const CheckoutPage: React.FC = () => {
       shippingMethod: 'standard',
       paymentMethod: 'cod',
       couponCode: cart.appliedCoupon || '',
+      orderNotes: '',
     },
   });
 
@@ -156,13 +158,14 @@ export const CheckoutPage: React.FC = () => {
     }
   }, [
     cart.items.length, 
-    cart.subtotal, 
     cart.appliedCoupon, 
     watchedCoupon,
     hasEnteredAddress,
     shippingAddress?.addressLine1, 
     shippingAddress?.city, 
-    shippingAddress?.state
+    shippingAddress?.state,
+    shippingAddress?.postalCode,
+    shippingAddress?.country
   ]);
 
   useEffect(() => {
@@ -178,17 +181,20 @@ export const CheckoutPage: React.FC = () => {
   const taxFraction = rawTaxRate > 1 ? rawTaxRate / 100 : rawTaxRate;
   const taxPercentDisplay = Math.round(taxFraction * 100);
 
+  // Authoritative shipping calculation: Derived strictly from backend response
   const effectiveShippingFee = checkoutSession
     ? checkoutSession.shippingFee
-    : (isFreeShipping ? 0 : 60);
+    : (isFreeShipping ? 0 : (cart.shippingFee ?? 0));
 
+  // Authoritative tax calculation: Derived strictly from backend response or settings
   const effectiveTax = checkoutSession
     ? checkoutSession.tax
-    : netSubtotal * taxFraction;
+    : (cart.estimatedTax !== undefined ? cart.estimatedTax : netSubtotal * taxFraction);
 
+  // Authoritative grand total: Derived strictly from backend response or consistent sum
   const effectiveTotal = checkoutSession
     ? checkoutSession.totalAmount
-    : netSubtotal + (isFreeShipping ? 0 : effectiveShippingFee) + effectiveTax;
+    : (cart.total > 0 ? cart.total : netSubtotal + (isFreeShipping ? 0 : effectiveShippingFee) + effectiveTax);
 
   // Pre-fill logged in user info (customer fields and basic contact info)
   useEffect(() => {
@@ -219,7 +225,7 @@ export const CheckoutPage: React.FC = () => {
         setValue('billingAddress.phone', user.phone || '');
       }
     }
-  }, [user, setValue]);
+  }, [user, setValue, watch]);
 
   // Auto-fill saved default address for authenticated users
   useEffect(() => {
@@ -244,16 +250,17 @@ export const CheckoutPage: React.FC = () => {
     }
   }, [user, setValue]);
 
+  // Synchronize billing address with shipping address if 'sameAsShipping' is checked
   useEffect(() => {
     if (sameAsShipping) {
-      setValue('billingAddress.fullName', shippingAddress.fullName);
-      setValue('billingAddress.email', shippingAddress.email);
-      setValue('billingAddress.phone', shippingAddress.phone);
-      setValue('billingAddress.addressLine1', shippingAddress.addressLine1);
-      setValue('billingAddress.city', shippingAddress.city);
-      setValue('billingAddress.state', shippingAddress.state);
-      setValue('billingAddress.postalCode', shippingAddress.postalCode);
-      setValue('billingAddress.country', shippingAddress.country);
+      setValue('billingAddress.fullName', shippingAddress.fullName || '');
+      setValue('billingAddress.email', shippingAddress.email || '');
+      setValue('billingAddress.phone', shippingAddress.phone || '');
+      setValue('billingAddress.addressLine1', shippingAddress.addressLine1 || '');
+      setValue('billingAddress.city', shippingAddress.city || '');
+      setValue('billingAddress.state', shippingAddress.state || '');
+      setValue('billingAddress.postalCode', shippingAddress.postalCode || '');
+      setValue('billingAddress.country', shippingAddress.country || 'Bangladesh');
     }
   }, [sameAsShipping, shippingAddress, setValue]);
 
@@ -275,24 +282,31 @@ export const CheckoutPage: React.FC = () => {
         trackGA4BeginCheckout(cart.items, cart.total, currency, couponCode);
       }
     }
-  }, [cart.items, cart.total, cart.appliedCoupon, currency]);
+  }, [cart.items, cart.total, cart.appliedCoupon, currency, watch]);
 
   const handleApplyCoupon = async () => {
     if (!localCoupon.trim()) {
       notifyError(new Error('Please enter a coupon code'), 'Empty Coupon');
       return;
     }
-    await applyCoupon(localCoupon);
+    try {
+      await applyCoupon(localCoupon);
+      setLocalCoupon('');
+      fetchSession();
+    } catch {
+      // Error handled by hook
+    }
   };
 
   const handleRemoveCoupon = async () => {
-    // If no backend removal, just clear local form state
     setLocalCoupon('');
     setValue('couponCode', '');
     notifySuccess('Coupon Removed', 'The coupon has been removed from your order.');
+    fetchSession();
   };
 
   const onPlaceOrder: SubmitHandler<CheckoutFormData> = async (data) => {
+    if (isSubmitting) return; // Prevent double submission
     setIsSubmitting(true);
     setServerError(null);
 
@@ -306,7 +320,18 @@ export const CheckoutPage: React.FC = () => {
         data.customer.lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
       }
 
-      // Track Shipping & Payment info right before submission, since we skip wizard steps
+      // If sameAsShipping is true, ensure billing fields are mirrored
+      if (data.billingAddress.sameAsShipping) {
+        data.billingAddress.fullName = data.shippingAddress.fullName;
+        data.billingAddress.email = data.shippingAddress.email;
+        data.billingAddress.phone = data.shippingAddress.phone;
+        data.billingAddress.addressLine1 = data.shippingAddress.addressLine1;
+        data.billingAddress.city = data.shippingAddress.city;
+        data.billingAddress.state = data.shippingAddress.state;
+        data.billingAddress.postalCode = data.shippingAddress.postalCode;
+        data.billingAddress.country = data.shippingAddress.country;
+      }
+
       const couponCode = cart.appliedCoupon || data.couponCode;
       
       const methodTierMap: Record<string, string> = {
@@ -336,12 +361,13 @@ export const CheckoutPage: React.FC = () => {
         shippingFee: effectiveShippingFee,
         tax: effectiveTax,
         totalAmount: effectiveTotal,
+        notes: data.orderNotes || '',
         status: 'Pending',
       };
 
       const createdOrder = await storefrontApi.checkoutComplete(orderPayload);
       
-      // Clear the cart only after successful order creation
+      // Clear the cart after successful order creation
       try {
         await clearCart();
       } catch (err) {
@@ -356,8 +382,8 @@ export const CheckoutPage: React.FC = () => {
         navigateTo('checkout-gateway', { orderId: createdOrder.id, method: data.paymentMethod });
       }
     } catch (err: any) {
-      setServerError(err.message || 'An error occurred while placing your order. Please try again.');
-      window.scrollTo(0, 0);
+      setServerError(err.message || 'An error occurred while placing your order. Please check all required fields and try again.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setIsSubmitting(false);
     }
@@ -390,6 +416,8 @@ export const CheckoutPage: React.FC = () => {
     );
   }
 
+  const isProfileMissingDetails = user && (!user.phone || !user.fullName || !user.email);
+
   return (
     <div className="bg-[#F9FAFB] min-h-screen pb-12">
       {/* Simple Header */}
@@ -397,7 +425,7 @@ export const CheckoutPage: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <button 
             onClick={() => navigateTo('cart')} 
-            className="flex items-center gap-1.5 text-xs font-semibold text-[#6B7280] hover:text-[#111827] transition-colors"
+            className="flex items-center gap-1.5 text-xs font-semibold text-[#6B7280] hover:text-[#111827] transition-colors cursor-pointer"
           >
             <ArrowLeft size={16} />
             <span className="hidden sm:inline">Back to Cart</span>
@@ -419,30 +447,31 @@ export const CheckoutPage: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
         
         {serverError && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm font-medium">
-            {serverError}
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-[#DC2626] text-xs font-medium flex items-center gap-2.5">
+            <AlertCircle size={18} className="shrink-0" />
+            <span>{serverError}</span>
           </div>
         )}
 
-        {user && (!user.phone || !user.fullName) && (
-          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {isProfileMissingDetails && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
             <div className="flex items-start gap-3">
-              <span className="p-2 bg-amber-100 rounded-lg text-amber-800 shrink-0 mt-0.5 animate-pulse">
+              <span className="p-2 bg-amber-100 rounded-lg text-amber-800 shrink-0 mt-0.5">
                 <ShieldAlert size={18} />
               </span>
               <div>
-                <h3 className="text-sm font-bold text-amber-900">Incomplete Customer Profile</h3>
+                <h3 className="text-xs sm:text-sm font-bold text-amber-900">Missing Customer Profile Information</h3>
                 <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
-                  Your profile is missing some required contact information (like your phone number). Please make sure to complete the contact info in the checkout form below or update your profile in the Account page.
+                  Your profile is missing {!user.phone ? 'a valid mobile number' : ''} {!user.phone && !user.fullName ? 'and' : ''} {!user.fullName ? 'your full name' : ''}. Please ensure all required delivery fields below are completed.
                 </p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => navigateTo('account')}
-              className="px-4 py-2 bg-amber-800 hover:bg-amber-900 text-white rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer"
+              className="px-3.5 py-1.5 bg-amber-800 hover:bg-amber-900 text-white rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer"
             >
-              Go to Account
+              Update Account
             </button>
           </div>
         )}
@@ -480,7 +509,7 @@ export const CheckoutPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="px-2 py-1 text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827]"
+                            className="px-2 py-1 text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827] cursor-pointer"
                           >
                             -
                           </button>
@@ -488,7 +517,7 @@ export const CheckoutPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="px-2 py-1 text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827]"
+                            className="px-2 py-1 text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827] cursor-pointer"
                           >
                             +
                           </button>
@@ -496,7 +525,7 @@ export const CheckoutPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => removeCartItem(item.id)}
-                          className="text-[#6B7280] hover:text-[#DC2B53]"
+                          className="text-[#6B7280] hover:text-[#DC2B53] cursor-pointer"
                           title="Remove item"
                         >
                           <Trash2 size={14} />
@@ -533,23 +562,23 @@ export const CheckoutPage: React.FC = () => {
               </div>
             </div>
 
-            {/* 3. Billing Information */}
+            {/* 3. Billing Information (Visible by default, Checkbox UNCHECKED by default) */}
             <div className="bg-white border border-[#E5E7EB] rounded-xl shadow-xs overflow-hidden">
               <div className="px-5 py-4 border-b border-[#E5E7EB] bg-[#F9FAFB]">
                 <h2 className="text-base font-bold text-[#111827]">Billing Information</h2>
               </div>
-              <div className="p-5">
+              <div className="p-5 space-y-4">
                 <label className="flex items-center gap-2.5 cursor-pointer">
                   <input
                     type="checkbox"
                     {...register('billingAddress.sameAsShipping')}
                     className="w-4 h-4 rounded text-[#DC2B53] border-[#E5E7EB] focus:ring-[#DC2B53] accent-[#DC2B53]"
                   />
-                  <span className="text-sm text-[#111827] font-medium">Billing address is the same as shipping address</span>
+                  <span className="text-xs sm:text-sm text-[#111827] font-medium">Billing address is the same as shipping address</span>
                 </label>
                 
                 {!sameAsShipping && (
-                  <div className="mt-5 pt-5 border-t border-[#E5E7EB]">
+                  <div className="pt-4 border-t border-[#E5E7EB]">
                     <AddressForm 
                       register={register} 
                       errors={errors} 
@@ -595,8 +624,8 @@ export const CheckoutPage: React.FC = () => {
                   </div>
                   
                   {cart.discount > 0 && (
-                    <div className="flex justify-between text-emerald-600">
-                      <span>Discount</span>
+                    <div className="flex justify-between text-[#DC2B53] font-medium">
+                      <span>Discount ({cart.appliedCoupon || 'Promo'})</span>
                       <span className="font-semibold">-{formatPrice(cart.discount, currency, currencySymbol)}</span>
                     </div>
                   )}
@@ -610,16 +639,18 @@ export const CheckoutPage: React.FC = () => {
                         </span>
                       ) : isFreeShipping ? (
                         <span className="text-[#16A34A] font-semibold">FREE</span>
-                      ) : hasEnteredAddress || checkoutSession ? (
-                        formatPrice(effectiveShippingFee, currency, currencySymbol)
+                      ) : checkoutSession && checkoutSession.shippingFee !== undefined ? (
+                        formatPrice(checkoutSession.shippingFee, currency, currencySymbol)
+                      ) : cart.shippingFee !== undefined && cart.shippingFee > 0 ? (
+                        formatPrice(cart.shippingFee, currency, currencySymbol)
                       ) : (
-                        <span className="text-xs text-[#6B7280] font-normal">Select delivery address</span>
+                        <span className="text-xs text-[#6B7280] font-normal">Calculated at checkout</span>
                       )}
                     </span>
                   </div>
                   
                   <div className="flex justify-between text-[#6B7280]">
-                    <span>Tax ({taxPercentDisplay}%)</span>
+                    <span>Estimated Tax ({taxPercentDisplay}%)</span>
                     <span className="font-semibold text-[#111827]">
                       {isSessionLoading ? (
                         <span className="text-xs text-[#6B7280] italic flex items-center gap-1">
@@ -633,7 +664,7 @@ export const CheckoutPage: React.FC = () => {
                 </div>
 
                 {sessionError && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600 flex items-center justify-between">
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-[#DC2626] flex items-center justify-between">
                     <span>{sessionError}</span>
                     <button
                       type="button"
@@ -647,7 +678,7 @@ export const CheckoutPage: React.FC = () => {
 
                 {/* Final Total */}
                 <div className="flex justify-between items-center pt-2">
-                  <span className="text-base font-bold text-[#111827]">Total</span>
+                  <span className="text-base font-bold text-[#111827]">Total Amount</span>
                   <span className="text-xl font-bold text-[#DC2B53]">
                     {isSessionLoading ? (
                       <span className="text-sm font-normal italic text-[#6B7280] flex items-center gap-1">
@@ -665,24 +696,24 @@ export const CheckoutPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsCouponExpanded(!isCouponExpanded)}
-                  className="flex items-center gap-2 text-sm font-semibold text-[#111827] hover:text-[#DC2B53] transition-colors w-full text-left"
+                  className="flex items-center gap-2 text-xs font-semibold text-[#111827] hover:text-[#DC2B53] transition-colors w-full text-left cursor-pointer"
                 >
-                  <Tag size={16} className="text-[#6B7280]" />
-                  Have a coupon or gift voucher?
+                  <Tag size={15} className="text-[#6B7280]" />
+                  <span>Have a promo coupon or gift code?</span>
                 </button>
                 
                 {isCouponExpanded && (
-                  <div className="mt-4">
+                  <div className="mt-3.5">
                     {cart.appliedCoupon ? (
-                      <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 p-3 rounded-lg">
-                        <div className="flex items-center gap-2 text-emerald-700 text-sm font-bold">
-                          <Tag size={14} />
-                          {cart.appliedCoupon}
+                      <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 p-2.5 rounded-lg">
+                        <div className="flex items-center gap-2 text-emerald-700 text-xs font-bold">
+                          <Tag size={13} />
+                          <span>{cart.appliedCoupon}</span>
                         </div>
                         <button
                           type="button"
                           onClick={handleRemoveCoupon}
-                          className="text-emerald-700 hover:text-emerald-900 text-xs font-semibold underline"
+                          className="text-emerald-700 hover:text-emerald-900 text-xs font-semibold underline cursor-pointer"
                         >
                           Remove
                         </button>
@@ -693,13 +724,13 @@ export const CheckoutPage: React.FC = () => {
                           type="text"
                           value={localCoupon}
                           onChange={(e) => setLocalCoupon(e.target.value)}
-                          placeholder="Enter code"
-                          className="flex-1 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-sm text-[#111827] focus:outline-none focus:border-[#DC2B53]"
+                          placeholder="Enter coupon code"
+                          className="flex-1 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] uppercase placeholder:normal-case focus:outline-none focus:border-[#DC2B53]"
                         />
                         <button
                           type="button"
                           onClick={handleApplyCoupon}
-                          className="px-4 py-2 bg-[#111827] hover:bg-[#374151] text-white rounded-lg text-sm font-bold transition-colors shrink-0"
+                          className="px-3.5 py-2 bg-[#111827] hover:bg-black text-white rounded-lg text-xs font-semibold transition-colors shrink-0 cursor-pointer"
                         >
                           Apply
                         </button>
@@ -711,11 +742,12 @@ export const CheckoutPage: React.FC = () => {
               
               {/* Customer Note */}
               <div className="bg-[#F9FAFB] border-t border-[#E5E7EB] p-5">
-                <label className="block text-sm font-semibold text-[#111827] mb-2">Order Notes (Optional)</label>
+                <label className="block text-xs font-semibold text-[#111827] mb-1.5">Order Notes <span className="text-[11px] font-normal text-[#6B7280]">(Optional)</span></label>
                 <textarea
-                  className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-sm text-[#111827] focus:outline-none focus:border-[#DC2B53] resize-none"
-                  rows={3}
-                  placeholder="Notes about your order, e.g. special notes for delivery."
+                  {...register('orderNotes')}
+                  className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] focus:outline-none focus:border-[#DC2B53] resize-none"
+                  rows={2}
+                  placeholder="Special instructions for packaging or delivery..."
                 />
               </div>
 
@@ -725,27 +757,27 @@ export const CheckoutPage: React.FC = () => {
                   <input
                     type="checkbox"
                     required
-                    className="mt-1 w-4 h-4 rounded text-[#DC2B53] border-[#E5E7EB] focus:ring-[#DC2B53] accent-[#DC2B53]"
+                    className="mt-0.5 w-4 h-4 rounded text-[#DC2B53] border-[#E5E7EB] focus:ring-[#DC2B53] accent-[#DC2B53]"
                   />
-                  <span className="text-xs text-[#6B7280] leading-tight">
-                    I agree to the <a href="/terms" className="text-[#DC2B53] hover:underline" target="_blank">Terms & Conditions</a>, <a href="/privacy" className="text-[#DC2B53] hover:underline" target="_blank">Privacy Policy</a>, and <a href="/refund-policy" className="text-[#DC2B53] hover:underline" target="_blank">Return & Refund Policy</a>.
+                  <span className="text-[11px] text-[#6B7280] leading-tight">
+                    I agree to the <a href="/terms" className="text-[#DC2B53] hover:underline font-medium" target="_blank">Terms & Conditions</a>, <a href="/privacy" className="text-[#DC2B53] hover:underline font-medium" target="_blank">Privacy Policy</a>, and <a href="/refund-policy" className="text-[#DC2B53] hover:underline font-medium" target="_blank">Return Policy</a>.
                   </span>
                 </label>
 
                 <button
                   type="submit"
                   disabled={isSubmitting || cart.items.length === 0}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#DC2B53] hover:bg-[#C52247] disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-colors shadow-xs"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#DC2B53] hover:bg-[#C52247] disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-colors shadow-xs cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 size={18} className="animate-spin" />
-                      <span>Processing...</span>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Processing Order...</span>
                     </>
                   ) : (
                     <>
-                      <ShieldCheck size={18} />
-                      <span>PLACE ORDER</span>
+                      <ShieldCheck size={16} />
+                      <span>Place Order</span>
                     </>
                   )}
                 </button>

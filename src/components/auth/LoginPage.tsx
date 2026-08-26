@@ -234,7 +234,8 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
-          {/* Authentication Method Tabs */}
+          {/* Authentication Method Tabs - Mobile OTP login is temporarily disabled until backend SMS integration is available */}
+          {/*
           <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#F3F4F6] rounded-lg mb-6">
             <button
               type="button"
@@ -268,6 +269,7 @@ export const LoginPage: React.FC = () => {
               <span>Mobile OTP</span>
             </button>
           </div>
+          */}
 
           {/* Server Error Alert */}
           {serverError && (

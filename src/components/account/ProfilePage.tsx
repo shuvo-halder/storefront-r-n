@@ -89,6 +89,7 @@ export const ProfilePage: React.FC = () => {
       firstName: activeProfile.firstName || '',
       lastName: activeProfile.lastName || '',
       avatarUrl: activeProfile.avatarUrl || activeProfile.avatar || '',
+      phone: activeProfile.phone || '',
     },
   });
 
@@ -101,6 +102,7 @@ export const ProfilePage: React.FC = () => {
         firstName: profileData.firstName || '',
         lastName: profileData.lastName || '',
         avatarUrl: profileData.avatarUrl || profileData.avatar || '',
+        phone: profileData.phone || '',
       });
       setAvatarPreviewUrl(profileData.avatarUrl || profileData.avatar || '');
     }
@@ -116,7 +118,7 @@ export const ProfilePage: React.FC = () => {
   // 3. Mutation for PATCH /customer/profile
   const updateMutation = useMutation({
     mutationFn: async (formData: UpdateCustomerProfileFormData) => {
-      // Whitelist ONLY allowed fields (Security rule: id, email, phone, security fields omitted)
+      // Whitelist ONLY allowed fields (Security rule: id, email, security fields omitted)
       const payload: UpdateCustomerProfilePayload = {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
@@ -125,6 +127,9 @@ export const ProfilePage: React.FC = () => {
         payload.avatarUrl = formData.avatarUrl.trim();
       } else {
         payload.avatarUrl = '';
+      }
+      if (formData.phone !== undefined) {
+        payload.phone = formData.phone.trim();
       }
 
       const res = await customerService.updateProfile(payload);
@@ -159,6 +164,7 @@ export const ProfilePage: React.FC = () => {
         firstName: profileData.firstName || '',
         lastName: profileData.lastName || '',
         avatarUrl: profileData.avatarUrl || profileData.avatar || '',
+        phone: profileData.phone || '',
       });
       setAvatarPreviewUrl(profileData.avatarUrl || profileData.avatar || '');
     }
@@ -428,13 +434,17 @@ export const ProfilePage: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Phone (Read-Only) */}
+                {/* Phone (Editable) */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-semibold text-gray-700">Phone Number</label>
-                    <span className="text-[10px] text-gray-400 flex items-center gap-1 font-medium">
-                      <Lock size={11} /> Read-only
-                    </span>
+                    <label className="block text-xs font-semibold text-gray-700">
+                      Phone Number {isEditMode && <span className="text-[#DC2B53]">*</span>}
+                    </label>
+                    {!isEditMode && (
+                      <span className="text-[10px] text-gray-400 flex items-center gap-1 font-medium">
+                        <Lock size={11} /> Read-only
+                      </span>
+                    )}
                   </div>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -442,14 +452,21 @@ export const ProfilePage: React.FC = () => {
                     </div>
                     <input
                       type="text"
-                      value={activeProfile.phone || ''}
-                      readOnly
-                      disabled
-                      className="block w-full pl-10 pr-3.5 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-xs font-medium text-gray-500 cursor-not-allowed"
+                      disabled={!isEditMode || updateMutation.isPending}
+                      {...register('phone')}
+                      className={`block w-full pl-10 pr-3.5 py-2.5 rounded-lg text-xs font-medium transition-colors ${
+                        isEditMode 
+                          ? 'bg-white border border-gray-200 text-gray-900 focus:outline-hidden focus:ring-1 focus:ring-[#DC2B53] focus:border-[#DC2B53]' 
+                          : 'bg-gray-50 border border-gray-200 text-gray-900 cursor-not-allowed opacity-90'
+                      } ${errors.phone ? 'border-red-500' : ''}`}
+                      placeholder="e.g. 01700000000"
                     />
                   </div>
+                  {errors.phone && (
+                    <p className="text-[11px] text-red-600 mt-1 font-medium">{errors.phone.message}</p>
+                  )}
                   <p className="text-[11px] text-gray-400 mt-1 font-medium">
-                    Mobile number used for SMS notifications and OTP verification.
+                    Mobile number used for SMS notifications and orders.
                   </p>
                 </div>
 

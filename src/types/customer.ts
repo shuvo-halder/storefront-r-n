@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isValidBDPhone } from '../utils/phone';
 
 /**
  * Customer Dashboard Metrics
@@ -91,6 +92,15 @@ export const updateCustomerProfileSchema = z.object({
     }, 'Please enter a valid image URL (starting with http:// or https://)')
     .optional()
     .or(z.literal('')),
+  phone: z
+    .string()
+    .trim()
+    .refine((val) => {
+      if (!val || val === '') return true;
+      return isValidBDPhone(val);
+    }, 'Please enter a valid Bangladesh mobile number (e.g. 01700000000)')
+    .optional()
+    .or(z.literal('')),
 });
 
 export type UpdateCustomerProfileFormData = z.infer<typeof updateCustomerProfileSchema>;
@@ -102,6 +112,7 @@ export interface UpdateCustomerProfilePayload {
   firstName: string;
   lastName: string;
   avatarUrl?: string;
+  phone?: string;
 }
 
 /**
