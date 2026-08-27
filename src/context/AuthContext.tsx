@@ -255,6 +255,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         ? `${firstName || ''} ${lastName || ''}`.trim() 
         : (updated.fullName || prev.fullName);
       const avatarUrl = updated.avatarUrl !== undefined ? updated.avatarUrl : (updated.avatar !== undefined ? updated.avatar : prev.avatarUrl);
+      const phone = updated.phone !== undefined ? updated.phone : prev.phone;
 
       return {
         ...prev,
@@ -263,7 +264,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         lastName,
         fullName,
         avatarUrl,
-        avatar: avatarUrl
+        avatar: avatarUrl,
+        phone
       };
     });
   }, []);
@@ -275,11 +277,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const firstName = data.firstName || data.fullName?.split(' ')[0] || '';
     const lastName = data.lastName || data.fullName?.split(' ').slice(1).join(' ') || '';
     const avatarUrl = data.avatarUrl || data.avatar;
+    const phone = data.phone;
 
     const res = await customerService.updateProfile({
       firstName,
       lastName,
-      avatarUrl
+      avatarUrl,
+      phone
     });
 
     if (res.status === 'error' || !res.data?.profile) {

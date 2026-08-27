@@ -1,6 +1,7 @@
 import { apiClient, ApiResponse, unwrapApiResponse, extractApiError } from '../lib/api';
 import { 
   CustomerDashboardData, 
+  CustomerProfile,
   CustomerProfileData, 
   UpdateCustomerProfilePayload,
   CustomerOrdersData,
@@ -61,8 +62,23 @@ export const customerService = {
   getProfile: async (): Promise<ApiResponse<CustomerProfileData>> => {
     try {
       const res = await apiClient.get('/customer/profile');
-      const unwrapped = unwrapApiResponse<CustomerProfileData>(res);
-      return unwrapped;
+      const unwrapped = unwrapApiResponse<any>(res);
+      if (unwrapped.status === 'error' || !unwrapped.data) {
+        return {
+          status: 'error',
+          message: unwrapped.message || 'Failed to fetch customer profile.',
+          errors: unwrapped.errors,
+          data: null as any,
+        };
+      }
+
+      const rawData = unwrapped.data || {};
+      const profile: CustomerProfile = rawData.profile || rawData.customer || rawData;
+      return {
+        status: 'success',
+        message: unwrapped.message || null,
+        data: { profile },
+      };
     } catch (err: any) {
       const { message, errors } = extractApiError(err, 'Failed to fetch customer profile.');
       return {
@@ -76,8 +92,8 @@ export const customerService = {
 
   /**
    * PATCH /customer/profile
-   * Updates mutable profile attributes (firstName, lastName, avatarUrl).
-   * Security Rule: Non-editable fields (id, email, phone, verification statuses, tokens) are strictly omitted.
+   * Updates mutable profile attributes (firstName, lastName, avatarUrl, phone).
+   * Security Rule: Non-editable fields (id, email, verification statuses, tokens) are strictly omitted.
    */
   updateProfile: async (payload: UpdateCustomerProfilePayload): Promise<ApiResponse<CustomerProfileData>> => {
     try {
@@ -95,8 +111,24 @@ export const customerService = {
       }
 
       const res = await apiClient.patch('/customer/profile', sanitizedBody);
-      const unwrapped = unwrapApiResponse<CustomerProfileData>(res);
-      return unwrapped;
+      const unwrapped = unwrapApiResponse<any>(res);
+
+      if (unwrapped.status === 'error' || !unwrapped.data) {
+        return {
+          status: 'error',
+          message: unwrapped.message || 'Failed to update customer profile.',
+          errors: unwrapped.errors,
+          data: null as any,
+        };
+      }
+
+      const rawData = unwrapped.data || {};
+      const profile: CustomerProfile = rawData.profile || rawData.customer || rawData;
+      return {
+        status: 'success',
+        message: unwrapped.message || null,
+        data: { profile },
+      };
     } catch (err: any) {
       const { message, errors } = extractApiError(err, 'Failed to update customer profile.');
       return {

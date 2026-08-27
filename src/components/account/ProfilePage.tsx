@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SmartImage } from '../common/SmartImage';
 import { AccountLayout } from './AccountLayout';
 import { useAuth } from '../../context/AuthContext';
 import { useStorefront } from '../../context/StorefrontContext';
 import { customerService } from '../../services/customerService';
+import { uploadService } from '../../services/uploadService';
 import { 
   CustomerProfile, 
   updateCustomerProfileSchema, 
@@ -31,7 +32,9 @@ import {
   CheckCircle2,
   AlertCircle,
   RefreshCw,
-  Lock
+  Lock,
+  Upload,
+  Camera
 } from 'lucide-react';
 
 export const ProfilePage: React.FC = () => {
@@ -42,6 +45,8 @@ export const ProfilePage: React.FC = () => {
 
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string>('');
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 1. Query /customer/profile with TanStack Query
   const { 
@@ -82,6 +87,7 @@ export const ProfilePage: React.FC = () => {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors, isDirty },
   } = useForm<UpdateCustomerProfileFormData>({
     resolver: zodResolver(updateCustomerProfileSchema),
@@ -94,6 +100,33 @@ export const ProfilePage: React.FC = () => {
   });
 
   const watchedAvatarUrl = watch('avatarUrl');
+
+  // Handle direct file upload for profile avatar
+  const handleAvatarFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validation = uploadService.validateImageFile(file);
+    if (!validation.valid) {
+      notifyError('Invalid File', validation.error || 'Please select a valid image file (PNG, JPG, WEBP).');
+      return;
+    }
+
+    try {
+      setIsUploadingAvatar(true);
+      const uploadedUrl = await uploadService.uploadToCloudinary(file);
+      setValue('avatarUrl', uploadedUrl, { shouldDirty: true, shouldValidate: true });
+      setAvatarPreviewUrl(uploadedUrl);
+      notifySuccess('Image Uploaded', 'Avatar uploaded successfully. Save your changes to apply.');
+    } catch (err: any) {
+      notifyError('Upload Failed', err.message || 'Failed to upload image. Please try again.');
+    } finally {
+      setIsUploadingAvatar(false);
+      if (e.target) {
+        e.target.value = '';
+      }
+    }
+  };
 
   // Keep form values in sync when server profile data loads or changes
   useEffect(() => {
@@ -278,10 +311,19 @@ export const ProfilePage: React.FC = () => {
             {/* Profile Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               
+              {/* Hidden File Input for Avatar Upload */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleAvatarFileSelect}
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                className="hidden"
+              />
+
               {/* Avatar Summary / Avatar Editor */}
               <div className="flex flex-col sm:flex-row items-center gap-6 p-4 sm:p-6 bg-gray-50/70 rounded-xl border border-gray-100">
-                <div className="relative">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#111827] text-white flex items-center justify-center font-bold text-2xl overflow-hidden border-2 border-white shadow-xs">
+                <div className="relative group">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#111827] text-white flex items-center justify-center font-bold text-2xl overflow-hidden border-2 border-white shadow-xs relative">
                     {currentAvatar ? (
                       <SmartImage 
                         src={currentAvatar} 
@@ -293,7 +335,25 @@ export const ProfilePage: React.FC = () => {
                     ) : (
                       <span>{displayName.charAt(0).toUpperCase()}</span>
                     )}
+
+                    {isUploadingAvatar && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white">
+                        <Loader2 size={22} className="animate-spin text-white" />
+                      </div>
+                    )}
                   </div>
+
+                  {isEditMode && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploadingAvatar}
+                      className="absolute bottom-0 right-0 p-2 bg-[#DC2B53] hover:bg-[#b02242] text-white rounded-full shadow-md transition-transform hover:scale-105 cursor-pointer"
+                      title="Upload profile photo"
+                    >
+                      <Camera size={14} />
+                    </button>
+                  )}
                 </div>
 
                 <div className="text-center sm:text-left flex-1 min-w-0">
@@ -325,14 +385,37 @@ export const ProfilePage: React.FC = () => {
                       </span>
                     )}
                   </div>
+
+                  {isEditMode && (
+                    <div className="mt-3">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploadingAvatar}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+                      >
+                        {isUploadingAvatar ? (
+                          <>
+                            <Loader2 size={13} className="animate-spin text-[#DC2B53]" />
+                            <span>Uploading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload size={13} className="text-gray-500" />
+                            <span>Upload New Photo</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Avatar URL input (Only visible in Edit Mode) */}
               {isEditMode && (
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Avatar Image URL
+                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-2">
+                  <label className="block text-xs font-semibold text-gray-700">
+                    Avatar Image URL (or upload above)
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
@@ -348,10 +431,10 @@ export const ProfilePage: React.FC = () => {
                     />
                   </div>
                   {errors.avatarUrl && (
-                    <p className="text-[11px] text-red-600 mt-1 font-medium">{errors.avatarUrl.message}</p>
+                    <p className="text-[11px] text-red-600 font-medium">{errors.avatarUrl.message}</p>
                   )}
-                  <p className="text-[11px] text-gray-500 mt-1.5">
-                    Paste a direct image link (PNG, JPG, WEBP). Leave empty to use default user initials.
+                  <p className="text-[11px] text-gray-500">
+                    Upload an image file using the button above or paste a direct image URL (PNG, JPG, WEBP).
                   </p>
                 </div>
               )}
