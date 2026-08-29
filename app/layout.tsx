@@ -9,6 +9,7 @@ import { QuickViewModal } from '../src/components/common/QuickViewModal';
 import { ToastContainer } from '../src/components/common/ToastContainer';
 import { AuthModal } from '../src/components/account/AuthModal';
 import { getHomepageMetadata } from '../src/lib/seo';
+import { storefrontApi } from '../src/services/storefrontApi';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,16 +17,23 @@ export async function generateMetadata(): Promise<Metadata> {
   return await getHomepageMetadata();
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  let initialAnalyticsConfig = null;
+  try {
+    initialAnalyticsConfig = await storefrontApi.getAnalyticsConfig();
+  } catch (err) {
+    console.error('Failed to fetch initial analytics config:', err);
+  }
+
   return (
     <html lang="en" className="light">
       <body className="min-h-screen bg-white text-[#111827] font-sans flex flex-col justify-between selection:bg-primary selection:text-white antialiased overflow-x-hidden">
         <StorefrontProviders>
-          <AnalyticsProvider />
+          <AnalyticsProvider initialConfig={initialAnalyticsConfig} />
           <div>
             <Header />
             <main>{children}</main>

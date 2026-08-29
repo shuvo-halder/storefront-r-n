@@ -4,6 +4,7 @@ import React, { useEffect, useRef, Suspense } from 'react';
 import Script from 'next/script';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
+import { analyticsService } from '../services/analyticsService';
 import { storefrontApi } from '../services/storefrontApi';
 import { 
   getGA4Id, 
@@ -61,11 +62,18 @@ function AnalyticsRouteTracker() {
   return null;
 }
 
-export function AnalyticsProvider({ children }: { children?: React.ReactNode }) {
+export function AnalyticsProvider({ 
+  children,
+  initialConfig
+}: { 
+  children?: React.ReactNode;
+  initialConfig?: any;
+}) {
   // Query backend analytics config with 1 hour staleTime
   const { data: analyticsConfig, isLoading } = useQuery({
     queryKey: ['analytics_config'],
     queryFn: storefrontApi.getAnalyticsConfig,
+    initialData: initialConfig,
     staleTime: 60 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -74,6 +82,18 @@ export function AnalyticsProvider({ children }: { children?: React.ReactNode }) 
 
   // If analytics config explicitly disables analytics or is not yet loaded, render children only
   const isEnabled = analyticsConfig ? Boolean(analyticsConfig.enableAnalytics) : false;
+
+  // Sync config synchronously to ensure helper functions (like pushToDataLayer)
+  // have the latest config immediately during child component mounts
+  if (analyticsConfig && typeof window !== 'undefined') {
+    analyticsService.setCachedConfig(analyticsConfig);
+  }
+
+  useEffect(() => {
+    if (analyticsConfig) {
+      analyticsService.setCachedConfig(analyticsConfig);
+    }
+  }, [analyticsConfig]);
 
   // Resolve IDs strictly from Backend Config API
   const gtmId = isEnabled ? getGTMId(analyticsConfig) : '';

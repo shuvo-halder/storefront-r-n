@@ -68,6 +68,12 @@ export const analyticsService = {
     return cachedConfig;
   },
 
+  setCachedConfig: (config: AnalyticsConfig) => {
+    if (config) {
+      cachedConfig = { ...cachedConfig, ...config };
+    }
+  },
+
   isAnalyticsEnabled: (): boolean => {
     return Boolean(cachedConfig.enableAnalytics);
   },
