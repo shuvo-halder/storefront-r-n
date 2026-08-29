@@ -18,40 +18,40 @@ declare global {
 type ConfigSource = AnalyticsConfig | PublicSettings | StoreMarketing | null | undefined;
 
 const extractMarketing = (source?: ConfigSource): any => {
-  if (!source) return null;
-  if ('enableAnalytics' in source) return source; // AnalyticsConfig
-  if ('marketing' in source && source.marketing) return source.marketing; // PublicSettings
-  return source; // StoreMarketing
+  if (source && 'enableAnalytics' in source) return source; // AnalyticsConfig
+  if (source && 'marketing' in source && source.marketing) return source.marketing; // PublicSettings
+  if (source) return source; // StoreMarketing
+  return analyticsService.getCachedConfig();
 };
 
 /**
- * Get GA4 Measurement ID safely from dynamic backend settings with env fallback
- * Priority: Backend Config > Environment Variable > empty string
+ * Get GA4 Measurement ID safely from dynamic backend settings
+ * Priority: Backend Config > empty string (NO env fallbacks)
  */
 export const getGA4Id = (source?: ConfigSource): string => {
   const marketing = extractMarketing(source);
   if (marketing) {
-    const backendId = marketing.ga4MeasurementId || marketing.ga4Id;
+    const backendId = marketing.ga4MeasurementId || marketing.ga4Id || marketing.googleAnalyticsId;
     if (backendId && typeof backendId === 'string' && backendId.trim()) {
       return backendId.trim();
     }
   }
-  return process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() || '';
+  return '';
 };
 
 /**
- * Get GTM Container ID safely from dynamic backend settings with env fallback
- * Priority: Backend Config > Environment Variable > empty string
+ * Get GTM Container ID safely from dynamic backend settings
+ * Priority: Backend Config > empty string (NO env fallbacks)
  */
 export const getGTMId = (source?: ConfigSource): string => {
   const marketing = extractMarketing(source);
   if (marketing) {
-    const backendId = marketing.gtmContainerId || marketing.gtmId;
+    const backendId = marketing.gtmContainerId || marketing.gtmId || marketing.googleTagManagerId;
     if (backendId && typeof backendId === 'string' && backendId.trim()) {
       return backendId.trim();
     }
   }
-  return process.env.NEXT_PUBLIC_GTM_ID?.trim() || '';
+  return '';
 };
 
 /**
@@ -61,7 +61,7 @@ export const getGTMId = (source?: ConfigSource): string => {
 export const getMetaPixelId = (source?: ConfigSource): string => {
   const marketing = extractMarketing(source);
   if (marketing) {
-    const backendId = marketing.metaPixelId || marketing.pixelId;
+    const backendId = marketing.metaPixelId || marketing.pixelId || marketing.facebookPixelId;
     if (backendId && typeof backendId === 'string' && backendId.trim()) {
       return backendId.trim();
     }
@@ -76,7 +76,7 @@ export const getMetaPixelId = (source?: ConfigSource): string => {
 export const getGoogleAdsId = (source?: ConfigSource): string => {
   const marketing = extractMarketing(source);
   if (marketing) {
-    const backendId = marketing.googleAdsId || marketing.adsId;
+    const backendId = marketing.googleAdsId || marketing.adsId || marketing.googleAdsConversionId;
     if (backendId && typeof backendId === 'string' && backendId.trim()) {
       return backendId.trim();
     }
@@ -89,8 +89,11 @@ export const getGoogleAdsId = (source?: ConfigSource): string => {
  */
 export const getGoogleAdsConversionId = (source?: ConfigSource): string => {
   const marketing = extractMarketing(source);
-  if (marketing && marketing.googleAdsConversionId && typeof marketing.googleAdsConversionId === 'string') {
-    return marketing.googleAdsConversionId.trim();
+  if (marketing) {
+    const backendId = marketing.googleAdsConversionId || marketing.googleAdsId || marketing.adsId;
+    if (backendId && typeof backendId === 'string' && backendId.trim()) {
+      return backendId.trim();
+    }
   }
   return '';
 };
@@ -136,6 +139,7 @@ export const getHotjarId = (source?: ConfigSource): string => {
  */
 export const pushToDataLayer = (payload: Record<string, any>) => {
   if (typeof window === 'undefined') return;
+  if (!analyticsService.isAnalyticsEnabled()) return;
 
   window.dataLayer = window.dataLayer || [];
 
@@ -170,6 +174,8 @@ export const pushToDataLayer = (payload: Record<string, any>) => {
  */
 export const trackMetaEvent = (eventName: string, params?: Record<string, any>) => {
   if (typeof window === 'undefined') return;
+  if (!analyticsService.isAnalyticsEnabled()) return;
+
   if (typeof window.fbq === 'function') {
     window.fbq('track', eventName, params);
     if (process.env.NODE_ENV === 'development') {
@@ -186,6 +192,8 @@ export const trackMetaEvent = (eventName: string, params?: Record<string, any>) 
  */
 export const trackTikTokEvent = (eventName: string, params?: Record<string, any>) => {
   if (typeof window === 'undefined') return;
+  if (!analyticsService.isAnalyticsEnabled()) return;
+
   if (window.ttq && typeof window.ttq.track === 'function') {
     window.ttq.track(eventName, params);
     if (process.env.NODE_ENV === 'development') {
@@ -202,6 +210,8 @@ export const trackTikTokEvent = (eventName: string, params?: Record<string, any>
  */
 export const trackTikTokPageView = () => {
   if (typeof window === 'undefined') return;
+  if (!analyticsService.isAnalyticsEnabled()) return;
+
   if (window.ttq && typeof window.ttq.page === 'function') {
     window.ttq.page();
   } else {

@@ -72,10 +72,10 @@ export function AnalyticsProvider({ children }: { children?: React.ReactNode }) 
     retry: 1,
   });
 
-  // If analytics config explicitly disables analytics, render nothing
-  const isEnabled = analyticsConfig ? analyticsConfig.enableAnalytics : true;
+  // If analytics config explicitly disables analytics or is not yet loaded, render children only
+  const isEnabled = analyticsConfig ? Boolean(analyticsConfig.enableAnalytics) : false;
 
-  // Resolve IDs with priority: Backend Config API > Environment Fallback > empty string
+  // Resolve IDs strictly from Backend Config API
   const gtmId = isEnabled ? getGTMId(analyticsConfig) : '';
   const gaId = isEnabled ? getGA4Id(analyticsConfig) : '';
   const metaPixelId = isEnabled ? getMetaPixelId(analyticsConfig) : '';
