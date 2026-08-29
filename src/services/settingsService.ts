@@ -30,7 +30,7 @@ const DEFAULT_SETTINGS: PublicSettings = {
     currency: 'BDT',
     currencySymbol: '৳',
     storePhone: '',
-    storeEmail: 'support@vyzobd.com'
+    storeEmail: ''
   },
   marketing: {
     gtmContainerId: '',
@@ -44,8 +44,8 @@ const DEFAULT_SETTINGS: PublicSettings = {
   faviconUrl: '',
   currency: 'BDT',
   currencySymbol: '৳',
-  freeShippingThreshold: 2000,
-  supportEmail: 'support@vyzobd.com',
+  freeShippingThreshold: 3000,
+  supportEmail: '',
   supportPhone: ''
 };
 
@@ -88,17 +88,19 @@ export const settingsService = {
           '';
 
         const storePhone = 
-          raw.general?.storePhone || 
+          raw.store?.supportPhone || 
           raw.store?.callOrderNumber || 
+          raw.general?.storePhone || 
           raw.callOrderNumber || 
           raw.supportPhone || 
-          '+8801710634144';
+          '';
 
         const storeEmail = 
+          raw.store?.supportEmail || 
           raw.general?.storeEmail || 
           raw.storeEmail || 
           raw.supportEmail || 
-          'support@vyzobd.com';
+          '';
 
         const siteName = 
           raw.branding?.siteName || 

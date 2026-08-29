@@ -8,7 +8,9 @@ import { ShieldAlert, ArrowLeft, Smartphone, Mail, Headphones } from 'lucide-rea
 
 export const ForgotPasswordPage: React.FC = () => {
   const router = useRouter();
-  const { navigateTo } = useStorefront();
+  const { navigateTo, publicSettings } = useStorefront();
+
+  const supportEmail = publicSettings?.supportEmail || publicSettings?.general?.storeEmail || publicSettings?.store?.supportEmail;
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -58,7 +60,7 @@ export const ForgotPasswordPage: React.FC = () => {
               <div>
                 <span className="font-semibold text-[#111827] block">Need Help Recovering Your Account?</span>
                 <p className="text-[11px] text-[#6B7280] mt-0.5">
-                  Contact Vyzobd customer support at <span className="font-semibold text-[#111827]">support@vyzobd.com</span> or via live WhatsApp support for identity verification and account restoration.
+                  Contact customer support {supportEmail ? <>at <span className="font-semibold text-[#111827]">{supportEmail}</span></> : null} or via live support for identity verification and account restoration.
                 </p>
               </div>
             </div>

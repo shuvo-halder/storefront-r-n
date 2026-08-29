@@ -395,6 +395,16 @@ export interface PublicSettings {
   store?: {
     whatsappOrderNumber?: string;
     callOrderNumber?: string;
+    supportPhone?: string;
+    supportEmail?: string;
+    address?: string;
+    city?: string;
+    country?: string;
+    facebookUrl?: string;
+    instagramUrl?: string;
+    youtubeUrl?: string;
+    tiktokUrl?: string;
+    linkedinUrl?: string;
   };
   whatsappOrderNumber?: string;
   callOrderNumber?: string;

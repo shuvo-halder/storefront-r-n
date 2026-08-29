@@ -418,18 +418,22 @@ function HeaderContent() {
         <div className="bg-white border-b border-[#E5E7EB] py-2 hidden lg:block">
           <div className="container-vyzobd flex items-center justify-between text-xs font-medium text-[#6B7280]">
             <div className="flex items-center gap-6">
-              <a 
-                href={`tel:${publicSettings?.store?.callOrderNumber || publicSettings?.general?.storePhone || publicSettings?.callOrderNumber || '+8801710634144'}`} 
-                className="flex items-center gap-1.5 group cursor-pointer hover:text-[#DC2B53] transition-colors"
-                title="Customer Support"
-              >
-                <PhoneCall size={13} className="text-[#DC2B53]" />
-                <span>{publicSettings?.store?.callOrderNumber || publicSettings?.general?.storePhone || publicSettings?.callOrderNumber || '+8801710634144'}</span>
-              </a>
-              <a href={`mailto:${publicSettings?.general?.storeEmail || 'support@vyzobd.com'}`} className="flex items-center gap-1.5 group cursor-pointer hover:text-[#DC2B53] transition-colors">
-                <Mail size={13} className="text-[#DC2B53]" />
-                <span>{publicSettings?.general?.storeEmail || 'support@vyzobd.com'}</span>
-              </a>
+              {(publicSettings?.supportPhone || publicSettings?.general?.storePhone || publicSettings?.store?.supportPhone || publicSettings?.store?.callOrderNumber) && (
+                <a 
+                  href={`tel:${publicSettings?.supportPhone || publicSettings?.general?.storePhone || publicSettings?.store?.supportPhone || publicSettings?.store?.callOrderNumber}`} 
+                  className="flex items-center gap-1.5 group cursor-pointer hover:text-[#DC2B53] transition-colors"
+                  title="Customer Support"
+                >
+                  <PhoneCall size={13} className="text-[#DC2B53]" />
+                  <span>{publicSettings?.supportPhone || publicSettings?.general?.storePhone || publicSettings?.store?.supportPhone || publicSettings?.store?.callOrderNumber}</span>
+                </a>
+              )}
+              {(publicSettings?.supportEmail || publicSettings?.general?.storeEmail || publicSettings?.store?.supportEmail) && (
+                <a href={`mailto:${publicSettings?.supportEmail || publicSettings?.general?.storeEmail || publicSettings?.store?.supportEmail}`} className="flex items-center gap-1.5 group cursor-pointer hover:text-[#DC2B53] transition-colors">
+                  <Mail size={13} className="text-[#DC2B53]" />
+                  <span>{publicSettings?.supportEmail || publicSettings?.general?.storeEmail || publicSettings?.store?.supportEmail}</span>
+                </a>
+              )}
             </div>
             <div className="flex items-center gap-5">
               <div className="flex items-center gap-1 hover:text-[#111827] transition-colors cursor-pointer">

@@ -104,18 +104,24 @@ export const Footer: React.FC = () => {
 
           <div className="grid grid-cols-[1fr_auto] lg:flex lg:flex-col items-start justify-between lg:justify-start gap-4 pt-1 w-full">
             <div className="space-y-2.5 text-xs font-medium text-gray-300 min-w-0">
-              <div className="flex items-center gap-3 min-w-0">
-                <Phone size={14} className="text-[#DC2B53] shrink-0" />
-                <span className="truncate">{publicSettings?.general?.storePhone || publicSettings?.store?.callOrderNumber || '+8801710634144'}</span>
-              </div>
-              <div className="flex items-center gap-3 min-w-0">
-                <Mail size={14} className="text-[#DC2B53] shrink-0" />
-                <span className="lowercase truncate">{publicSettings?.general?.storeEmail || 'support@vyzobd.com'}</span>
-              </div>
-              <div className="flex items-center gap-3 min-w-0">
-                <MapPin size={14} className="text-[#DC2B53] shrink-0" />
-                <span className="capitalize truncate">{publicSettings?.general?.storeAddress || 'Dhaka, Bangladesh'}</span>
-              </div>
+              {(publicSettings?.supportPhone || publicSettings?.general?.storePhone || publicSettings?.store?.supportPhone || publicSettings?.store?.callOrderNumber) && (
+                <div className="flex items-center gap-3 min-w-0">
+                  <Phone size={14} className="text-[#DC2B53] shrink-0" />
+                  <span className="truncate">{publicSettings?.supportPhone || publicSettings?.general?.storePhone || publicSettings?.store?.supportPhone || publicSettings?.store?.callOrderNumber}</span>
+                </div>
+              )}
+              {(publicSettings?.supportEmail || publicSettings?.general?.storeEmail || publicSettings?.store?.supportEmail) && (
+                <div className="flex items-center gap-3 min-w-0">
+                  <Mail size={14} className="text-[#DC2B53] shrink-0" />
+                  <span className="lowercase truncate">{publicSettings?.supportEmail || publicSettings?.general?.storeEmail || publicSettings?.store?.supportEmail}</span>
+                </div>
+              )}
+              {(publicSettings?.general?.storeAddress || publicSettings?.store?.address) && (
+                <div className="flex items-center gap-3 min-w-0">
+                  <MapPin size={14} className="text-[#DC2B53] shrink-0" />
+                  <span className="capitalize truncate">{publicSettings?.general?.storeAddress || publicSettings?.store?.address}</span>
+                </div>
+              )}
             </div>
 
             {/* Social Media Icons (Mobile: right side of contact info in a 2-column grid; Desktop: horizontal row below contact info) */}
