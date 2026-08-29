@@ -148,19 +148,26 @@ export const pushToDataLayer = (payload: Record<string, any>) => {
     window.dataLayer.push({ ecommerce: null });
   }
 
-  // Push actual event payload to dataLayer
-  window.dataLayer.push(payload);
+  const hasGTM = Boolean(getGTMId());
 
-  // Standalone GA4 Event Bridge: if window.gtag exists, dispatch directly to gtag
-  if (payload.event) {
-    if (typeof window.gtag !== 'function') {
-      window.gtag = function() { window.dataLayer.push(arguments); };
-    }
-    if (payload.ecommerce) {
-      window.gtag('event', payload.event, payload.ecommerce);
+  if (hasGTM) {
+    // 1. GTM is present: GTM expects plain objects
+    window.dataLayer.push(payload);
+  } else {
+    // 2. Standalone GA4/Ads: gtag expects arguments array format via window.gtag
+    if (payload.event) {
+      if (typeof window.gtag !== 'function') {
+        window.gtag = function() { window.dataLayer.push(arguments); };
+      }
+      if (payload.ecommerce) {
+        window.gtag('event', payload.event, payload.ecommerce);
+      } else {
+        const { event, ...rest } = payload;
+        window.gtag('event', event, rest);
+      }
     } else {
-      const { event, ...rest } = payload;
-      window.gtag('event', event, rest);
+      // Non-event pushes
+      window.dataLayer.push(payload);
     }
   }
 
