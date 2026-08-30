@@ -239,6 +239,13 @@ export const trackGoogleAdsPurchaseConversion = (
   if (typeof window === 'undefined') return;
   if (!order || !conversionId || !conversionLabel) return;
 
+  // If GTM is present, it is the authoritative Google Tag transport.
+  // GTM will listen to the standard 'purchase' dataLayer event.
+  // We abort direct Google Ads conversion to prevent duplicate firing.
+  if (getGTMId()) {
+    return;
+  }
+
   const rawOrderNumber = order.orderNumber;
   const transactionId = rawOrderNumber && typeof rawOrderNumber === 'string'
     ? rawOrderNumber.trim()
@@ -951,17 +958,16 @@ export const trackGA4Purchase = (order: any, currency: string = 'BDT') => {
       currency: currency || 'BDT',
     });
 
-    // Dispatch Google Ads conversion asynchronously
-    analyticsService.getAnalyticsConfig().then((res) => {
-      if (res?.data && res.data.googleAdsConversionId && res.data.googleAdsConversionLabel) {
-        trackGoogleAdsPurchaseConversion(
-          order,
-          currency,
-          res.data.googleAdsConversionId,
-          res.data.googleAdsConversionLabel
-        );
-      }
-    }).catch(console.error);
+    // Dispatch Google Ads conversion
+    const config = analyticsService.getCachedConfig();
+    if (config?.googleAdsConversionId && config?.googleAdsConversionLabel) {
+      trackGoogleAdsPurchaseConversion(
+        order,
+        currency,
+        config.googleAdsConversionId,
+        config.googleAdsConversionLabel
+      );
+    }
     
     // Mark transaction as tracked
     if (typeof window !== 'undefined') {
