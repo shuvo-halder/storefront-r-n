@@ -9,14 +9,12 @@ import { storefrontApi } from '../services/storefrontApi';
 import { 
   getGA4Id, 
   getGTMId, 
-  getMetaPixelId, 
   getGoogleAdsId, 
   getGoogleAdsConversionId,
   getGoogleAdsConversionLabel,
   getTikTokPixelId,
   getHotjarId,
   pushToDataLayer, 
-  trackMetaEvent,
   trackTikTokPageView
 } from '../utils/analytics';
 
@@ -51,9 +49,6 @@ function AnalyticsRouteTracker() {
       page_path: currentUrl,
       page_title: pageTitle,
     });
-
-    // Track Meta Pixel PageView on SPA route change
-    trackMetaEvent('PageView');
     
     // Track TikTok PageView
     trackTikTokPageView();
@@ -98,7 +93,6 @@ export function AnalyticsProvider({
   // Resolve IDs strictly from Backend Config API
   const gtmId = isEnabled ? getGTMId(analyticsConfig) : '';
   const gaId = isEnabled ? getGA4Id(analyticsConfig) : '';
-  const metaPixelId = isEnabled ? getMetaPixelId(analyticsConfig) : '';
   const googleAdsId = isEnabled ? getGoogleAdsId(analyticsConfig) : '';
   const tiktokPixelId = isEnabled ? getTikTokPixelId(analyticsConfig) : '';
   const hotjarId = isEnabled ? getHotjarId(analyticsConfig) : '';
@@ -135,7 +129,7 @@ export function AnalyticsProvider({
       )}
 
       {/* TikTok Pixel */}
-      {tiktokPixelId && (
+      {tiktokPixelId && !gtmId && (
         <Script
           id="tiktok-pixel"
           strategy="afterInteractive"
@@ -223,44 +217,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               `,
             }}
           />
-        </>
-      )}
-
-      {/* 4. Meta Pixel (fbq) */}
-      {metaPixelId && (
-        <>
-          <Script
-            id="meta-pixel-init"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `
-                !function(f,b,e,v,n,t,s)
-                {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-                n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-                if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-                n.queue=[];t=b.createElement(e);t.async=!0;
-                t.src=v;s=b.getElementsByTagName(e)[0];
-                s.parentNode.insertBefore(t,s)}(window, document,'script',
-                'https://connect.facebook.net/en_US/fbevents.js');
-                fbq('init', '${metaPixelId}');
-                if (window._meta_q) {
-                  for (var i = 0; i < window._meta_q.length; i++) {
-                    fbq.apply(null, window._meta_q[i]);
-                  }
-                  window._meta_q = [];
-                }
-              `,
-            }}
-          />
-          <noscript>
-            <img
-              height="1"
-              width="1"
-              style={{ display: 'none' }}
-              src={`https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1`}
-              alt=""
-            />
-          </noscript>
         </>
       )}
 

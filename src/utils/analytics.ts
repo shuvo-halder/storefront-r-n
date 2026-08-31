@@ -55,21 +55,6 @@ export const getGTMId = (source?: ConfigSource): string => {
 };
 
 /**
- * Get Meta Pixel ID safely from dynamic backend settings
- * Priority: Backend Config > empty string
- */
-export const getMetaPixelId = (source?: ConfigSource): string => {
-  const marketing = extractMarketing(source);
-  if (marketing) {
-    const backendId = marketing.metaPixelId || marketing.pixelId || marketing.facebookPixelId;
-    if (backendId && typeof backendId === 'string' && backendId.trim()) {
-      return backendId.trim();
-    }
-  }
-  return '';
-};
-
-/**
  * Get Google Ads ID safely from dynamic backend settings
  * Priority: Backend Config > empty string
  */
@@ -177,29 +162,13 @@ export const pushToDataLayer = (payload: Record<string, any>) => {
 };
 
 /**
- * Safely dispatch an event to Meta Pixel (fbq) if initialized.
- */
-export const trackMetaEvent = (eventName: string, params?: Record<string, any>) => {
-  if (typeof window === 'undefined') return;
-  if (!analyticsService.isAnalyticsEnabled()) return;
-
-  if (typeof window.fbq === 'function') {
-    window.fbq('track', eventName, params);
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Meta Pixel Track]', eventName, params);
-    }
-  } else {
-    window._meta_q = window._meta_q || [];
-    window._meta_q.push(params ? ['track', eventName, params] : ['track', eventName]);
-  }
-};
-
-/**
  * Safely dispatch an event to TikTok Pixel (ttq) if initialized.
  */
 export const trackTikTokEvent = (eventName: string, params?: Record<string, any>) => {
   if (typeof window === 'undefined') return;
   if (!analyticsService.isAnalyticsEnabled()) return;
+
+  if (getGTMId()) return;
 
   if (window.ttq && typeof window.ttq.track === 'function') {
     window.ttq.track(eventName, params);
@@ -218,6 +187,8 @@ export const trackTikTokEvent = (eventName: string, params?: Record<string, any>
 export const trackTikTokPageView = () => {
   if (typeof window === 'undefined') return;
   if (!analyticsService.isAnalyticsEnabled()) return;
+
+  if (getGTMId()) return;
 
   if (window.ttq && typeof window.ttq.page === 'function') {
     window.ttq.page();
@@ -455,7 +426,6 @@ export const trackGA4Search = (searchTerm: string) => {
       search_term: searchTerm,
     });
 
-    trackMetaEvent('Search', { search_string: searchTerm });
     
     trackTikTokEvent('Search', {
       query: searchTerm,
@@ -545,13 +515,6 @@ export const trackGA4ViewItem = (
     });
 
     // Meta ViewContent mapping
-    trackMetaEvent('ViewContent', {
-      content_ids: [item.item_id],
-      content_name: item.item_name,
-      content_type: 'product',
-      value: val,
-      currency: currency || 'BDT',
-    });
 
     // TikTok ViewContent mapping
     trackTikTokEvent('ViewContent', {
@@ -631,13 +594,6 @@ export const trackGA4AddToCart = (
     });
 
     // Meta AddToCart mapping
-    trackMetaEvent('AddToCart', {
-      content_ids: [formattedItem.item_id],
-      content_name: formattedItem.item_name,
-      content_type: 'product',
-      value: totalVal,
-      currency: currency || 'BDT',
-    });
 
     // TikTok AddToCart mapping
     trackTikTokEvent('AddToCart', {
@@ -706,13 +662,6 @@ export const trackGA4AddToWishlist = (
     });
 
     // Meta AddToWishlist mapping
-    trackMetaEvent('AddToWishlist', {
-      content_ids: [formattedItem.item_id],
-      content_name: formattedItem.item_name,
-      content_type: 'product',
-      value: unitPrice,
-      currency: currency || 'BDT',
-    });
   } catch (err) {
     console.error('[GA4 add_to_wishlist error]', err);
   }
@@ -748,13 +697,6 @@ export const trackGA4BeginCheckout = (
     });
 
     // Meta InitiateCheckout mapping
-    trackMetaEvent('InitiateCheckout', {
-      content_ids: formattedItems.map((i) => i.item_id),
-      content_type: 'product',
-      value: val,
-      num_items: formattedItems.length,
-      currency: currency || 'BDT',
-    });
 
     // TikTok InitiateCheckout mapping
     trackTikTokEvent('InitiateCheckout', {
@@ -937,13 +879,6 @@ export const trackGA4Purchase = (order: any, currency: string = 'BDT') => {
     });
 
     // Meta Purchase mapping
-    trackMetaEvent('Purchase', {
-      content_ids: formattedItems.map((i) => i.item_id),
-      content_type: 'product',
-      value: isNaN(value) ? 0 : value,
-      currency: currency || 'BDT',
-      num_items: formattedItems.length,
-    });
 
     // TikTok Purchase mapping
     trackTikTokEvent('CompletePayment', {
