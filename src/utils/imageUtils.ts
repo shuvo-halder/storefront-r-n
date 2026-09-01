@@ -68,7 +68,8 @@ export function formatCloudinaryUrl(
  * Does NOT rely on external placeholder APIs or random images.
  */
 export function getFallbackSvgUri(type: FallbackType = 'product', label?: string): string {
-  const displayLabel = label ? label.replace(/["'<>]/g, '') : '';
+  const trimmedLabel = label ? label.trim() : '';
+  const displayLabel = trimmedLabel ? trimmedLabel.replace(/["'<>]/g, '') : '';
 
   let svgContent = '';
 

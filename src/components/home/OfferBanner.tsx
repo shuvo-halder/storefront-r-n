@@ -80,6 +80,10 @@ export const OfferBanner: React.FC<OfferBannerProps> = ({
     }
   };
 
+  const rawTitle = offerBanner.title?.trim() || '';
+  const rawSubtitle = offerBanner.subtitle?.trim() || offerBanner.description?.trim() || '';
+  const bannerLabel = rawTitle || rawSubtitle || 'Promotional Offer';
+
   const mobileImg = offerBanner.mobileImage || offerBanner.desktopImage || offerBanner.image;
   const desktopImg = offerBanner.desktopImage || offerBanner.image;
 
@@ -87,26 +91,33 @@ export const OfferBanner: React.FC<OfferBannerProps> = ({
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div 
         onClick={handleClick}
-        className="group relative overflow-hidden rounded-2xl bg-slate-100 cursor-pointer shadow-xs transition-all duration-300 hover:shadow-md"
+        className="group relative overflow-hidden rounded-2xl bg-slate-900 cursor-pointer shadow-xs transition-all duration-300 hover:shadow-md w-full"
       >
-        <div className="block sm:hidden w-full">
+        {/* Mobile View */}
+        <div className="block sm:hidden w-full relative aspect-[21/9] min-h-[140px]">
           <SmartImage 
             src={mobileImg} 
-            alt={offerBanner.title || 'Promotional Banner'} 
-            fill={false}
+            alt={bannerLabel} 
+            fill
+            priority
             fallbackType="banner"
-            fallbackLabel={offerBanner.title}
-            className="w-full h-auto block group-hover:scale-[1.01] transition-transform duration-700" 
+            fallbackLabel={bannerLabel}
+            containerClassName="w-full h-full"
+            className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700" 
           />
         </div>
-        <div className="hidden sm:block w-full">
+
+        {/* Desktop View */}
+        <div className="hidden sm:block w-full relative aspect-[21/9] sm:aspect-[4/1] min-h-[180px] md:min-h-[220px] lg:min-h-[260px]">
           <SmartImage 
             src={desktopImg} 
-            alt={offerBanner.title || 'Promotional Banner'} 
-            fill={false}
+            alt={bannerLabel} 
+            fill
+            priority
             fallbackType="banner"
-            fallbackLabel={offerBanner.title}
-            className="w-full h-auto block group-hover:scale-[1.01] transition-transform duration-700" 
+            fallbackLabel={bannerLabel}
+            containerClassName="w-full h-full"
+            className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700" 
           />
         </div>
       </div>
