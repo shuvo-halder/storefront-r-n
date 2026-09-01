@@ -102,8 +102,9 @@ export const OfferBanner: React.FC<OfferBannerProps> = ({
             priority
             fallbackType="banner"
             fallbackLabel={bannerLabel}
+            objectFit="contain"
             containerClassName="w-full h-full"
-            className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700" 
+            className="w-full h-full object-contain group-hover:scale-[1.01] transition-transform duration-700" 
           />
         </div>
 
@@ -116,8 +117,9 @@ export const OfferBanner: React.FC<OfferBannerProps> = ({
             priority
             fallbackType="banner"
             fallbackLabel={bannerLabel}
+            objectFit="contain"
             containerClassName="w-full h-full"
-            className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700" 
+            className="w-full h-full object-contain group-hover:scale-[1.01] transition-transform duration-700" 
           />
         </div>
       </div>
