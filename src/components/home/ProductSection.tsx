@@ -80,7 +80,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
         </div>
 
         {/* Tab Filters or Action Button */}
-        <div className="flex flex-wrap items-center gap-3 self-end md:self-auto">
+        <div className="flex flex-wrap items-center gap-3">
           {tabs && tabs.length > 0 && (
             <div className="flex items-center gap-1 bg-[#F9FAFB] p-1 rounded-lg border border-[#E5E7EB]">
               {tabs.map((tab) => (
@@ -102,7 +102,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
           {viewAllAction && (
             <button
               onClick={viewAllAction}
-              className="text-xs font-semibold text-[#DC2B53] hover:text-[#C52247] flex items-center gap-1 transition-colors cursor-pointer min-h-[32px] ml-auto md:ml-0"
+              className="text-xs font-semibold text-[#DC2B53] hover:text-[#C52247] flex items-center gap-1 transition-colors cursor-pointer min-h-[32px]"
             >
               <span>{viewAllText}</span>
               <ArrowRight size={14} />

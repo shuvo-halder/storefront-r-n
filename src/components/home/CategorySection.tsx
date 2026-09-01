@@ -79,7 +79,7 @@ export const CategorySection: React.FC = () => {
           onClick={() => {
             setFilters(prev => ({ ...prev, categorySlug: null }));
           }}
-          className="group inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#DC2B53] hover:bg-[#C52247] text-white rounded-lg font-semibold text-xs transition-colors shrink-0 self-end sm:self-auto shadow-2xs min-h-[32px]"
+          className="group inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#DC2B53] hover:bg-[#C52247] text-white rounded-lg font-semibold text-xs transition-colors shrink-0 self-start sm:self-auto shadow-2xs min-h-[32px]"
         >
           <span>View All Categories</span>
           <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
