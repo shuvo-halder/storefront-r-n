@@ -116,7 +116,8 @@ export const HeroSection: React.FC = () => {
             fill
             fallbackType="banner"
             fallbackLabel={activeHero.title || 'Banner'}
-            className="w-full h-full object-cover opacity-100 group-hover:scale-103 transition-transform duration-700 ease-out" 
+            objectFit="contain"
+            className="w-full h-full object-contain opacity-100 group-hover:scale-103 transition-transform duration-700 ease-out" 
           />
         </div>
         {/* Desktop Image */}
@@ -128,7 +129,8 @@ export const HeroSection: React.FC = () => {
             fill
             fallbackType="banner"
             fallbackLabel={activeHero.title || 'Banner'}
-            className="w-full h-full object-cover opacity-100 group-hover:scale-103 transition-transform duration-700 ease-out" 
+            objectFit="contain"
+            className="w-full h-full object-contain opacity-100 group-hover:scale-103 transition-transform duration-700 ease-out" 
           />
         </div>
         
