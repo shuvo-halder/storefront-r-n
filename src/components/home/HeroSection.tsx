@@ -133,9 +133,6 @@ export const HeroSection: React.FC = () => {
             className="w-full h-full object-cover object-center opacity-100 group-hover:scale-103 transition-transform duration-700 ease-out" 
           />
         </div>
-        
-        {/* Very subtle gradient overlay ONLY for text contrast, leaving 70%+ of image unobstructed */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent sm:bg-gradient-to-r sm:from-black/60 sm:via-black/20 sm:to-transparent" />
       </div>
 
       {/* Top Bar: Badge & Navigation Controls */}

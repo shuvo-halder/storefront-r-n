@@ -46,7 +46,7 @@ export const OfferBanner: React.FC<OfferBannerProps> = ({
   if (loading) {
     return (
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <Skeleton className="h-44 sm:h-52 w-full rounded-2xl bg-slate-200" />
+        <Skeleton className="h-[68px] sm:h-[180px] w-full rounded-xl sm:rounded-2xl bg-slate-200" />
       </section>
     );
   }
@@ -91,7 +91,7 @@ export const OfferBanner: React.FC<OfferBannerProps> = ({
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div 
         onClick={handleClick}
-        className="group relative overflow-hidden rounded-2xl bg-slate-900 cursor-pointer shadow-xs transition-all duration-300 hover:shadow-md w-full h-[130px] sm:h-[180px] min-h-[130px] sm:min-h-[180px] max-h-[130px] sm:max-h-[180px]"
+        className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-slate-900 cursor-pointer shadow-xs transition-all duration-300 hover:shadow-md w-full h-[68px] sm:h-[180px] min-h-[68px] sm:min-h-[180px] max-h-[68px] sm:max-h-[180px]"
       >
         {/* Mobile View */}
         <div className="block sm:hidden w-full h-full relative">
@@ -102,9 +102,9 @@ export const OfferBanner: React.FC<OfferBannerProps> = ({
             priority
             fallbackType="banner"
             fallbackLabel={bannerLabel}
-            objectFit="contain"
-            containerClassName="w-full h-full flex items-center justify-center bg-slate-900"
-            className="w-full h-full object-contain object-center group-hover:scale-[1.01] transition-transform duration-700" 
+            objectFit="cover"
+            containerClassName="w-full h-full"
+            className="w-full h-full object-cover object-center group-hover:scale-[1.01] transition-transform duration-700" 
           />
         </div>
 
