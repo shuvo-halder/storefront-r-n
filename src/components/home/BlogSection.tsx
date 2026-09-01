@@ -68,7 +68,7 @@ export const BlogSection: React.FC = () => {
 
         <button
           onClick={() => navigateTo('blog')}
-          className="text-xs font-semibold text-[#DC2B53] hover:text-[#C52247] flex items-center gap-1 transition-colors cursor-pointer self-start sm:self-auto min-h-[32px]"
+          className="text-xs font-semibold text-[#DC2B53] hover:text-[#C52247] flex items-center gap-1 transition-colors cursor-pointer self-end sm:self-auto min-h-[32px]"
         >
           <span>Read All Articles</span>
           <ArrowRight size={14} />

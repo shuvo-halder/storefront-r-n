@@ -49,7 +49,7 @@ export const BrandSection: React.FC = () => {
             setFilters(prev => ({ ...prev, brandSlugs: [] }));
             navigateTo('shop');
           }}
-          className="text-xs font-semibold text-[#DC2B53] hover:text-[#C52247] flex items-center gap-1 transition-colors cursor-pointer self-start sm:self-auto min-h-[32px]"
+          className="text-xs font-semibold text-[#DC2B53] hover:text-[#C52247] flex items-center gap-1 transition-colors cursor-pointer self-end sm:self-auto min-h-[32px]"
         >
           <span>View All Brands</span>
           <ArrowRight size={14} />

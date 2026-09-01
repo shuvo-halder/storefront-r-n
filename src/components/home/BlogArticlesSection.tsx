@@ -33,7 +33,7 @@ export const BlogArticlesSection: React.FC = () => {
 
           <button
             onClick={() => navigateTo('blog')}
-            className="text-xs font-bold text-slate-700 hover:text-primary flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto"
+            className="text-xs font-bold text-slate-700 hover:text-primary flex items-center gap-1.5 transition-colors cursor-pointer self-end sm:self-auto"
           >
             <span>Read All Articles</span>
             <ArrowRight size={14} />
