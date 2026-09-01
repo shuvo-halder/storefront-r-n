@@ -63,13 +63,10 @@ export const Footer: React.FC = () => {
   }, []);
 
   const socialPlatforms = [
-    { id: 'facebook', label: 'Facebook', url: publicSettings?.socialLinks?.facebook, Icon: Facebook, iconColor: '#1877F2', buttonClass: 'hover:border-[#1877F2]/50 hover:bg-[#1877F2]/10', mobileHidden: false },
-    { id: 'instagram', label: 'Instagram', url: publicSettings?.socialLinks?.instagram, Icon: Instagram, iconColor: '#E4405F', buttonClass: 'hover:border-[#E4405F]/50 hover:bg-[#E4405F]/10', mobileHidden: false },
-    { id: 'youtube', label: 'YouTube', url: publicSettings?.socialLinks?.youtube, Icon: Youtube, iconColor: '#FF0000', buttonClass: 'hover:border-[#FF0000]/50 hover:bg-[#FF0000]/10', mobileHidden: true },
-    { id: 'twitter', label: 'X (Twitter)', url: publicSettings?.socialLinks?.twitter || publicSettings?.socialLinks?.x, Icon: X, iconColor: '#1DA1F2', buttonClass: 'hover:border-[#1DA1F2]/50 hover:bg-[#1DA1F2]/10', mobileHidden: true },
-    { id: 'linkedin', label: 'LinkedIn', url: publicSettings?.socialLinks?.linkedin, Icon: Linkedin, iconColor: '#0A66C2', buttonClass: 'hover:border-[#0A66C2]/50 hover:bg-[#0A66C2]/10', mobileHidden: true },
-    { id: 'tiktok', label: 'TikTok', url: publicSettings?.socialLinks?.tiktok, Icon: TikTokIcon, iconColor: '#EE1D52', buttonClass: 'hover:border-[#EE1D52]/50 hover:bg-[#EE1D52]/10', mobileHidden: false },
-    { id: 'whatsapp', label: 'WhatsApp', url: publicSettings?.socialLinks?.whatsapp, Icon: WhatsAppIcon, iconColor: '#25D366', buttonClass: 'hover:border-[#25D366]/50 hover:bg-[#25D366]/10', mobileHidden: false },
+    { id: 'facebook', label: 'Facebook', url: publicSettings?.socialLinks?.facebook, Icon: Facebook },
+    { id: 'instagram', label: 'Instagram', url: publicSettings?.socialLinks?.instagram, Icon: Instagram },
+    { id: 'tiktok', label: 'TikTok', url: publicSettings?.socialLinks?.tiktok, Icon: TikTokIcon },
+    { id: 'whatsapp', label: 'WhatsApp', url: publicSettings?.socialLinks?.whatsapp, Icon: WhatsAppIcon },
   ];
 
   const activeSocialLinks = socialPlatforms
@@ -124,10 +121,10 @@ export const Footer: React.FC = () => {
               )}
             </div>
 
-            {/* Social Media Icons (Mobile: row below contact info; Desktop: horizontal row below contact info) */}
+            {/* Social Media Icons (Mobile: centered row below contact info; Desktop: row below contact info) */}
             {mounted && activeSocialLinks.length > 0 && (
-              <div className="flex justify-start shrink-0 pt-1 lg:pt-2">
-                <div className="flex flex-row flex-nowrap items-center gap-6 sm:gap-7 lg:gap-2">
+              <div className="flex justify-center lg:justify-start shrink-0 pt-2 lg:pt-2 w-full">
+                <div className="flex flex-row flex-nowrap items-center justify-center lg:justify-start gap-6 sm:gap-7 lg:gap-5">
                   {activeSocialLinks.map((social) => (
                     <a
                       key={social.id}
@@ -135,14 +132,9 @@ export const Footer: React.FC = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={social.label}
-                      className={`items-center justify-center transition-all duration-200 cursor-pointer shrink-0 ${
-                        social.mobileHidden ? 'hidden lg:flex' : 'flex'
-                      } lg:w-8 lg:h-8 lg:rounded-lg lg:bg-gray-800/90 lg:border lg:border-gray-700/80 lg:shadow-2xs lg:focus:outline-none lg:focus:ring-2 lg:focus:ring-[#DC2B53]/50 lg:${social.buttonClass}`}
+                      className="flex items-center justify-center cursor-pointer shrink-0 transition-opacity hover:opacity-80 focus:outline-none"
                     >
-                      {/* Mobile: Plain White Icon Glyph */}
-                      <social.Icon className="w-5 h-5 shrink-0 text-white lg:hidden hover:opacity-80 transition-opacity" />
-                      {/* Desktop: Colored Icon inside Button */}
-                      <social.Icon className="w-4 h-4 shrink-0 hidden lg:block" style={{ color: social.iconColor }} />
+                      <social.Icon className="w-5 h-5 shrink-0 text-white" />
                     </a>
                   ))}
                 </div>
