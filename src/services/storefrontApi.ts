@@ -85,6 +85,11 @@ export const storefrontApi = {
     return res.data;
   },
 
+  getCMSPages: async (): Promise<CMSPage[]> => {
+    const res = await contentService.getCMSPages();
+    return res.data || [];
+  },
+
   getCMSPageBySlug: async (slug: string): Promise<CMSPage | null> => {
     const res = await contentService.getPageBySlug(slug);
     return res.data;

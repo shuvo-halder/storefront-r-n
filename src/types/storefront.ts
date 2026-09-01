@@ -456,7 +456,10 @@ export interface CMSPage {
   slug: string;
   title: string;
   content: string;
-  lastUpdated: string;
+  lastUpdated?: string;
+  status?: string;
+  publishedAt?: string;
+  updatedAt?: string;
   metaTitle?: string;
   metaDescription?: string;
 }

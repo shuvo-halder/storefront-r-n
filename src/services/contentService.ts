@@ -242,6 +242,26 @@ export const contentService = {
     }
   },
 
+  // GET /pages
+  getCMSPages: async (): Promise<ApiResponse<CMSPage[]>> => {
+    try {
+      const res = await apiClient.get('/pages');
+      const unwrapped = unwrapApiResponse<any>(res);
+
+      if (unwrapped.status === 'error') {
+        return { status: 'error', message: unwrapped.message || 'Failed to fetch pages', data: [] };
+      }
+
+      const list = Array.isArray(unwrapped.data) 
+        ? unwrapped.data 
+        : (unwrapped.data?.pages || unwrapped.data?.data || []);
+
+      return { status: 'success', message: null, data: list };
+    } catch (err: any) {
+      return { status: 'error', message: err?.message || 'Failed to fetch pages', data: [] };
+    }
+  },
+
   // GET /pages/:slug
   getPageBySlug: async (slug: string): Promise<ApiResponse<CMSPage>> => {
     try {

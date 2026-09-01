@@ -1,6 +1,10 @@
 import type { MetadataRoute } from 'next';
 
-const DEFAULT_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://vyzobd.com';
+const BASE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  'https://vyzobd.com'
+).replace(/\/+$/, '');
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,9 +12,21 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/account/', '/cart', '/checkout/'],
+        disallow: [
+          '/account/',
+          '/cart',
+          '/checkout',
+          '/wishlist',
+          '/login',
+          '/register',
+          '/forgot-password',
+          '/reset-password',
+          '/order-confirmation',
+          '/search',
+        ],
       },
     ],
-    sitemap: `${DEFAULT_BASE_URL}/sitemap.xml`,
+    sitemap: `${BASE_URL}/sitemap.xml`,
   };
 }
+

@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
 import { storefrontApi } from '../services/storefrontApi';
 
-const DEFAULT_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://vyzobd.com';
+const DEFAULT_BASE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  'https://vyzobd.com'
+).replace(/\/+$/, '');
 
 export async function getPublicSiteSettings() {
   try {
