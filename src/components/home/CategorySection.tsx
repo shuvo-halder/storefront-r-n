@@ -72,9 +72,6 @@ export const CategorySection: React.FC = () => {
           <h2 className="text-xl sm:text-2xl font-bold text-[#111827] tracking-tight">
             Shop by Category
           </h2>
-          <p className="text-[#6B7280] text-xs max-w-lg hidden sm:block">
-            Explore our curated selection of quality products and everyday essentials.
-          </p>
         </div>
 
         <Link

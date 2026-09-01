@@ -76,7 +76,6 @@ export const HomePage: React.FC = () => {
       {/* 4. FEATURED PRODUCTS */}
       <ProductSection
         title="Featured Products"
-        subtitle="Handpicked quality items curated just for you."
         badge="CURATED COLLECTION"
         icon={<Sparkles size={14} className="text-[#DC2B53]" />}
         products={featuredProducts}
@@ -92,7 +91,6 @@ export const HomePage: React.FC = () => {
       {/* 5. POPULAR PRODUCTS */}
       <ProductSection
         title="Popular Products"
-        subtitle="Most popular picks loved by our customers."
         badge="MOST POPULAR"
         icon={<Flame size={14} className="text-[#DC2B53]" />}
         products={bestSellers}
@@ -111,7 +109,6 @@ export const HomePage: React.FC = () => {
       {/* 7. NEW ARRIVALS */}
       <ProductSection
         title="New Arrivals"
-        subtitle="Explore the latest additions to our store."
         badge="JUST RELEASED"
         icon={<Zap size={14} className="text-[#DC2B53]" />}
         products={newArrivals}
