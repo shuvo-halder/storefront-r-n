@@ -63,13 +63,13 @@ export const Footer: React.FC = () => {
   }, []);
 
   const socialPlatforms = [
-    { id: 'facebook', label: 'Facebook', url: publicSettings?.socialLinks?.facebook, Icon: Facebook, iconColor: '#1877F2', buttonClass: 'hover:border-[#1877F2]/50 hover:bg-[#1877F2]/10' },
-    { id: 'instagram', label: 'Instagram', url: publicSettings?.socialLinks?.instagram, Icon: Instagram, iconColor: '#E4405F', buttonClass: 'hover:border-[#E4405F]/50 hover:bg-[#E4405F]/10' },
-    { id: 'youtube', label: 'YouTube', url: publicSettings?.socialLinks?.youtube, Icon: Youtube, iconColor: '#FF0000', buttonClass: 'hover:border-[#FF0000]/50 hover:bg-[#FF0000]/10' },
-    { id: 'twitter', label: 'X (Twitter)', url: publicSettings?.socialLinks?.twitter || publicSettings?.socialLinks?.x, Icon: X, iconColor: '#1DA1F2', buttonClass: 'hover:border-[#1DA1F2]/50 hover:bg-[#1DA1F2]/10' },
-    { id: 'linkedin', label: 'LinkedIn', url: publicSettings?.socialLinks?.linkedin, Icon: Linkedin, iconColor: '#0A66C2', buttonClass: 'hover:border-[#0A66C2]/50 hover:bg-[#0A66C2]/10' },
-    { id: 'tiktok', label: 'TikTok', url: publicSettings?.socialLinks?.tiktok, Icon: TikTokIcon, iconColor: '#EE1D52', buttonClass: 'hover:border-[#EE1D52]/50 hover:bg-[#EE1D52]/10' },
-    { id: 'whatsapp', label: 'WhatsApp', url: publicSettings?.socialLinks?.whatsapp, Icon: WhatsAppIcon, iconColor: '#25D366', buttonClass: 'hover:border-[#25D366]/50 hover:bg-[#25D366]/10' },
+    { id: 'facebook', label: 'Facebook', url: publicSettings?.socialLinks?.facebook, Icon: Facebook, iconColor: '#1877F2', buttonClass: 'hover:border-[#1877F2]/50 hover:bg-[#1877F2]/10', mobileHidden: false },
+    { id: 'instagram', label: 'Instagram', url: publicSettings?.socialLinks?.instagram, Icon: Instagram, iconColor: '#E4405F', buttonClass: 'hover:border-[#E4405F]/50 hover:bg-[#E4405F]/10', mobileHidden: false },
+    { id: 'youtube', label: 'YouTube', url: publicSettings?.socialLinks?.youtube, Icon: Youtube, iconColor: '#FF0000', buttonClass: 'hover:border-[#FF0000]/50 hover:bg-[#FF0000]/10', mobileHidden: true },
+    { id: 'twitter', label: 'X (Twitter)', url: publicSettings?.socialLinks?.twitter || publicSettings?.socialLinks?.x, Icon: X, iconColor: '#1DA1F2', buttonClass: 'hover:border-[#1DA1F2]/50 hover:bg-[#1DA1F2]/10', mobileHidden: true },
+    { id: 'linkedin', label: 'LinkedIn', url: publicSettings?.socialLinks?.linkedin, Icon: Linkedin, iconColor: '#0A66C2', buttonClass: 'hover:border-[#0A66C2]/50 hover:bg-[#0A66C2]/10', mobileHidden: true },
+    { id: 'tiktok', label: 'TikTok', url: publicSettings?.socialLinks?.tiktok, Icon: TikTokIcon, iconColor: '#EE1D52', buttonClass: 'hover:border-[#EE1D52]/50 hover:bg-[#EE1D52]/10', mobileHidden: false },
+    { id: 'whatsapp', label: 'WhatsApp', url: publicSettings?.socialLinks?.whatsapp, Icon: WhatsAppIcon, iconColor: '#25D366', buttonClass: 'hover:border-[#25D366]/50 hover:bg-[#25D366]/10', mobileHidden: false },
   ];
 
   const activeSocialLinks = socialPlatforms
@@ -127,7 +127,7 @@ export const Footer: React.FC = () => {
             {/* Social Media Icons (Mobile: right side of contact info in a 2-column grid; Desktop: horizontal row below contact info) */}
             {mounted && activeSocialLinks.length > 0 && (
               <div className="flex justify-end lg:justify-start shrink-0">
-                <div className="grid grid-cols-2 lg:flex lg:flex-wrap gap-2 pt-0.5 lg:pt-2">
+                <div className="flex flex-row flex-nowrap lg:flex-wrap gap-1.5 sm:gap-2 pt-0.5 lg:pt-2">
                   {activeSocialLinks.map((social) => (
                     <a
                       key={social.id}
@@ -135,9 +135,14 @@ export const Footer: React.FC = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={social.label}
-                      className={`w-8 h-8 rounded-lg bg-gray-800/90 border border-gray-700/80 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#DC2B53]/50 shrink-0 ${social.buttonClass}`}
+                      className={`w-8 h-8 rounded-lg bg-gray-800/90 border border-gray-700/80 items-center justify-center transition-all duration-200 cursor-pointer shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#DC2B53]/50 shrink-0 ${
+                        social.mobileHidden ? 'hidden lg:flex' : 'flex'
+                      } ${social.buttonClass}`}
                     >
-                      <social.Icon className="w-4 h-4 shrink-0" style={{ color: social.iconColor }} />
+                      {/* Mobile: White icon */}
+                      <social.Icon className="w-4 h-4 shrink-0 text-white lg:hidden" />
+                      {/* Desktop: Colored icon */}
+                      <social.Icon className="w-4 h-4 shrink-0 hidden lg:block" style={{ color: social.iconColor }} />
                     </a>
                   ))}
                 </div>
