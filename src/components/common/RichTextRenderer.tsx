@@ -2,9 +2,19 @@ import React from 'react';
 import parse, { HTMLReactParserOptions, domToReact } from 'html-react-parser';
 import DOMPurify from 'isomorphic-dompurify';
 
-interface RichTextRendererProps {
+export interface RichTextRendererProps {
   content: string;
   className?: string;
+  inline?: boolean;
+}
+
+/**
+ * Checks whether a given string contains actual non-whitespace text after stripping HTML tags.
+ */
+export function hasRichTextContent(str?: string | null): boolean {
+  if (!str) return false;
+  const stripped = str.replace(/<[^>]*>/g, '').trim();
+  return stripped.length > 0;
 }
 
 // Safely convert inline style strings and align attributes to React CSSProperties
@@ -36,7 +46,7 @@ function parseInlineStyle(styleString?: string, alignAttr?: string): React.CSSPr
   return Object.keys(styleObj).length > 0 ? (styleObj as React.CSSProperties) : undefined;
 }
 
-export const RichTextRenderer: React.FC<RichTextRendererProps> = ({ content, className = '' }) => {
+export const RichTextRenderer: React.FC<RichTextRendererProps> = ({ content, className = '', inline = false }) => {
   if (!content) return null;
 
   // 1. Sanitize the HTML content on both client & server using DOMPurify
@@ -64,7 +74,7 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({ content, cla
             return (
               <h1
                 style={style}
-                className={`text-xl sm:text-2xl font-black text-[#111827] mt-8 mb-4 leading-tight ${attribs.class || ''}`}
+                className={`${inline ? 'inline m-0' : 'text-xl sm:text-2xl font-black text-[#111827] mt-8 mb-4 leading-tight'} ${attribs.class || ''}`}
               >
                 {reactChildren}
               </h1>
@@ -73,7 +83,7 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({ content, cla
             return (
               <h2
                 style={style}
-                className={`text-lg sm:text-xl font-bold text-[#111827] mt-7 mb-3 leading-snug ${attribs.class || ''}`}
+                className={`${inline ? 'inline m-0' : 'text-lg sm:text-xl font-bold text-[#111827] mt-7 mb-3 leading-snug'} ${attribs.class || ''}`}
               >
                 {reactChildren}
               </h2>
@@ -82,7 +92,7 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({ content, cla
             return (
               <h3
                 style={style}
-                className={`text-base sm:text-lg font-bold text-[#111827] mt-6 mb-2 ${attribs.class || ''}`}
+                className={`${inline ? 'inline m-0' : 'text-base sm:text-lg font-bold text-[#111827] mt-6 mb-2'} ${attribs.class || ''}`}
               >
                 {reactChildren}
               </h3>
@@ -93,7 +103,7 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({ content, cla
             return (
               <h4
                 style={style}
-                className={`text-sm sm:text-base font-semibold text-[#111827] mt-5 mb-2 ${attribs.class || ''}`}
+                className={`${inline ? 'inline m-0' : 'text-sm sm:text-base font-semibold text-[#111827] mt-5 mb-2'} ${attribs.class || ''}`}
               >
                 {reactChildren}
               </h4>
@@ -102,7 +112,7 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({ content, cla
             return (
               <p
                 style={style}
-                className={`text-sm sm:text-base text-[#111827] leading-relaxed mb-4 ${attribs.class || ''}`}
+                className={`${inline ? 'inline m-0 p-0 text-inherit leading-inherit' : 'text-sm sm:text-base text-[#111827] leading-relaxed mb-4'} ${attribs.class || ''}`}
               >
                 {reactChildren}
               </p>
@@ -111,7 +121,7 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({ content, cla
             return (
               <div
                 style={style}
-                className={`mb-4 ${attribs.class || ''}`}
+                className={`${inline ? 'inline m-0 p-0 text-inherit' : 'mb-4'} ${attribs.class || ''}`}
               >
                 {reactChildren}
               </div>

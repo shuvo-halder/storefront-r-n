@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { SmartImage } from '../common/SmartImage';
+import { RichTextRenderer } from '../common/RichTextRenderer';
 import { storefrontApi } from '../../services/storefrontApi';
 import { BlogArticle } from '../../types/storefront';
 import { Clock, BookOpen, ArrowRight, AlertCircle, RefreshCw, FileText } from 'lucide-react';
@@ -132,9 +133,11 @@ export const BlogPage: React.FC = () => {
                 <h2 className="text-3xl sm:text-4xl font-black text-slate-900 leading-tight group-hover:text-primary transition-colors">
                   {featuredArticle.title}
                 </h2>
-                <p className="text-slate-500 font-medium leading-relaxed line-clamp-3">
-                  {featuredArticle.excerpt}
-                </p>
+                <RichTextRenderer
+                  content={featuredArticle.excerpt}
+                  inline
+                  className="text-slate-500 font-medium leading-relaxed line-clamp-3 [&_p]:inline [&_p]:m-0"
+                />
                 <div className="pt-6 flex items-center justify-between border-t border-slate-50">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-black text-slate-400">
@@ -183,9 +186,11 @@ export const BlogPage: React.FC = () => {
                   <h3 className="font-black text-lg text-slate-900 leading-tight group-hover:text-primary transition-colors">
                     {art.title}
                   </h3>
-                  <p className="text-xs text-slate-500 font-medium line-clamp-2 leading-relaxed">
-                    {art.excerpt}
-                  </p>
+                  <RichTextRenderer
+                    content={art.excerpt}
+                    inline
+                    className="text-xs text-slate-500 font-medium line-clamp-2 leading-relaxed [&_p]:inline [&_p]:m-0"
+                  />
                   
                   <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
                     <div className="flex items-center gap-3">

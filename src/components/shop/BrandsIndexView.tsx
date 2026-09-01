@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { SmartImage } from '../common/SmartImage';
+import { RichTextRenderer, hasRichTextContent } from '../common/RichTextRenderer';
 import Link from 'next/link';
 import { storefrontApi } from '../../services/storefrontApi';
 import { Brand } from '../../types/storefront';
@@ -133,9 +134,17 @@ export const BrandsIndexView: React.FC = () => {
                       <span>{brand.name}</span>
                       <ArrowRight size={16} className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                     </h3>
-                    <p className="text-xs text-slate-500 line-clamp-2 mt-1.5 font-medium">
-                      {brand.description || 'Official brand partner.'}
-                    </p>
+                    {hasRichTextContent(brand.description) ? (
+                      <RichTextRenderer
+                        content={brand.description}
+                        inline
+                        className="text-xs text-slate-500 line-clamp-2 mt-1.5 font-medium [&_p]:inline [&_p]:m-0"
+                      />
+                    ) : (
+                      <p className="text-xs text-slate-500 line-clamp-2 mt-1.5 font-medium">
+                        Official brand partner.
+                      </p>
+                    )}
                   </div>
                 </div>
 

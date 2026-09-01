@@ -23,7 +23,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { Skeleton } from '../ui/Skeleton';
-import { RichTextRenderer } from '../common/RichTextRenderer';
+import { RichTextRenderer, hasRichTextContent } from '../common/RichTextRenderer';
 
 export const ShopCatalogView: React.FC = () => {
   const routeParams = useParams();
@@ -266,14 +266,12 @@ export const ShopCatalogView: React.FC = () => {
                   : 'All Products'}
             </h1>
             <div className="text-xs sm:text-sm text-[#374151] mt-1 max-w-xl font-normal leading-relaxed">
-              {activeCategoryObj ? (
+              {activeCategoryObj && hasRichTextContent(activeCategoryObj.description) ? (
                 <RichTextRenderer content={activeCategoryObj.description} />
+              ) : activeBrandObj && hasRichTextContent(activeBrandObj.description) ? (
+                <RichTextRenderer content={activeBrandObj.description} />
               ) : activeBrandObj ? (
-                activeBrandObj.description ? (
-                  <RichTextRenderer content={activeBrandObj.description} />
-                ) : (
-                  'Official brand partner products.'
-                )
+                'Official brand partner products.'
               ) : (
                 'Browse our complete collection of quality products, latest arrivals, and best deals.'
               )}

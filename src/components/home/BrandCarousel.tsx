@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { SmartImage } from '../common/SmartImage';
+import { RichTextRenderer, hasRichTextContent } from '../common/RichTextRenderer';
 import { useQuery } from '@tanstack/react-query';
 import { useStorefront } from '../../context/StorefrontContext';
 import { storefrontApi } from '../../services/storefrontApi';
@@ -88,10 +89,12 @@ export const BrandCarousel: React.FC = () => {
                   <h3 className="font-bold text-xs sm:text-sm text-slate-900 group-hover:text-primary transition-colors">
                     {brand.name}
                   </h3>
-                  {brand.description && (
-                    <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
-                      {brand.description}
-                    </p>
+                  {hasRichTextContent(brand.description) && (
+                    <RichTextRenderer
+                      content={brand.description}
+                      inline
+                      className="text-[11px] text-slate-500 line-clamp-1 mt-0.5 [&_p]:inline [&_p]:m-0"
+                    />
                   )}
                   <span className="text-[10px] font-semibold text-primary mt-2 inline-block">
                     Explore Brand →

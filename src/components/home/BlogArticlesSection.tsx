@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { SmartImage } from '../common/SmartImage';
+import { RichTextRenderer } from '../common/RichTextRenderer';
 import { useQuery } from '@tanstack/react-query';
 import { useStorefront } from '../../context/StorefrontContext';
 import { storefrontApi } from '../../services/storefrontApi';
@@ -121,9 +122,11 @@ export const BlogArticlesSection: React.FC = () => {
                       {article.title}
                     </h3>
 
-                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                      {article.excerpt}
-                    </p>
+                    <RichTextRenderer
+                      content={article.excerpt}
+                      inline
+                      className="text-xs text-slate-500 line-clamp-2 leading-relaxed [&_p]:inline [&_p]:m-0"
+                    />
                   </div>
 
                   <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs font-bold text-primary">

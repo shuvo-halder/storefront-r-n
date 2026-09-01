@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { SmartImage } from '../common/SmartImage';
+import { RichTextRenderer } from '../common/RichTextRenderer';
 import { BlogArticle } from '../../types/storefront';
 import { storefrontApi } from '../../services/storefrontApi';
 import { useStorefront } from '../../context/StorefrontContext';
@@ -117,9 +118,11 @@ export const BlogSection: React.FC = () => {
                   {article.title}
                 </h3>
 
-                <p className="text-xs text-[#6B7280] line-clamp-2 leading-relaxed">
-                  {article.excerpt}
-                </p>
+                <RichTextRenderer
+                  content={article.excerpt}
+                  inline
+                  className="text-xs text-[#6B7280] line-clamp-2 leading-relaxed [&_p]:inline [&_p]:m-0"
+                />
               </div>
             </div>
 
