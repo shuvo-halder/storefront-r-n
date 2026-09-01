@@ -102,8 +102,8 @@ export const Footer: React.FC = () => {
             {publicSettings?.seo?.metaDescription || 'Quality products, trusted service, and a better shopping experience — all in one place.'}
           </p>
 
-          <div className="grid grid-cols-[1fr_auto] lg:flex lg:flex-col items-start justify-between lg:justify-start gap-4 pt-1 w-full">
-            <div className="space-y-2.5 text-xs font-medium text-gray-300 min-w-0">
+          <div className="flex flex-col items-start justify-start gap-4 pt-1 w-full">
+            <div className="space-y-2.5 text-xs font-medium text-gray-300 min-w-0 w-full">
               {(publicSettings?.supportPhone || publicSettings?.general?.storePhone || publicSettings?.store?.supportPhone || publicSettings?.store?.callOrderNumber) && (
                 <div className="flex items-center gap-3 min-w-0">
                   <Phone size={14} className="text-[#DC2B53] shrink-0" />
@@ -124,10 +124,10 @@ export const Footer: React.FC = () => {
               )}
             </div>
 
-            {/* Social Media Icons (Mobile: right side of contact info in a 2-column grid; Desktop: horizontal row below contact info) */}
+            {/* Social Media Icons (Mobile: row below contact info; Desktop: horizontal row below contact info) */}
             {mounted && activeSocialLinks.length > 0 && (
-              <div className="flex justify-end lg:justify-start shrink-0">
-                <div className="flex flex-row flex-nowrap lg:flex-wrap gap-1.5 sm:gap-2 pt-0.5 lg:pt-2">
+              <div className="flex justify-start shrink-0 pt-1 lg:pt-2">
+                <div className="flex flex-row flex-nowrap items-center gap-6 sm:gap-7 lg:gap-2">
                   {activeSocialLinks.map((social) => (
                     <a
                       key={social.id}
@@ -135,13 +135,13 @@ export const Footer: React.FC = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={social.label}
-                      className={`w-8 h-8 rounded-lg bg-gray-800/90 border border-gray-700/80 items-center justify-center transition-all duration-200 cursor-pointer shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#DC2B53]/50 shrink-0 ${
+                      className={`items-center justify-center transition-all duration-200 cursor-pointer shrink-0 ${
                         social.mobileHidden ? 'hidden lg:flex' : 'flex'
-                      } ${social.buttonClass}`}
+                      } lg:w-8 lg:h-8 lg:rounded-lg lg:bg-gray-800/90 lg:border lg:border-gray-700/80 lg:shadow-2xs lg:focus:outline-none lg:focus:ring-2 lg:focus:ring-[#DC2B53]/50 lg:${social.buttonClass}`}
                     >
-                      {/* Mobile: White icon */}
-                      <social.Icon className="w-4 h-4 shrink-0 text-white lg:hidden" />
-                      {/* Desktop: Colored icon */}
+                      {/* Mobile: Plain White Icon Glyph */}
+                      <social.Icon className="w-5 h-5 shrink-0 text-white lg:hidden hover:opacity-80 transition-opacity" />
+                      {/* Desktop: Colored Icon inside Button */}
                       <social.Icon className="w-4 h-4 shrink-0 hidden lg:block" style={{ color: social.iconColor }} />
                     </a>
                   ))}
