@@ -91,10 +91,10 @@ export const OfferBanner: React.FC<OfferBannerProps> = ({
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div 
         onClick={handleClick}
-        className="group relative overflow-hidden rounded-2xl bg-slate-900 cursor-pointer shadow-xs transition-all duration-300 hover:shadow-md w-full"
+        className="group relative overflow-hidden rounded-2xl bg-slate-900 cursor-pointer shadow-xs transition-all duration-300 hover:shadow-md w-full h-[180px] min-h-[180px] max-h-[180px]"
       >
         {/* Mobile View */}
-        <div className="block sm:hidden w-full relative aspect-[21/9] min-h-[140px]">
+        <div className="block sm:hidden w-full h-full relative">
           <SmartImage 
             src={mobileImg} 
             alt={bannerLabel} 
@@ -102,14 +102,14 @@ export const OfferBanner: React.FC<OfferBannerProps> = ({
             priority
             fallbackType="banner"
             fallbackLabel={bannerLabel}
-            objectFit="contain"
+            objectFit="cover"
             containerClassName="w-full h-full"
-            className="w-full h-full object-contain group-hover:scale-[1.01] transition-transform duration-700" 
+            className="w-full h-full object-cover object-center group-hover:scale-[1.01] transition-transform duration-700" 
           />
         </div>
 
         {/* Desktop View */}
-        <div className="hidden sm:block w-full relative aspect-[21/9] sm:aspect-[4/1] min-h-[180px] md:min-h-[220px] lg:min-h-[260px]">
+        <div className="hidden sm:block w-full h-full relative">
           <SmartImage 
             src={desktopImg} 
             alt={bannerLabel} 
@@ -117,9 +117,9 @@ export const OfferBanner: React.FC<OfferBannerProps> = ({
             priority
             fallbackType="banner"
             fallbackLabel={bannerLabel}
-            objectFit="contain"
+            objectFit="cover"
             containerClassName="w-full h-full"
-            className="w-full h-full object-contain group-hover:scale-[1.01] transition-transform duration-700" 
+            className="w-full h-full object-cover object-center group-hover:scale-[1.01] transition-transform duration-700" 
           />
         </div>
       </div>

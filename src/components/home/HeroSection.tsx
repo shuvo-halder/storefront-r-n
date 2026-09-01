@@ -116,8 +116,8 @@ export const HeroSection: React.FC = () => {
             fill
             fallbackType="banner"
             fallbackLabel={activeHero.title || 'Banner'}
-            objectFit="contain"
-            className="w-full h-full object-contain opacity-100 group-hover:scale-103 transition-transform duration-700 ease-out" 
+            objectFit="cover"
+            className="w-full h-full object-cover object-center opacity-100 group-hover:scale-103 transition-transform duration-700 ease-out" 
           />
         </div>
         {/* Desktop Image */}
@@ -129,8 +129,8 @@ export const HeroSection: React.FC = () => {
             fill
             fallbackType="banner"
             fallbackLabel={activeHero.title || 'Banner'}
-            objectFit="contain"
-            className="w-full h-full object-contain opacity-100 group-hover:scale-103 transition-transform duration-700 ease-out" 
+            objectFit="cover"
+            className="w-full h-full object-cover object-center opacity-100 group-hover:scale-103 transition-transform duration-700 ease-out" 
           />
         </div>
         
@@ -259,7 +259,7 @@ export const HeroSection: React.FC = () => {
           rel="noopener noreferrer"
           onClick={() => handleBannerClick(activeHero)}
           aria-label={activeHero.title || 'Promotional Banner'}
-          className="relative w-full rounded-[2px] sm:rounded-[3px] overflow-hidden bg-[#111827] text-white border border-[#E5E7EB] shadow-xs flex flex-col justify-between h-[170px] min-h-[170px] max-h-[170px] sm:h-auto sm:max-h-none sm:min-h-[340px] md:min-h-[380px] lg:min-h-[420px] p-2.5 xs:p-3 sm:p-8 lg:p-10 group block focus:outline-none focus:ring-2 focus:ring-[#DC2B53] focus:ring-offset-2 transition-shadow"
+          className="relative w-full rounded-[2px] sm:rounded-[3px] overflow-hidden bg-[#111827] text-white border border-[#E5E7EB] shadow-xs flex flex-col justify-between h-[170px] min-h-[170px] max-h-[170px] sm:h-[418px] sm:min-h-[418px] sm:max-h-[418px] p-2.5 xs:p-3 sm:p-8 lg:p-10 group block focus:outline-none focus:ring-2 focus:ring-[#DC2B53] focus:ring-offset-2 transition-shadow"
         >
           {bannerContent}
         </a>
@@ -268,7 +268,7 @@ export const HeroSection: React.FC = () => {
           href={bannerHref}
           onClick={() => handleBannerClick(activeHero)}
           aria-label={activeHero.title || 'Promotional Banner'}
-          className="relative w-full rounded-[2px] sm:rounded-[3px] overflow-hidden bg-[#111827] text-white border border-[#E5E7EB] shadow-xs flex flex-col justify-between h-[170px] min-h-[170px] max-h-[170px] sm:h-auto sm:max-h-none sm:min-h-[340px] md:min-h-[380px] lg:min-h-[420px] p-2.5 xs:p-3 sm:p-8 lg:p-10 group block focus:outline-none focus:ring-2 focus:ring-[#DC2B53] focus:ring-offset-2 transition-shadow"
+          className="relative w-full rounded-[2px] sm:rounded-[3px] overflow-hidden bg-[#111827] text-white border border-[#E5E7EB] shadow-xs flex flex-col justify-between h-[170px] min-h-[170px] max-h-[170px] sm:h-[418px] sm:min-h-[418px] sm:max-h-[418px] p-2.5 xs:p-3 sm:p-8 lg:p-10 group block focus:outline-none focus:ring-2 focus:ring-[#DC2B53] focus:ring-offset-2 transition-shadow"
         >
           {bannerContent}
         </Link>
