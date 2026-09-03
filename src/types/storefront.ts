@@ -537,7 +537,7 @@ export interface ProductFilterState {
 export interface Popup {
   id: string;
   title: string;
-  type: string;
+  type: 'homepage' | 'product' | 'coupon' | 'exit_intent' | string;
   headline?: string;
   body?: string;
   couponCode?: string;

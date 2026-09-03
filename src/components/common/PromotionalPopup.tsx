@@ -2,19 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import { X, Tag, Check, Sparkles, ArrowRight } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { Popup } from '../../types/storefront';
 import { storefrontApi } from '../../services/storefrontApi';
 import { SmartImage } from './SmartImage';
 import { RichTextRenderer } from './RichTextRenderer';
 import { useStorefront } from '../../context/StorefrontContext';
 
-interface PromotionalPopupProps {
-  pageType?: 'homepage' | 'category' | 'product';
-}
-
-export const PromotionalPopup: React.FC<PromotionalPopupProps> = ({
-  pageType = 'homepage',
-}) => {
+export const PromotionalPopup: React.FC = () => {
+  const pathname = usePathname();
   const { navigateTo } = useStorefront();
   const [activePopup, setActivePopup] = useState<Popup | null>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -24,19 +20,41 @@ export const PromotionalPopup: React.FC<PromotionalPopupProps> = ({
     let isMounted = true;
     let timer: NodeJS.Timeout | null = null;
 
+    // Reset state on route change
+    setIsOpen(false);
+    setActivePopup(null);
+
+    function getContextFromPathname(path: string | null): string {
+      if (!path || path === '/') return 'homepage';
+      if (
+        path.startsWith('/products') ||
+        path.startsWith('/categories') ||
+        path.startsWith('/brands') ||
+        path.startsWith('/shop') ||
+        path.startsWith('/search') ||
+        path.startsWith('/deals')
+      ) {
+        return 'product';
+      }
+      return 'other';
+    }
+
     async function loadPopups() {
       try {
+        const pageContext = getContextFromPathname(pathname);
+        // Do not show popup if context is not mapped to an active type yet (e.g. cart/checkout)
+        if (pageContext === 'other') return;
+
         const popups = await storefrontApi.getPopups();
         if (!isMounted || !Array.isArray(popups) || popups.length === 0) {
           return;
         }
 
-        // Filter for popups matching the current pageType (or default to 'homepage')
+        // Filter for popups matching the current page context
         const eligible = popups.filter((p) => {
           if (!p || !p.id) return false;
-          const pType = (p.type || 'homepage').toLowerCase();
-          const targetType = pageType.toLowerCase();
-          return pType === targetType;
+          const pType = (p.type || '').toLowerCase();
+          return pType === pageContext;
         });
 
         if (eligible.length === 0) return;
@@ -75,7 +93,7 @@ export const PromotionalPopup: React.FC<PromotionalPopupProps> = ({
       isMounted = false;
       if (timer) clearTimeout(timer);
     };
-  }, [pageType]);
+  }, [pathname]);
 
   // Handle ESC key press
   useEffect(() => {

@@ -8,6 +8,7 @@ import { CartDrawer } from '../src/components/common/CartDrawer';
 import { QuickViewModal } from '../src/components/common/QuickViewModal';
 import { ToastContainer } from '../src/components/common/ToastContainer';
 import { AuthModal } from '../src/components/account/AuthModal';
+import { PromotionalPopup } from '../src/components/common/PromotionalPopup';
 import { getHomepageMetadata } from '../src/lib/seo';
 import { storefrontApi } from '../src/services/storefrontApi';
 
@@ -43,6 +44,7 @@ export default async function RootLayout({
           <QuickViewModal />
           <AuthModal />
           <ToastContainer />
+          <PromotionalPopup />
         </StorefrontProviders>
       </body>
     </html>
