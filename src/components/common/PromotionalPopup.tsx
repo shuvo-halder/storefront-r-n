@@ -154,101 +154,105 @@ export const PromotionalPopup: React.FC<PromotionalPopupProps> = ({
       aria-labelledby="popup-title"
     >
       <div
-        className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 transition-all transform animate-in zoom-in-95 duration-300"
+        className="relative w-full max-w-lg min-h-[400px] sm:min-h-[480px] bg-slate-900 rounded-3xl shadow-2xl overflow-hidden transition-all transform animate-in zoom-in-95 duration-300 flex flex-col justify-end"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Background Image */}
+        {activePopup.imageUrl && (
+          <div className="absolute inset-0 z-0">
+            <SmartImage
+              src={activePopup.imageUrl}
+              alt={activePopup.title || 'Promotional Offer'}
+              fallbackType="banner"
+              objectFit="cover"
+              priority
+              containerClassName="w-full h-full"
+              className="w-full h-full object-cover object-center"
+            />
+          </div>
+        )}
+
+        {/* Subtle Gradient Overlay for Text Readability */}
+        <div className="absolute inset-0 z-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10 mix-blend-multiply" />
+
         {/* Close Button */}
         <button
           onClick={handleClose}
           type="button"
           aria-label="Close offer popup"
-          className="absolute top-3 right-3 sm:top-4 sm:right-4 z-30 p-2 text-slate-500 hover:text-slate-900 bg-white/90 hover:bg-white rounded-full backdrop-blur-md shadow-md border border-slate-100 transition-all cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-primary/50"
+          className="absolute top-4 right-4 z-30 p-2.5 text-white hover:text-white bg-black/20 hover:bg-black/40 rounded-full backdrop-blur-md shadow-xs border border-white/10 transition-all cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-white/50"
         >
           <X size={18} />
         </button>
 
-        {/* Promotional Image Header */}
-        {activePopup.imageUrl && (
-          <div className="relative w-full bg-slate-900/5 min-h-[160px] sm:min-h-[200px] max-h-[260px] flex items-center justify-center overflow-hidden">
-            <SmartImage
-              src={activePopup.imageUrl}
-              alt={activePopup.title || 'Promotional Offer'}
-              fallbackType="banner"
-              fallbackLabel={activePopup.title}
-              objectFit="contain"
-              priority
-              containerClassName="w-full h-full flex items-center justify-center p-4"
-              className="max-h-[220px] w-auto h-auto object-contain object-center transition-transform duration-500 hover:scale-102"
-            />
-          </div>
-        )}
-
         {/* Content Area */}
-        <div className="p-6 sm:p-8 text-center space-y-4">
-          {/* Badge / Subtitle */}
-          {activePopup.title && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20">
-              <Sparkles size={12} className="shrink-0" />
-              <span>{activePopup.title}</span>
-            </div>
-          )}
-
-          {/* Headline */}
-          {activePopup.headline && (
-            <h2 id="popup-title" className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight tracking-tight">
-              {activePopup.headline}
-            </h2>
-          )}
-
-          {/* Body Text */}
-          {activePopup.body && (
-            <div className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed max-w-md mx-auto">
-              {isHtmlBody ? (
-                <RichTextRenderer content={activePopup.body} inline />
-              ) : (
-                <p>{activePopup.body}</p>
-              )}
-            </div>
-          )}
-
-          {/* Coupon Code Container */}
-          {activePopup.couponCode && (
-            <div className="p-3.5 bg-slate-50 rounded-2xl border-2 border-dashed border-primary/30 flex items-center justify-between gap-3 my-4">
-              <div className="flex items-center gap-2 pl-2 overflow-hidden">
-                <Tag size={18} className="text-primary shrink-0" />
-                <span className="font-mono text-base sm:text-lg font-extrabold text-primary tracking-wider truncate select-all">
-                  {activePopup.couponCode}
-                </span>
+        <div className="relative z-10 p-6 sm:p-10 text-center flex flex-col items-center justify-end h-full">
+          <div className="w-full max-w-sm space-y-5 flex flex-col items-center">
+            {/* Badge / Subtitle */}
+            {activePopup.title && (
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-white/20 backdrop-blur-md border border-white/30 shadow-sm">
+                <Sparkles size={12} className="shrink-0 text-white" />
+                <span>{activePopup.title}</span>
               </div>
-              <button
-                onClick={handleCopyCoupon}
-                type="button"
-                className="px-4 py-2 text-xs sm:text-sm font-bold text-white bg-primary hover:bg-primary/90 rounded-xl transition-all shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer active:scale-95"
-              >
-                {copied ? (
-                  <>
-                    <Check size={16} />
-                    <span>Copied!</span>
-                  </>
+            )}
+
+            {/* Headline */}
+            {activePopup.headline && (
+              <h2 id="popup-title" className="text-3xl sm:text-4xl font-black text-white leading-tight tracking-tight drop-shadow-md">
+                {activePopup.headline}
+              </h2>
+            )}
+
+            {/* Body Text */}
+            {activePopup.body && (
+              <div className="text-sm sm:text-base text-white/90 font-medium leading-relaxed drop-shadow-sm max-w-xs mx-auto">
+                {isHtmlBody ? (
+                  <RichTextRenderer content={activePopup.body} inline />
                 ) : (
-                  <>
-                    <span>Copy Code</span>
-                  </>
+                  <p>{activePopup.body}</p>
                 )}
+              </div>
+            )}
+
+            {/* Coupon Code Container */}
+            {activePopup.couponCode && (
+              <div className="w-full p-2 pl-4 pr-2 bg-white/15 backdrop-blur-lg rounded-2xl border border-white/30 shadow-lg flex items-center justify-between gap-3 mt-2">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <Tag size={18} className="text-white/80 shrink-0" />
+                  <span className="font-mono text-base sm:text-lg font-bold text-white tracking-wider truncate select-all">
+                    {activePopup.couponCode}
+                  </span>
+                </div>
+                <button
+                  onClick={handleCopyCoupon}
+                  type="button"
+                  className="px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-900 bg-white hover:bg-gray-100 rounded-xl transition-all shadow-md flex items-center gap-1.5 shrink-0 cursor-pointer active:scale-95"
+                >
+                  {copied ? (
+                    <>
+                      <Check size={16} />
+                      <span>Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* Call to Action Button */}
+            <div className="w-full pt-1">
+              <button
+                onClick={handleAction}
+                type="button"
+                className="w-full py-4 px-6 bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer group active:scale-98"
+              >
+                <span>{activePopup.couponCode ? 'Shop Now' : 'Claim Offer'}</span>
+                <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
               </button>
             </div>
-          )}
-
-          {/* Call to Action Button */}
-          <div className="pt-2">
-            <button
-              onClick={handleAction}
-              type="button"
-              className="w-full py-3.5 px-6 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer group active:scale-98"
-            >
-              <span>{activePopup.couponCode ? 'Use Coupon & Shop Now' : 'Shop Now'}</span>
-              <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-            </button>
           </div>
         </div>
       </div>
