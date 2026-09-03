@@ -533,3 +533,16 @@ export interface ProductFilterState {
   page: number;
   pageSize: number;
 }
+
+export interface Popup {
+  id: string;
+  title: string;
+  type: string;
+  headline?: string;
+  body?: string;
+  couponCode?: string;
+  imageUrl?: string;
+  delaySeconds?: number;
+  targetUrl?: string;
+  isActive?: boolean;
+}

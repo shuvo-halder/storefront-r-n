@@ -13,6 +13,7 @@ import { BrandSection } from './BrandSection';
 import { BlogSection } from './BlogSection';
 import { CustomerReviewCarousel } from './CustomerReviewCarousel';
 import { Sparkles, Flame, Zap, AlertCircle, RefreshCw } from 'lucide-react';
+import { PromotionalPopup } from '../common/PromotionalPopup';
 
 export const HomePage: React.FC = () => {
   const { navigateTo, setFilters } = useStorefront();
@@ -46,6 +47,9 @@ export const HomePage: React.FC = () => {
   return (
     <div className="bg-slate-50 pb-12 sm:pb-16 overflow-x-hidden">
       
+      {/* Promotional Popup (Non-blocking) */}
+      <PromotionalPopup pageType="homepage" />
+
       {/* 1. HERO SECTION & PROMOTIONAL CARDS */}
       <HeroSection />
 
