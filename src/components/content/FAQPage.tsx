@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useStorefront } from '../../context/StorefrontContext';
 import { storefrontApi } from '../../services/storefrontApi';
 import { HelpCircle, ChevronDown, ChevronUp, Search, MessageCircle } from 'lucide-react';
+import { RichTextRenderer } from '../common/RichTextRenderer';
 
 export const FAQPage: React.FC = () => {
   const { navigateTo } = useStorefront();
@@ -11,26 +12,49 @@ export const FAQPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    storefrontApi.getFAQs().then(data => {
-      setFaqs(data);
-      setIsLoading(false);
-    });
+    storefrontApi.getFAQs()
+      .then(data => {
+        setFaqs(data);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to load FAQs:', err);
+        setError('Failed to load FAQs. Please try again later.');
+        setIsLoading(false);
+      });
   }, []);
 
   const filteredFaqs = faqs.filter(f => 
-    f.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    f.answer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    f.category.toLowerCase().includes(searchQuery.toLowerCase())
+    (f.question || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (f.answer || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (f.category?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const categories = Array.from(new Set(faqs.map(f => f.category)));
+  const categories = Array.from(new Set(faqs.map(f => f.category?.name || 'General')));
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 space-y-4 px-4 text-center">
+        <HelpCircle size={48} className="text-red-400" />
+        <h2 className="text-2xl font-black text-slate-900">Oops! Something went wrong</h2>
+        <p className="text-slate-500 font-medium max-w-md">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="px-6 py-3 bg-primary text-white font-bold rounded-xl shadow-lg hover:bg-primary/90 transition-colors"
+        >
+          Try Again
+        </button>
       </div>
     );
   }
@@ -68,7 +92,7 @@ export const FAQPage: React.FC = () => {
         {/* FAQ List */}
         <div className="space-y-12">
           {categories.map(category => {
-            const categoryFaqs = filteredFaqs.filter(f => f.category === category);
+            const categoryFaqs = filteredFaqs.filter(f => (f.category?.name || 'General') === category);
             if (categoryFaqs.length === 0) return null;
 
             return (
@@ -100,7 +124,7 @@ export const FAQPage: React.FC = () => {
                         }`}
                       >
                         <div className="px-8 pb-8 pt-0 text-slate-500 font-medium leading-relaxed">
-                          {faq.answer}
+                          <RichTextRenderer content={faq.answer} />
                         </div>
                       </div>
                     </div>
