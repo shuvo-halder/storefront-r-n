@@ -53,14 +53,36 @@ export const apiClient: AxiosInstance = axios.create({
   timeout: 15000,
 });
 
+export const getSessionId = (): string => {
+  if (typeof window === 'undefined') return '';
+  let sessionId = localStorage.getItem('storefront_session_id') || localStorage.getItem('vyzobd_cart_session_id');
+  if (!sessionId) {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      sessionId = crypto.randomUUID();
+    } else {
+      sessionId = 'sess_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+    }
+    localStorage.setItem('storefront_session_id', sessionId);
+    localStorage.setItem('vyzobd_cart_session_id', sessionId);
+  }
+  return sessionId;
+};
+
+export const setSessionId = (id: string): void => {
+  if (typeof window === 'undefined' || !id) return;
+  localStorage.setItem('storefront_session_id', id);
+  localStorage.setItem('vyzobd_cart_session_id', id);
+};
+
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = tokenStorage.getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    const sessionId = localStorage.getItem('vyzobd_cart_session_id');
+    const sessionId = getSessionId();
     if (sessionId) {
+      config.headers['x-session-id'] = sessionId;
       config.headers['X-Cart-Session-Id'] = sessionId;
     }
   }
@@ -88,6 +110,9 @@ const isAuthEntryEndpoint = (url?: string): boolean => {
     url.includes('/auth/login') ||
     url.includes('/auth/register') ||
     url.includes('/auth/refresh') ||
+    url.includes('/auth/refresh-token') ||
+    url.includes('/auth/mobile/request-otp') ||
+    url.includes('/auth/mobile/verify-otp') ||
     url.includes('/auth/login-mobile') ||
     url.includes('/auth/verify-mobile-login') ||
     url.includes('/auth/register-mobile') ||
@@ -98,9 +123,9 @@ const isAuthEntryEndpoint = (url?: string): boolean => {
 apiClient.interceptors.response.use(
   (response) => {
     if (typeof window !== 'undefined') {
-      const sessionId = response.headers['x-cart-session-id'];
+      const sessionId = response.headers['x-session-id'] || response.headers['x-cart-session-id'];
       if (sessionId) {
-        localStorage.setItem('vyzobd_cart_session_id', sessionId);
+        setSessionId(sessionId);
       }
     }
     return response;
@@ -132,10 +157,23 @@ apiClient.interceptors.response.use(
       try {
         const refreshToken = tokenStorage.getRefreshToken();
         if (refreshToken) {
-          const res = await axios.post<ApiResponse<{ accessToken?: string; token?: string }>>(
-            `${API_BASE_URL}/auth/refresh`,
-            { refreshToken }
-          );
+          // Attempt authoritative POST /auth/refresh-token first, with fallback to /auth/refresh
+          let res: any;
+          try {
+            res = await axios.post<ApiResponse<{ accessToken?: string; token?: string }>>(
+              `${API_BASE_URL}/auth/refresh-token`,
+              { refreshToken }
+            );
+          } catch (err: any) {
+            if (err.response?.status === 404) {
+              res = await axios.post<ApiResponse<{ accessToken?: string; token?: string }>>(
+                `${API_BASE_URL}/auth/refresh`,
+                { refreshToken }
+              );
+            } else {
+              throw err;
+            }
+          }
           
           const newAccessToken = res.data?.data?.accessToken || res.data?.data?.token;
 

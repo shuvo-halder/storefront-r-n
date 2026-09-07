@@ -91,7 +91,7 @@ export const customerService = {
   },
 
   /**
-   * PATCH /customer/profile
+   * PUT /customer/profile
    * Updates mutable profile attributes (firstName, lastName, avatarUrl, phone).
    * Security Rule: Non-editable fields (id, email, verification statuses, tokens) are strictly omitted.
    */
@@ -110,7 +110,16 @@ export const customerService = {
         sanitizedBody.phone = payload.phone.trim();
       }
 
-      const res = await apiClient.patch('/customer/profile', sanitizedBody);
+      let res: any;
+      try {
+        res = await apiClient.put('/customer/profile', sanitizedBody);
+      } catch (putErr: any) {
+        if (putErr.response?.status === 405) {
+          res = await apiClient.patch('/customer/profile', sanitizedBody);
+        } else {
+          throw putErr;
+        }
+      }
       const unwrapped = unwrapApiResponse<any>(res);
 
       if (unwrapped.status === 'error' || !unwrapped.data) {
@@ -136,6 +145,61 @@ export const customerService = {
         message,
         errors,
         data: null as any,
+      };
+    }
+  },
+
+  /**
+   * POST /customer/change-password
+   * Updates customer account password
+   */
+  changePassword: async (payload: { currentPassword?: string; newPassword?: string; oldPassword?: string; password?: string }): Promise<ApiResponse<any>> => {
+    try {
+      const currentPassword = payload.currentPassword || payload.oldPassword || '';
+      const newPassword = payload.newPassword || payload.password || '';
+      const res = await apiClient.post('/customer/change-password', {
+        currentPassword,
+        newPassword,
+        oldPassword: currentPassword,
+        password: newPassword
+      });
+      return unwrapApiResponse<any>(res);
+    } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Failed to change password.');
+      return {
+        status: 'error',
+        message,
+        errors,
+        data: null as any,
+      };
+    }
+  },
+
+  /**
+   * POST /orders/claim-guest-orders
+   * Authoritative endpoint to claim guest orders associated with current session
+   */
+  claimGuestOrders: async (sessionId?: string): Promise<ApiResponse<{ claimedCount?: number; orders?: any[] }>> => {
+    try {
+      const sid = sessionId || (typeof window !== 'undefined' ? (localStorage.getItem('storefront_session_id') || localStorage.getItem('vyzobd_cart_session_id')) : null);
+      let res: any;
+      try {
+        res = await apiClient.post('/orders/claim-guest-orders', { sessionId: sid || undefined });
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          res = await apiClient.post('/customer/orders/claim-guest-orders', { sessionId: sid || undefined });
+        } else {
+          throw err;
+        }
+      }
+      return unwrapApiResponse<{ claimedCount?: number; orders?: any[] }>(res);
+    } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Failed to claim guest orders.');
+      return {
+        status: 'error',
+        message,
+        errors,
+        data: { claimedCount: 0 },
       };
     }
   },
@@ -402,13 +466,59 @@ export const customerService = {
   },
 
   /**
+   * GET /orders/:orderId/timeline
+   * Dispatched shipment packages & order progress timeline.
+   */
+  getOrderTimeline: async (orderId: string): Promise<ApiResponse<any>> => {
+    try {
+      const cleanId = encodeURIComponent(orderId.trim());
+      let res: any;
+      try {
+        res = await apiClient.get(`/orders/${cleanId}/timeline`);
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          try {
+            res = await apiClient.get(`/customer/orders/${cleanId}/timeline`);
+          } catch (err2: any) {
+            if (err2.response?.status === 404) {
+              res = await apiClient.get(`/customer/orders/${cleanId}/shipments`);
+            } else {
+              throw err2;
+            }
+          }
+        } else {
+          throw err;
+        }
+      }
+      return unwrapApiResponse<any>(res);
+    } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Failed to fetch order timeline.');
+      return {
+        status: 'error',
+        message,
+        errors,
+        data: null,
+      };
+    }
+  },
+
+  /**
    * GET /customer/orders/:orderId/shipments
    * Dispatched shipment packages for a specific order.
    */
   getOrderShipments: async (orderId: string): Promise<ApiResponse<OrderShipmentsResponse>> => {
     try {
       const cleanId = encodeURIComponent(orderId.trim());
-      const res = await apiClient.get(`/customer/orders/${cleanId}/shipments`);
+      let res: any;
+      try {
+        res = await apiClient.get(`/orders/${cleanId}/timeline`);
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          res = await apiClient.get(`/customer/orders/${cleanId}/shipments`);
+        } else {
+          throw err;
+        }
+      }
       const unwrapped = unwrapApiResponse<any>(res);
 
       if (unwrapped.status === 'error' || !unwrapped.data) {
@@ -633,12 +743,21 @@ export const customerService = {
   },
 
   /**
-   * POST /returns/request
+   * POST /return/request
    * Submit a return request for eligible order items.
    */
   requestReturn: async (payload: ReturnRequestPayload): Promise<ApiResponse<CustomerReturn>> => {
     try {
-      const res = await apiClient.post('/returns/request', payload);
+      let res: any;
+      try {
+        res = await apiClient.post('/return/request', payload);
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          res = await apiClient.post('/returns/request', payload);
+        } else {
+          throw err;
+        }
+      }
       const unwrapped = unwrapApiResponse<any>(res);
 
       if (unwrapped.status === 'error' || !unwrapped.data) {
@@ -792,6 +911,47 @@ export const customerService = {
           orderId,
           refunds: [],
         },
+      };
+    }
+  },
+
+  /**
+   * POST /refund/request
+   * Submit a refund request for an order
+   */
+  requestRefund: async (payload: { orderId: string; amount?: number; reason: string; items?: any[]; method?: string }): Promise<ApiResponse<CustomerRefund>> => {
+    try {
+      let res: any;
+      try {
+        res = await apiClient.post('/refund/request', payload);
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          res = await apiClient.post('/refunds/request', payload);
+        } else {
+          throw err;
+        }
+      }
+      const unwrapped = unwrapApiResponse<any>(res);
+      if (unwrapped.status === 'error' || !unwrapped.data) {
+        return {
+          status: 'error',
+          message: unwrapped.message || 'Failed to submit refund request.',
+          errors: unwrapped.errors,
+          data: null as any,
+        };
+      }
+      return {
+        status: 'success',
+        message: unwrapped.message || 'Refund request submitted successfully.',
+        data: unwrapped.data,
+      };
+    } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Failed to submit refund request.');
+      return {
+        status: 'error',
+        message,
+        errors,
+        data: null as any,
       };
     }
   },

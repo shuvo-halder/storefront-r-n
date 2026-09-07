@@ -2,10 +2,10 @@ import { apiClient, unwrapApiResponse, extractApiError, ApiResponse } from '../l
 import { CustomerAddress, AddressFormData } from '../types/storefront';
 
 export const addressService = {
-  // GET /account/addresses
+  // GET /customer/addresses
   getAddresses: async (): Promise<ApiResponse<CustomerAddress[]>> => {
     try {
-      const res = await apiClient.get('/account/addresses');
+      const res = await apiClient.get('/customer/addresses');
       const unwrapped = unwrapApiResponse<any>(res);
 
       if (unwrapped.status === 'error') {
@@ -28,7 +28,7 @@ export const addressService = {
     }
   },
 
-  // POST /account/addresses
+  // POST /customer/addresses
   createAddress: async (data: AddressFormData): Promise<ApiResponse<CustomerAddress>> => {
     try {
       const payload = {
@@ -40,12 +40,12 @@ export const addressService = {
         city: data.city?.trim(),
         state: data.state?.trim(),
         postalCode: data.postalCode?.trim(),
-        country: data.country?.trim() || 'United States',
+        country: data.country?.trim() || 'Bangladesh',
         isDefault: Boolean(data.isDefault),
         ...(data.label ? { label: data.label.trim() } : {})
       };
 
-      const res = await apiClient.post('/account/addresses', payload);
+      const res = await apiClient.post('/customer/addresses', payload);
       const unwrapped = unwrapApiResponse<any>(res);
 
       if (unwrapped.status === 'error' || !unwrapped.data) {
@@ -60,7 +60,7 @@ export const addressService = {
     }
   },
 
-  // PUT /account/addresses/:id
+  // PUT /customer/addresses/:id
   updateAddress: async (id: string, data: Partial<AddressFormData>): Promise<ApiResponse<CustomerAddress>> => {
     try {
       const payload = {
@@ -77,7 +77,7 @@ export const addressService = {
         ...(data.label !== undefined ? { label: data.label?.trim() || null } : {})
       };
 
-      const res = await apiClient.put(`/account/addresses/${encodeURIComponent(id)}`, payload);
+      const res = await apiClient.put(`/customer/addresses/${encodeURIComponent(id)}`, payload);
       const unwrapped = unwrapApiResponse<any>(res);
 
       if (unwrapped.status === 'error' || !unwrapped.data) {
@@ -92,10 +92,10 @@ export const addressService = {
     }
   },
 
-  // DELETE /account/addresses/:id
+  // DELETE /customer/addresses/:id
   deleteAddress: async (id: string): Promise<ApiResponse<boolean>> => {
     try {
-      const res = await apiClient.delete(`/account/addresses/${encodeURIComponent(id)}`);
+      const res = await apiClient.delete(`/customer/addresses/${encodeURIComponent(id)}`);
       const unwrapped = unwrapApiResponse<any>(res);
 
       if (unwrapped.status === 'error') {
@@ -109,24 +109,33 @@ export const addressService = {
     }
   },
 
-  // Set Address as Default via PUT /account/addresses/:id
-  setDefaultAddress: async (id: string, currentAddress: CustomerAddress): Promise<ApiResponse<CustomerAddress>> => {
+  // Set Address as Default via authoritative PATCH /customer/addresses/:id/default
+  setDefaultAddress: async (id: string, currentAddress?: CustomerAddress): Promise<ApiResponse<CustomerAddress>> => {
     try {
-      const payload = {
-        fullName: currentAddress.fullName,
-        phone: currentAddress.phone,
-        email: currentAddress.email || '',
-        address1: currentAddress.address1,
-        address2: currentAddress.address2 || null,
-        city: currentAddress.city,
-        state: currentAddress.state,
-        postalCode: currentAddress.postalCode,
-        country: currentAddress.country,
-        label: currentAddress.label || null,
-        isDefault: true
-      };
+      let res: any;
+      try {
+        res = await apiClient.patch(`/customer/addresses/${encodeURIComponent(id)}/default`);
+      } catch (patchErr: any) {
+        if (patchErr.response?.status === 404 || patchErr.response?.status === 405) {
+          const payload = currentAddress ? {
+            fullName: currentAddress.fullName,
+            phone: currentAddress.phone,
+            email: currentAddress.email || '',
+            address1: currentAddress.address1,
+            address2: currentAddress.address2 || null,
+            city: currentAddress.city,
+            state: currentAddress.state,
+            postalCode: currentAddress.postalCode,
+            country: currentAddress.country,
+            label: currentAddress.label || null,
+            isDefault: true
+          } : { isDefault: true };
+          res = await apiClient.put(`/customer/addresses/${encodeURIComponent(id)}`, payload);
+        } else {
+          throw patchErr;
+        }
+      }
 
-      const res = await apiClient.put(`/account/addresses/${encodeURIComponent(id)}`, payload);
       const unwrapped = unwrapApiResponse<any>(res);
 
       if (unwrapped.status === 'error' || !unwrapped.data) {

@@ -48,6 +48,49 @@ export const ProfilePage: React.FC = () => {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Change Password state
+  const [showPasswordModal, setShowPasswordModal] = useState<boolean>(false);
+  const [currentPassword, setCurrentPassword] = useState<string>('');
+  const [newPassword, setNewPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [isChangingPassword, setIsChangingPassword] = useState<boolean>(false);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword) {
+      notifyError('Required', 'Please enter your current password.');
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      notifyError('Invalid Password', 'New password must be at least 6 characters long.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      notifyError('Mismatch', 'New passwords do not match.');
+      return;
+    }
+
+    try {
+      setIsChangingPassword(true);
+      const res = await customerService.changePassword({
+        currentPassword,
+        newPassword
+      });
+      if (res.status === 'error') {
+        throw new Error(res.message || 'Failed to change password.');
+      }
+      notifySuccess('Password Changed', res.message || 'Your password has been changed successfully.');
+      setShowPasswordModal(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      notifyError('Change Password Failed', err.message || 'Failed to change password.');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   // 1. Query /customer/profile with TanStack Query
   const { 
     data: profileData, 
@@ -576,6 +619,27 @@ export const ProfilePage: React.FC = () => {
 
               </div>
 
+              {/* Password & Security Card */}
+              <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-gray-50/80 rounded-xl border border-gray-200/80">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-600 shadow-xs">
+                    <Lock size={16} />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-gray-900">Account Password</div>
+                    <div className="text-[11px] text-gray-500">Regularly updating your password keeps your account secure.</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  id="open-change-password-btn"
+                  onClick={() => setShowPasswordModal(true)}
+                  className="px-3.5 py-2 bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer shrink-0"
+                >
+                  Change Password
+                </button>
+              </div>
+
               {/* Action Buttons (in Edit Mode) */}
               {isEditMode && (
                 <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 border-t border-gray-100">
@@ -613,6 +677,110 @@ export const ProfilePage: React.FC = () => {
         )}
 
       </div>
+
+      {/* Change Password Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 relative animate-in fade-in zoom-in-95 duration-200">
+            <button
+              type="button"
+              id="close-change-password-modal"
+              onClick={() => {
+                setShowPasswordModal(false);
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+              }}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-xl bg-red-50 text-[#DC2B53] flex items-center justify-center">
+                <Lock size={20} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-gray-900">Change Password</h3>
+                <p className="text-xs text-gray-500">Enter your current and new password below.</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  Current Password <span className="text-[#DC2B53]">*</span>
+                </label>
+                <input
+                  type="password"
+                  id="current-password-input"
+                  required
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Enter current password"
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-xs font-medium focus:outline-hidden focus:ring-1 focus:ring-[#DC2B53] focus:border-[#DC2B53]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  New Password <span className="text-[#DC2B53]">*</span>
+                </label>
+                <input
+                  type="password"
+                  id="new-password-input"
+                  required
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="At least 6 characters"
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-xs font-medium focus:outline-hidden focus:ring-1 focus:ring-[#DC2B53] focus:border-[#DC2B53]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  Confirm New Password <span className="text-[#DC2B53]">*</span>
+                </label>
+                <input
+                  type="password"
+                  id="confirm-password-input"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter new password"
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-xs font-medium focus:outline-hidden focus:ring-1 focus:ring-[#DC2B53] focus:border-[#DC2B53]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordModal(false)}
+                  disabled={isChangingPassword}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  id="submit-change-password-btn"
+                  disabled={isChangingPassword}
+                  className="btn-primary inline-flex items-center justify-center gap-2 text-xs font-semibold px-4 py-2 cursor-pointer disabled:opacity-50"
+                >
+                  {isChangingPassword ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      <span>Updating...</span>
+                    </>
+                  ) : (
+                    <span>Update Password</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </AccountLayout>
   );
 };

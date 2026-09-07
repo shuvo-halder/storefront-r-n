@@ -110,18 +110,33 @@ export const orderService = {
     }
   },
 
-  // GET /orders/:id/shipments
-  getOrderShipments: async (id: string): Promise<ApiResponse<any>> => {
+  // GET /orders/:id/timeline
+  getOrderTimeline: async (id: string): Promise<ApiResponse<any>> => {
     try {
-      const res = await apiClient.get(`/orders/${encodeURIComponent(id)}/shipments`);
+      const cleanId = encodeURIComponent(id.trim());
+      let res: any;
+      try {
+        res = await apiClient.get(`/orders/${cleanId}/timeline`);
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          res = await apiClient.get(`/orders/${cleanId}/shipments`);
+        } else {
+          throw err;
+        }
+      }
       const unwrapped = unwrapApiResponse<any>(res);
       return { status: unwrapped.status, data: unwrapped.data, message: unwrapped.message || null };
     } catch (err: any) {
-      const { message, errors } = extractApiError(err, 'Failed to fetch shipment details');
+      const { message, errors } = extractApiError(err, 'Failed to fetch order timeline');
       return {
         status: 'error', message, errors, data: null
       };
     }
+  },
+
+  // GET /orders/:id/shipments (alias for timeline)
+  getOrderShipments: async (id: string): Promise<ApiResponse<any>> => {
+    return orderService.getOrderTimeline(id);
   }
 };
 

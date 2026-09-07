@@ -281,11 +281,23 @@ export const storefrontApi = {
   },
 
   forgotPassword: async (email: string): Promise<boolean> => {
+    const res = await authService.forgotPassword(email);
+    if (res.status === 'error') {
+      throw new Error(res.message || 'Failed to send password reset instructions');
+    }
     return true;
   },
 
   resetPassword: async (password: string, token: string): Promise<boolean> => {
+    const res = await authService.resetPassword({ password, token });
+    if (res.status === 'error') {
+      throw new Error(res.message || 'Failed to reset password');
+    }
     return true;
+  },
+
+  changePassword: async (payload: { currentPassword?: string; newPassword?: string; oldPassword?: string; password?: string }) => {
+    return customerService.changePassword(payload);
   },
 
   // CHECKOUT & ORDERS

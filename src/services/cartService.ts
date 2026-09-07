@@ -1,15 +1,15 @@
-import { apiClient, unwrapApiResponse, normalizeCart, extractApiError, ApiResponse } from '../lib/api';
+import { apiClient, unwrapApiResponse, normalizeCart, extractApiError, ApiResponse, getSessionId } from '../lib/api';
 import { tokenStorage } from '../lib/tokenStorage';
 import { Cart } from '../types/storefront';
 
 export const cartService = {
   // GET /cart
   getCart: async (): Promise<ApiResponse<Cart>> => {
-    // If neither auth token nor guest cart session ID exists, return empty cart locally
+    // If neither auth token nor guest session ID exists, return empty cart locally
     if (
       typeof window !== 'undefined' &&
       !tokenStorage.hasAccessToken() &&
-      !localStorage.getItem('vyzobd_cart_session_id')
+      !getSessionId()
     ) {
       return { status: 'success', message: null, data: normalizeCart(null) };
     }

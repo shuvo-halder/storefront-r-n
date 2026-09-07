@@ -133,6 +133,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       queryClient.removeQueries({ queryKey: ['customer'] });
       setCustomer(res.data.customer);
       queryClient.invalidateQueries({ queryKey: ['customer'] });
+      customerService.claimGuestOrders().catch(() => {});
       return res.data;
     } catch (err: any) {
       setCustomer(null);
@@ -155,6 +156,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       queryClient.removeQueries({ queryKey: ['customer'] });
       setCustomer(res.data.customer);
       queryClient.invalidateQueries({ queryKey: ['customer'] });
+      customerService.claimGuestOrders().catch(() => {});
       return res.data;
     } catch (err: any) {
       throw err;
@@ -187,6 +189,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       queryClient.removeQueries({ queryKey: ['customer'] });
       setCustomer(res.data.customer);
       queryClient.invalidateQueries({ queryKey: ['customer'] });
+      customerService.claimGuestOrders().catch(() => {});
       return res.data;
     } catch (err: any) {
       setCustomer(null);
@@ -220,6 +223,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       queryClient.removeQueries({ queryKey: ['customer'] });
       setCustomer(res.data.customer);
       queryClient.invalidateQueries({ queryKey: ['customer'] });
+      customerService.claimGuestOrders().catch(() => {});
       return res.data;
     } catch (err: any) {
       throw err;

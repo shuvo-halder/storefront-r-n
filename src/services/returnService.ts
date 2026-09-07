@@ -2,10 +2,19 @@ import { apiClient, unwrapApiResponse, extractApiError, ApiResponse } from '../l
 import { ReturnRequest } from '../types/storefront';
 
 export const returnService = {
-  // GET /returns
+  // GET /return
   getReturns: async (): Promise<ApiResponse<ReturnRequest[]>> => {
     try {
-      const res = await apiClient.get('/returns');
+      let res: any;
+      try {
+        res = await apiClient.get('/return');
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          res = await apiClient.get('/returns');
+        } else {
+          throw err;
+        }
+      }
       const unwrapped = unwrapApiResponse<any>(res);
 
       if (unwrapped.status === 'error') {
@@ -19,10 +28,19 @@ export const returnService = {
     }
   },
 
-  // POST /returns/request
+  // POST /return/request
   requestReturn: async (payload: { orderId: string; items: any[]; reason: string }): Promise<ApiResponse<ReturnRequest>> => {
     try {
-      const res = await apiClient.post('/returns/request', payload);
+      let res: any;
+      try {
+        res = await apiClient.post('/return/request', payload);
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          res = await apiClient.post('/returns/request', payload);
+        } else {
+          throw err;
+        }
+      }
       const unwrapped = unwrapApiResponse<any>(res);
 
       if (unwrapped.status === 'error' || !unwrapped.data) {
