@@ -133,6 +133,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       queryClient.removeQueries({ queryKey: ['customer'] });
       setCustomer(res.data.customer);
       queryClient.invalidateQueries({ queryKey: ['customer'] });
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
       customerService.claimGuestOrders().catch(() => {});
       return res.data;
     } catch (err: any) {
@@ -156,6 +157,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       queryClient.removeQueries({ queryKey: ['customer'] });
       setCustomer(res.data.customer);
       queryClient.invalidateQueries({ queryKey: ['customer'] });
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
       customerService.claimGuestOrders().catch(() => {});
       return res.data;
     } catch (err: any) {
@@ -189,6 +191,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       queryClient.removeQueries({ queryKey: ['customer'] });
       setCustomer(res.data.customer);
       queryClient.invalidateQueries({ queryKey: ['customer'] });
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
       customerService.claimGuestOrders().catch(() => {});
       return res.data;
     } catch (err: any) {
@@ -223,6 +226,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       queryClient.removeQueries({ queryKey: ['customer'] });
       setCustomer(res.data.customer);
       queryClient.invalidateQueries({ queryKey: ['customer'] });
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
       customerService.claimGuestOrders().catch(() => {});
       return res.data;
     } catch (err: any) {
@@ -242,6 +246,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } finally {
       tokenStorage.clearTokens();
       queryClient.removeQueries({ queryKey: ['customer'] });
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
       setCustomer(null);
       setIsLoading(false);
     }

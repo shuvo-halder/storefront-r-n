@@ -5,6 +5,7 @@ import { categoryService } from './categoryService';
 import { brandService } from './brandService';
 import { searchService } from './searchService';
 import { cartService } from './cartService';
+import { couponService } from './couponService';
 import { wishlistService } from './wishlistService';
 import { checkoutService, CheckoutSummary } from './checkoutService';
 import { paymentService } from './paymentService';
@@ -164,31 +165,66 @@ export const storefrontApi = {
   // CART
   getCart: async (): Promise<Cart> => {
     const res = await cartService.getCart();
+    if (res.status === 'error') {
+      throw new Error(res.message || 'Failed to fetch cart');
+    }
     return res.data || normalizeCart(null);
   },
 
   addToCart: async (productId: string, quantity = 1, variantId?: string): Promise<Cart> => {
     const res = await cartService.addItem(productId, quantity, variantId);
+    if (res.status === 'error') {
+      throw new Error(res.message || 'Failed to add item to cart');
+    }
     return res.data || normalizeCart(null);
   },
 
   updateCartItem: async (itemId: string, quantity: number): Promise<Cart> => {
     const res = await cartService.updateItem(itemId, quantity);
+    if (res.status === 'error') {
+      throw new Error(res.message || 'Failed to update cart item');
+    }
     return res.data || normalizeCart(null);
   },
 
   removeCartItem: async (itemId: string): Promise<Cart> => {
     const res = await cartService.removeItem(itemId);
+    if (res.status === 'error') {
+      throw new Error(res.message || 'Failed to remove cart item');
+    }
     return res.data || normalizeCart(null);
   },
 
   clearCart: async (): Promise<Cart> => {
     const res = await cartService.clearCart();
+    if (res.status === 'error') {
+      throw new Error(res.message || 'Failed to clear cart');
+    }
     return res.data || normalizeCart(null);
+  },
+
+  // COUPONS
+  getCoupons: async (): Promise<Coupon[]> => {
+    const res = await couponService.getCoupons();
+    if (res.status === 'error') {
+      throw new Error(res.message || 'Failed to fetch coupons');
+    }
+    return res.data || [];
   },
 
   applyCoupon: async (code: string): Promise<Coupon | null> => {
     const res = await checkoutService.applyCoupon(code);
+    if (res.status === 'error') {
+      throw new Error(res.message || 'Failed to apply coupon');
+    }
+    return res.data;
+  },
+
+  removeCoupon: async (): Promise<boolean> => {
+    const res = await checkoutService.removeCoupon();
+    if (res.status === 'error') {
+      throw new Error(res.message || 'Failed to remove coupon');
+    }
     return res.data;
   },
 

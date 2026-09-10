@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { storefrontApi } from '../services/storefrontApi';
-import { Cart } from '../types/storefront';
+import { Cart, Coupon } from '../types/storefront';
 import { useSettings } from '../context/SettingsContext';
 import { useStorefront } from '../context/StorefrontContext';
 import { 
@@ -54,11 +54,20 @@ export function useCart() {
     staleTime: 1000 * 60 * 5,
   });
 
+  // GET /coupons
+  const { data: availableCoupons = [] } = useQuery<Coupon[]>({
+    queryKey: ['available_coupons'],
+    queryFn: storefrontApi.getCoupons,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+
   const mergedCart: Cart = checkoutSession && cart.items.length > 0 ? {
     ...cart,
+    discount: checkoutSession.discount !== undefined ? checkoutSession.discount : cart.discount,
     shippingFee: checkoutSession.shippingFee,
     estimatedTax: checkoutSession.tax,
     total: checkoutSession.totalAmount,
+    appliedCoupon: checkoutSession.appliedCoupon?.code || cart.appliedCoupon
   } : cart;
 
   // POST /cart/items
@@ -98,6 +107,9 @@ export function useCart() {
   // PUT /cart/items/:itemId
   const updateQuantityMutation = useMutation({
     mutationFn: async ({ itemId, quantity }: { itemId: string; quantity: number }) => {
+      if (quantity < 1) {
+        throw new Error('Quantity must be at least 1');
+      }
       const currentCart = queryClient.getQueryData<Cart>(CART_QUERY_KEY);
       const targetItem = currentCart?.items.find(i => i.id === itemId);
       const oldQuantity = targetItem?.quantity || 0;
@@ -106,7 +118,9 @@ export function useCart() {
       return { updated, targetItem, oldQuantity, newQuantity: quantity };
     },
     onSuccess: ({ updated, targetItem, oldQuantity, newQuantity }) => {
-      queryClient.setQueryData<Cart>(CART_QUERY_KEY, updated);
+      if (updated && Array.isArray(updated.items)) {
+        queryClient.setQueryData<Cart>(CART_QUERY_KEY, updated);
+      }
 
       if (targetItem) {
         const diff = newQuantity - oldQuantity;
@@ -118,7 +132,7 @@ export function useCart() {
       }
     },
     onError: (err) => {
-      notifyError(err, 'Quantity Update Failed', 'Unable to adjust item quantity. The maximum available stock may have been reached.');
+      notifyError(err, 'Quantity Update Failed', 'Unable to adjust item quantity. Minimum quantity is 1.');
     }
   });
 
@@ -168,24 +182,40 @@ export function useCart() {
     }
   });
 
-  // POST /cart/coupons
+  // POST /checkout/coupon
   const applyCouponMutation = useMutation({
     mutationFn: async (code: string) => {
       const coupon = await storefrontApi.applyCoupon(code);
-      const updatedCart = await storefrontApi.getCart();
-      return { coupon, updatedCart, code };
+      await queryClient.invalidateQueries({ queryKey: ['checkoutSession_base'] });
+      await queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
+      return { coupon, code };
     },
-    onSuccess: ({ coupon, updatedCart, code }) => {
-      queryClient.setQueryData<Cart>(CART_QUERY_KEY, updatedCart);
+    onSuccess: ({ coupon, code }) => {
+      queryClient.invalidateQueries({ queryKey: ['checkoutSession_base'] });
       queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
-      const discountVal = coupon?.discountAmount || updatedCart.discount || 0;
-      const discountFormatted = discountVal > 0 ? formatPrice(discountVal, currency) : 'promo';
-      notifySuccess('Coupon Applied!', `Code "${code.toUpperCase()}" has been applied. You saved ${discountFormatted}.`, {
+      notifySuccess('Coupon Applied!', `Code "${code.toUpperCase()}" has been applied.`, {
         badge: 'Coupon'
       });
     },
-    onError: (err) => {
-      notifyError(err, 'Invalid Coupon Code', 'The entered promo code is invalid, expired, or does not meet minimum order requirements.');
+    onError: (err: any) => {
+      notifyError(err, 'Coupon Error', err?.message || 'The entered promo code is invalid, expired, or does not meet requirements.');
+    }
+  });
+
+  // DELETE /checkout/coupon
+  const removeCouponMutation = useMutation({
+    mutationFn: async () => {
+      await storefrontApi.removeCoupon();
+      await queryClient.invalidateQueries({ queryKey: ['checkoutSession_base'] });
+      await queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['checkoutSession_base'] });
+      queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
+      notifySuccess('Coupon Removed', 'The coupon has been removed from your order.');
+    },
+    onError: (err: any) => {
+      notifyError(err, 'Failed to Remove Coupon', err?.message || 'Could not remove coupon at this time.');
     }
   });
 
@@ -223,9 +253,13 @@ export function useCart() {
     clearCart: clearCartMutation.mutateAsync,
     isClearingCart: clearCartMutation.isPending,
 
+    availableCoupons,
     applyCoupon: applyCouponMutation.mutateAsync,
     isApplyingCoupon: applyCouponMutation.isPending,
     applyCouponError: applyCouponMutation.error,
+
+    removeCoupon: removeCouponMutation.mutateAsync,
+    isRemovingCoupon: removeCouponMutation.isPending,
 
     viewCartGA4,
   };

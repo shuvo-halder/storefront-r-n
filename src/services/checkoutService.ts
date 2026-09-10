@@ -58,20 +58,26 @@ export const checkoutService = {
   // POST /checkout/coupon
   applyCoupon: async (couponCode: string): Promise<ApiResponse<Coupon>> => {
     try {
-      const res = await apiClient.post('/checkout/coupon', { code: couponCode });
+      const res = await apiClient.post('/checkout/coupon', { code: couponCode.trim().toUpperCase() });
       const unwrapped = unwrapApiResponse<any>(res);
 
       if (unwrapped.status === 'error' || !unwrapped.data) {
         return { status: 'error', message: unwrapped.message || 'Invalid coupon code', errors: unwrapped.errors, data: null as any };
       }
 
+      const session = unwrapped.data?.session || unwrapped.data;
+      const appliedCouponObj = session?.coupon || unwrapped.data?.coupon || unwrapped.data;
+
       return {
         status: 'success',
         data: {
-          code: unwrapped.data.code || couponCode,
-          discountPercent: unwrapped.data.discountPercent,
-          discountAmount: unwrapped.data.discountAmount,
-          description: unwrapped.data.description || 'Coupon applied'
+          id: appliedCouponObj?.id ? String(appliedCouponObj.id) : undefined,
+          code: String(appliedCouponObj?.code || couponCode).toUpperCase(),
+          discountType: appliedCouponObj?.discountType,
+          discountValue: appliedCouponObj?.discountValue !== undefined ? Number(appliedCouponObj.discountValue) : undefined,
+          discountPercent: appliedCouponObj?.discountType === 'percentage' && appliedCouponObj?.discountValue !== undefined ? Number(appliedCouponObj.discountValue) : undefined,
+          discountAmount: session?.discount !== undefined ? Number(session.discount) : undefined,
+          description: unwrapped.message || 'Coupon applied successfully'
         },
         message: unwrapped.message || null
       };
@@ -79,6 +85,29 @@ export const checkoutService = {
       const { message, errors } = extractApiError(err, 'Failed to apply coupon');
       return {
         status: 'error', message, errors, data: null as any
+      };
+    }
+  },
+
+  // DELETE /checkout/coupon
+  removeCoupon: async (): Promise<ApiResponse<boolean>> => {
+    try {
+      const res = await apiClient.delete('/checkout/coupon');
+      const unwrapped = unwrapApiResponse<any>(res);
+
+      if (unwrapped.status === 'error') {
+        return { status: 'error', message: unwrapped.message || 'Failed to remove coupon', errors: unwrapped.errors, data: false };
+      }
+
+      return {
+        status: 'success',
+        data: true,
+        message: unwrapped.message || 'Coupon removed successfully'
+      };
+    } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Failed to remove coupon');
+      return {
+        status: 'error', message, errors, data: false
       };
     }
   },

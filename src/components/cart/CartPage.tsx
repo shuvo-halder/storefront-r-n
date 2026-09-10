@@ -10,7 +10,8 @@ import {
   ShieldCheck, 
   ArrowLeft,
   Loader2,
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react';
 import { CartItem } from './CartItem';
 import { formatPrice } from '../../utils/formatters';
@@ -24,9 +25,12 @@ export const CartPage: React.FC = () => {
     updateCartQuantity,
     removeCartItem,
     clearCart,
+    availableCoupons,
     applyCoupon,
     isApplyingCoupon,
     applyCouponError,
+    removeCoupon,
+    isRemovingCoupon,
     viewCartGA4,
     isUpdatingQuantity,
     isRemovingItem,
@@ -174,7 +178,7 @@ export const CartPage: React.FC = () => {
                 <div className="relative flex-1">
                   <input
                     type="text"
-                    placeholder="e.g. SAVE10"
+                    placeholder="e.g. MONSOON-5"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value)}
                     className="w-full py-2 px-3 pl-8 bg-white border border-[#E5E7EB] rounded-lg text-xs uppercase font-medium text-[#111827] focus:outline-none focus:border-[#DC2B53] focus:ring-1 focus:ring-[#DC2B53]"
@@ -189,6 +193,29 @@ export const CartPage: React.FC = () => {
                   {isApplyingCoupon ? <Loader2 size={13} className="animate-spin" /> : 'Apply'}
                 </button>
               </div>
+
+              {availableCoupons && availableCoupons.length > 0 && !cart.appliedCoupon && (
+                <div className="pt-1">
+                  <p className="text-[11px] text-[#6B7280] mb-1 font-medium">Available Offers:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {availableCoupons.map((c) => (
+                      <button
+                        key={c.code}
+                        type="button"
+                        onClick={() => {
+                          setCouponCode(c.code);
+                          applyCoupon(c.code);
+                        }}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#111827] px-2 py-1 rounded border border-[#E5E7EB] transition-colors cursor-pointer"
+                      >
+                        <Tag size={10} className="text-[#DC2B53]" />
+                        {c.code} {c.minOrderAmount ? `(Min BDT ${c.minOrderAmount})` : ''}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {applyCouponError && (
                 <p className="text-[11px] text-[#DC2626] font-medium">
                   {(applyCouponError as any).message || 'Invalid coupon code'}
@@ -201,13 +228,24 @@ export const CartPage: React.FC = () => {
                 <span>Items Subtotal</span>
                 <span className="font-semibold text-[#111827]">{formatPrice(cart.subtotal, currencyCode, currencySymbol)}</span>
               </div>
-              {cart.discount > 0 && (
-                <div className="flex justify-between text-[#DC2B53] font-medium bg-[#FDF0F3] px-2 py-1.5 rounded-md border border-[#DC2B53]/20">
+              {(cart.discount > 0 || cart.appliedCoupon) && (
+                <div className="flex items-center justify-between text-[#DC2B53] font-medium bg-[#FDF0F3] px-2 py-1.5 rounded-md border border-[#DC2B53]/20">
                   <span className="flex items-center gap-1">
                     <Tag size={12} />
-                    Coupon Discount ({cart.appliedCoupon})
+                    Coupon ({cart.appliedCoupon || 'Applied'})
                   </span>
-                  <span>-{formatPrice(cart.discount, currencyCode, currencySymbol)}</span>
+                  <div className="flex items-center gap-2">
+                    <span>-{formatPrice(cart.discount, currencyCode, currencySymbol)}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeCoupon()}
+                      disabled={isRemovingCoupon}
+                      title="Remove coupon"
+                      className="p-0.5 text-[#DC2B53] hover:text-black rounded transition-colors cursor-pointer"
+                    >
+                      {isRemovingCoupon ? <Loader2 size={12} className="animate-spin" /> : <X size={12} />}
+                    </button>
+                  </div>
                 </div>
               )}
               <div className="flex justify-between">

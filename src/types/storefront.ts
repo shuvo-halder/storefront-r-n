@@ -289,11 +289,16 @@ export interface UserProfile {
 }
 
 export interface Coupon {
+  id?: string;
   code: string;
+  discountType?: 'percentage' | 'fixed' | string;
+  discountValue?: number;
   discountPercent?: number;
   discountAmount?: number;
   minSubtotal?: number;
-  description: string;
+  minOrderAmount?: number;
+  validUntil?: string;
+  description?: string;
 }
 
 export interface StoreBranding {

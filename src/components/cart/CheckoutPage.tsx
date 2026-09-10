@@ -10,6 +10,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { useCart } from '../../hooks/useCart';
 import { storefrontApi } from '../../services/storefrontApi';
 import { checkoutSchema, CheckoutFormData } from '../../types/checkout';
+import { QuantitySelector } from './QuantitySelector';
 import { AddressForm } from '../checkout/AddressForm';
 import { PaymentStep } from '../checkout/PaymentStep';
 import { 
@@ -42,8 +43,12 @@ export const CheckoutPage: React.FC = () => {
     cart, 
     isLoading: isCartLoading, 
     updateQuantity,
+    isUpdatingQuantity,
     removeCartItem,
+    availableCoupons,
     applyCoupon,
+    removeCoupon,
+    isRemovingCoupon,
     clearCart
   } = useCart();
 
@@ -299,10 +304,14 @@ export const CheckoutPage: React.FC = () => {
   };
 
   const handleRemoveCoupon = async () => {
-    setLocalCoupon('');
-    setValue('couponCode', '');
-    notifySuccess('Coupon Removed', 'The coupon has been removed from your order.');
-    fetchSession();
+    try {
+      await removeCoupon();
+      setLocalCoupon('');
+      setValue('couponCode', '');
+      fetchSession();
+    } catch {
+      // Handled by hook
+    }
   };
 
   const onPlaceOrder: SubmitHandler<CheckoutFormData> = async (data) => {
@@ -505,23 +514,12 @@ export const CheckoutPage: React.FC = () => {
                       )}
                       
                       <div className="flex items-center gap-3 mt-2">
-                        <div className="flex items-center border border-[#E5E7EB] rounded-md overflow-hidden bg-white">
-                          <button
-                            type="button"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="px-2 py-1 text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827] cursor-pointer"
-                          >
-                            -
-                          </button>
-                          <span className="px-2 text-xs font-semibold w-8 text-center">{item.quantity}</span>
-                          <button
-                            type="button"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="px-2 py-1 text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827] cursor-pointer"
-                          >
-                            +
-                          </button>
-                        </div>
+                        <QuantitySelector
+                          quantity={item.quantity}
+                          onUpdate={(q) => updateQuantity(item.id, q)}
+                          isLoading={isUpdatingQuantity}
+                          size="sm"
+                        />
                         <button
                           type="button"
                           onClick={() => removeCartItem(item.id)}
@@ -719,21 +717,44 @@ export const CheckoutPage: React.FC = () => {
                         </button>
                       </div>
                     ) : (
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={localCoupon}
-                          onChange={(e) => setLocalCoupon(e.target.value)}
-                          placeholder="Enter coupon code"
-                          className="flex-1 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] uppercase placeholder:normal-case focus:outline-none focus:border-[#DC2B53]"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleApplyCoupon}
-                          className="px-3.5 py-2 bg-[#111827] hover:bg-black text-white rounded-lg text-xs font-semibold transition-colors shrink-0 cursor-pointer"
-                        >
-                          Apply
-                        </button>
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={localCoupon}
+                            onChange={(e) => setLocalCoupon(e.target.value)}
+                            placeholder="Enter coupon code (e.g. MONSOON-5)"
+                            className="flex-1 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#111827] uppercase placeholder:normal-case focus:outline-none focus:border-[#DC2B53]"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleApplyCoupon}
+                            className="px-3.5 py-2 bg-[#111827] hover:bg-black text-white rounded-lg text-xs font-semibold transition-colors shrink-0 cursor-pointer"
+                          >
+                            Apply
+                          </button>
+                        </div>
+                        {availableCoupons && availableCoupons.length > 0 && (
+                          <div className="pt-1">
+                            <p className="text-[11px] text-[#6B7280] mb-1 font-medium">Available Offers:</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {availableCoupons.map((c) => (
+                                <button
+                                  key={c.code}
+                                  type="button"
+                                  onClick={() => {
+                                    setLocalCoupon(c.code);
+                                    applyCoupon(c.code);
+                                  }}
+                                  className="inline-flex items-center gap-1 text-[11px] font-semibold bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#111827] px-2 py-1 rounded border border-[#E5E7EB] transition-colors cursor-pointer"
+                                >
+                                  <Tag size={10} className="text-[#DC2B53]" />
+                                  {c.code} {c.minOrderAmount ? `(Min BDT ${c.minOrderAmount})` : ''}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

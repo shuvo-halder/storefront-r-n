@@ -18,17 +18,20 @@ export const cartService = {
       const unwrapped = unwrapApiResponse<any>(res);
 
       if (unwrapped.status === 'error') {
-        // Safe empty cart guarantee on initial fetch or session init
         return {
-          status: 'success', message: null, data: normalizeCart(null)
+          status: 'error',
+          message: unwrapped.message || 'Failed to fetch cart.',
+          errors: unwrapped.errors,
+          data: normalizeCart(null)
         };
       }
 
       const cart = normalizeCart(unwrapped.data);
       return { status: 'success', message: null, data: cart };
-    } catch {
+    } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Failed to fetch cart.');
       return {
-        status: 'success', message: null, data: normalizeCart(null)
+        status: 'error', message, errors, data: normalizeCart(null)
       };
     }
   },
@@ -42,6 +45,14 @@ export const cartService = {
         variantId
       });
       const unwrapped = unwrapApiResponse<any>(res);
+      if (unwrapped.status === 'error') {
+        return {
+          status: 'error',
+          message: unwrapped.message || 'Failed to add item to cart',
+          errors: unwrapped.errors,
+          data: normalizeCart(null)
+        };
+      }
       const cart = normalizeCart(unwrapped.data);
       return { status: 'success', message: unwrapped.message || null, data: cart };
     } catch (err: any) {
@@ -57,6 +68,14 @@ export const cartService = {
     try {
       const res = await apiClient.put(`/cart/items/${encodeURIComponent(itemId)}`, { quantity });
       const unwrapped = unwrapApiResponse<any>(res);
+      if (unwrapped.status === 'error') {
+        return {
+          status: 'error',
+          message: unwrapped.message || 'Failed to update cart item',
+          errors: unwrapped.errors,
+          data: normalizeCart(null)
+        };
+      }
       const cart = normalizeCart(unwrapped.data);
       return { status: 'success', message: unwrapped.message || null, data: cart };
     } catch (err: any) {
@@ -72,6 +91,14 @@ export const cartService = {
     try {
       const res = await apiClient.delete(`/cart/items/${encodeURIComponent(itemId)}`);
       const unwrapped = unwrapApiResponse<any>(res);
+      if (unwrapped.status === 'error') {
+        return {
+          status: 'error',
+          message: unwrapped.message || 'Failed to remove cart item',
+          errors: unwrapped.errors,
+          data: normalizeCart(null)
+        };
+      }
       const cart = normalizeCart(unwrapped.data);
       return { status: 'success', message: unwrapped.message || null, data: cart };
     } catch (err: any) {
@@ -87,11 +114,20 @@ export const cartService = {
     try {
       const res = await apiClient.delete('/cart');
       const unwrapped = unwrapApiResponse<any>(res);
+      if (unwrapped.status === 'error') {
+        return {
+          status: 'error',
+          message: unwrapped.message || 'Failed to clear cart',
+          errors: unwrapped.errors,
+          data: normalizeCart(null)
+        };
+      }
       const cart = normalizeCart(unwrapped.data);
       return { status: 'success', message: unwrapped.message || null, data: cart };
-    } catch {
+    } catch (err: any) {
+      const { message, errors } = extractApiError(err, 'Failed to clear cart');
       return {
-        status: 'success', message: null, data: normalizeCart(null)
+        status: 'error', message, errors, data: normalizeCart(null)
       };
     }
   }

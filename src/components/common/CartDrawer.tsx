@@ -32,9 +32,12 @@ export const CartDrawer: React.FC = () => {
     updateCartQuantity,
     removeCartItem,
     clearCart,
+    availableCoupons,
     applyCoupon,
     isApplyingCoupon,
     applyCouponError,
+    removeCoupon,
+    isRemovingCoupon,
     viewCartGA4,
     isUpdatingQuantity,
     isRemovingItem,
@@ -208,28 +211,52 @@ export const CartDrawer: React.FC = () => {
           <div className="p-4 bg-[#F9FAFB] border-t border-[#E5E7EB] space-y-3">
             
             {/* Coupon Code input */}
-            <form onSubmit={handleApplyCoupon} className="flex gap-2">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  placeholder="Coupon code (e.g. SAVE10)"
-                  value={couponInput}
-                  onChange={(e) => setCouponInput(e.target.value)}
-                  className="w-full py-2 pl-8 pr-3 bg-white border border-[#E5E7EB] rounded-lg text-xs uppercase placeholder:normal-case font-medium text-[#111827] focus:outline-none focus:border-[#DC2B53] focus:ring-1 focus:ring-[#DC2B53]"
-                />
-                <Tag size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#6B7280]" />
+            <form onSubmit={handleApplyCoupon} className="space-y-1">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    placeholder="e.g. MONSOON-5"
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value)}
+                    className="w-full py-2 pl-8 pr-3 bg-white border border-[#E5E7EB] rounded-lg text-xs uppercase placeholder:normal-case font-medium text-[#111827] focus:outline-none focus:border-[#DC2B53] focus:ring-1 focus:ring-[#DC2B53]"
+                  />
+                  <Tag size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#6B7280]" />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isApplyingCoupon || !couponInput.trim()}
+                  className="px-3.5 py-2 bg-[#111827] hover:bg-black text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {isApplyingCoupon ? <Loader2 size={13} className="animate-spin" /> : 'Apply'}
+                </button>
               </div>
-              <button
-                type="submit"
-                disabled={isApplyingCoupon || !couponInput.trim()}
-                className="px-3.5 py-2 bg-[#111827] hover:bg-black text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer disabled:opacity-50"
-              >
-                {isApplyingCoupon ? <Loader2 size={13} className="animate-spin" /> : 'Apply'}
-              </button>
+
+              {availableCoupons && availableCoupons.length > 0 && !cart.appliedCoupon && (
+                <div className="pt-1">
+                  <div className="flex flex-wrap gap-1">
+                    {availableCoupons.map((c) => (
+                      <button
+                        key={c.code}
+                        type="button"
+                        onClick={() => {
+                          setCouponInput(c.code);
+                          applyCoupon(c.code);
+                        }}
+                        className="inline-flex items-center gap-1 text-[10px] font-semibold bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#111827] px-1.5 py-0.5 rounded border border-[#E5E7EB] cursor-pointer"
+                      >
+                        <Tag size={9} className="text-[#DC2B53]" />
+                        {c.code}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {applyCouponError && (
+                <p className="text-[11px] text-[#DC2626] font-medium">{(applyCouponError as any).message || 'Invalid coupon'}</p>
+              )}
             </form>
-            {applyCouponError && (
-              <p className="text-[11px] text-[#DC2626] font-medium">{(applyCouponError as any).message || 'Invalid coupon'}</p>
-            )}
 
             {/* Calculations Breakdown */}
             <div className="space-y-1.5 text-xs text-[#6B7280] pt-1 border-t border-[#E5E7EB]">
@@ -237,10 +264,24 @@ export const CartDrawer: React.FC = () => {
                 <span>Subtotal</span>
                 <span className="font-semibold text-[#111827]">{formatPrice(cart.subtotal, currencyCode, currencySymbol)}</span>
               </div>
-              {cart.discount > 0 && (
-                <div className="flex justify-between text-[#DC2B53] font-medium">
-                  <span>Discount ({cart.appliedCoupon})</span>
-                  <span>-{formatPrice(cart.discount, currencyCode, currencySymbol)}</span>
+              {(cart.discount > 0 || cart.appliedCoupon) && (
+                <div className="flex justify-between items-center text-[#DC2B53] font-medium bg-[#FDF0F3] px-2 py-1 rounded border border-[#DC2B53]/20">
+                  <span className="flex items-center gap-1">
+                    <Tag size={11} />
+                    Discount ({cart.appliedCoupon || 'Applied'})
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span>-{formatPrice(cart.discount, currencyCode, currencySymbol)}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeCoupon()}
+                      disabled={isRemovingCoupon}
+                      title="Remove coupon"
+                      className="p-0.5 text-[#DC2B53] hover:text-black rounded transition-colors cursor-pointer"
+                    >
+                      {isRemovingCoupon ? <Loader2 size={11} className="animate-spin" /> : <X size={11} />}
+                    </button>
+                  </div>
                 </div>
               )}
               <div className="flex justify-between">
