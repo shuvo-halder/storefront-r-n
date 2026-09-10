@@ -509,16 +509,7 @@ export const customerService = {
   getOrderShipments: async (orderId: string): Promise<ApiResponse<OrderShipmentsResponse>> => {
     try {
       const cleanId = encodeURIComponent(orderId.trim());
-      let res: any;
-      try {
-        res = await apiClient.get(`/orders/${cleanId}/timeline`);
-      } catch (err: any) {
-        if (err.response?.status === 404) {
-          res = await apiClient.get(`/customer/orders/${cleanId}/shipments`);
-        } else {
-          throw err;
-        }
-      }
+      const res = await apiClient.get(`/customer/orders/${cleanId}/shipments`);
       const unwrapped = unwrapApiResponse<any>(res);
 
       if (unwrapped.status === 'error' || !unwrapped.data) {
