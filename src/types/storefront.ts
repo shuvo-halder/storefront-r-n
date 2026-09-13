@@ -101,6 +101,13 @@ export interface ProductSpecification {
   value: string;
 }
 
+export interface StorefrontProductFaq {
+  id: string;
+  question: string;
+  answer: string;
+  sortOrder: number;
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -129,6 +136,7 @@ export interface Product {
   dealEndTime?: string; // ISO date string
   variants?: ProductVariant[];
   reviews?: ProductReview[];
+  faqs?: StorefrontProductFaq[];
   tags?: string[];
 }
 

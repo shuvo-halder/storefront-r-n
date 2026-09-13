@@ -493,6 +493,14 @@ export function normalizeProduct(raw: any): Product {
             : []
         }))
       : [],
+    faqs: Array.isArray(raw.faqs)
+      ? raw.faqs.map((f: any) => ({
+          id: String(f.id || f._id || Math.random()),
+          question: String(f.question || f.q || f.title || ''),
+          answer: String(f.answer || f.a || f.content || f.body || ''),
+          sortOrder: typeof f.sortOrder === 'number' ? f.sortOrder : (typeof f.sort_order === 'number' ? f.sort_order : 0)
+        }))
+      : undefined,
     tags: Array.isArray(raw.tags) ? raw.tags : []
   };
 }
