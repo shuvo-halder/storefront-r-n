@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { SmartImage } from '../common/SmartImage';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -18,6 +18,8 @@ import {
   Activity, 
   LogOut, 
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   ShieldCheck,
   RotateCcw,
   Receipt,
@@ -35,6 +37,7 @@ interface AccountLayoutProps {
 export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTab }) => {
   const router = useRouter();
   const { customer, user, logout } = useAuth();
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const activeUser = customer || user;
 
   const menuItems = [
@@ -50,6 +53,8 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
     { id: 'addresses', href: '/account/addresses', label: 'Addresses', icon: MapPin, isPrimary: false },
     { id: 'notifications', href: '/account/notifications', label: 'Notifications', icon: Bell, isPrimary: false },
   ];
+
+  const activeMenuItem = menuItems.find(item => item.id === activeTab) || menuItems[0];
 
   const handleLogout = async () => {
     await logout();
@@ -76,12 +81,12 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
 
   return (
     <ProtectedRoute>
-      <div className="bg-[#F9FAFB] min-h-screen pt-20 pb-16">
+      <div className="bg-[#F9FAFB] min-h-screen pt-4 sm:pt-6 lg:pt-20 pb-12 sm:pb-16">
         <div className="container-vyzobd px-4 sm:px-6 lg:px-8">
           
           {/* Mobile Customer Account Card */}
-          <div className="lg:hidden mb-4">
-            <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-xs flex items-center justify-between">
+          <div className="lg:hidden mb-3 sm:mb-4">
+            <div className="bg-white rounded-xl p-3.5 sm:p-4 border border-gray-200 shadow-xs flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-full bg-[#111827] text-white flex items-center justify-center font-bold text-sm overflow-hidden flex-shrink-0 relative">
                   {avatarUrl ? (
@@ -111,11 +116,29 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
             </div>
           </div>
 
-          <div className="grid grid-cols-12 gap-3 sm:gap-6 lg:gap-8">
-            
-            {/* Mobile Vertical Navigation Sidebar */}
-            <div className="lg:hidden col-span-4 sm:col-span-3">
-              <div className="bg-white rounded-xl shadow-xs border border-gray-200 p-1.5 sm:p-2 space-y-1 sticky top-24">
+          {/* Mobile Customer Dashboard Navigation Toggle */}
+          <div className="lg:hidden mb-4">
+            <button
+              type="button"
+              onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+              className="w-full bg-white rounded-xl p-3 sm:p-3.5 border border-gray-200 shadow-xs flex items-center justify-between text-xs sm:text-sm font-bold text-gray-900 hover:bg-gray-50 transition-colors cursor-pointer"
+              aria-expanded={isMobileNavOpen}
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                {activeMenuItem && (
+                  <activeMenuItem.icon size={18} className="text-[#DC2B53] shrink-0" />
+                )}
+                <span className="truncate">{activeMenuItem ? activeMenuItem.label : 'Navigation Menu'}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 shrink-0">
+                <span>{isMobileNavOpen ? 'Close Menu' : 'Menu'}</span>
+                {isMobileNavOpen ? <ChevronUp size={18} className="text-gray-500" /> : <ChevronDown size={18} className="text-gray-500" />}
+              </div>
+            </button>
+
+            {/* Expandable Mobile Navigation List */}
+            {isMobileNavOpen && (
+              <div className="mt-2 bg-white rounded-xl shadow-xs border border-gray-200 p-2 space-y-1">
                 {menuItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;
@@ -124,16 +147,19 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
                     <Link
                       key={item.id}
                       href={item.href}
-                      className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition-colors ${
+                      onClick={() => setIsMobileNavOpen(false)}
+                      className={`flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-colors ${
                         isActive
                           ? 'bg-[#111827] text-white'
                           : 'text-gray-700 hover:bg-gray-50'
                       }`}
                     >
-                      <Icon size={14} className={`shrink-0 ${isActive ? 'text-[#DC2B53]' : 'text-gray-400'}`} />
-                      <span className="truncate">{item.label}</span>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Icon size={16} className={`shrink-0 ${isActive ? 'text-[#DC2B53]' : 'text-gray-400'}`} />
+                        <span className="font-semibold">{item.label}</span>
+                      </div>
                       {showBadge && (
-                        <span className="ml-auto px-1 py-0.2 rounded-full text-[9px] font-extrabold bg-[#DC2B53] text-white shrink-0">
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-[#DC2B53] text-white shrink-0">
                           {unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount}
                         </span>
                       )}
@@ -141,7 +167,10 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
                   );
                 })}
               </div>
-            </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
             {/* Desktop Sidebar */}
             <div className="hidden lg:block lg:col-span-3">
@@ -242,7 +271,7 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
             </div>
 
             {/* Main Content Area */}
-            <div className="col-span-8 sm:col-span-9 lg:col-span-9 min-w-0">
+            <div className="col-span-12 lg:col-span-9 min-w-0">
               {children}
             </div>
 
