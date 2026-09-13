@@ -66,7 +66,7 @@ export const ProductDetailPage: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(undefined);
   const [quantity, setQuantity] = useState<number>(1);
-  const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews'>('description');
+  const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews' | 'faq'>('description');
   const [openFaqId, setOpenFaqId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -761,7 +761,8 @@ export const ProductDetailPage: React.FC = () => {
             {[
               { id: 'description', label: 'Overview' },
               { id: 'specs', label: 'Specifications' },
-              { id: 'reviews', label: `Reviews (${product.reviewCount})` },
+              { id: 'reviews', label: `Reviews (${product.reviewCount || 0})` },
+              { id: 'faq', label: 'FAQ' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -838,45 +839,49 @@ export const ProductDetailPage: React.FC = () => {
             />
           )}
 
-        </div>
+          {/* Tab 4: Product FAQs */}
+          {activeTab === 'faq' && (
+            <div className="space-y-4">
+              <h4 className="font-bold text-sm text-[#111827] flex items-center gap-2">
+                <HelpCircle size={16} className="text-[#DC2B53]" />
+                <span>Frequently Asked Questions</span>
+              </h4>
 
-        {/* Product FAQs Section */}
-        {product.faqs && product.faqs.length > 0 && (
-          <div className="bg-white border border-[#E5E7EB] rounded-xl p-6 sm:p-8 shadow-xs space-y-5 mt-6">
-            <div className="flex items-center gap-2.5 pb-3 border-b border-[#E5E7EB]">
-              <HelpCircle size={20} className="text-[#DC2B53] shrink-0" />
-              <h3 className="text-base sm:text-lg font-bold text-[#111827] tracking-tight">
-                Frequently Asked Questions
-              </h3>
-            </div>
-            
-            <div className="divide-y divide-[#E5E7EB] border border-[#E5E7EB] rounded-lg overflow-hidden">
-              {product.faqs.map((faq) => {
-                const isOpen = openFaqId === faq.id;
-                return (
-                  <div key={faq.id} className="bg-white transition-colors">
-                    <button
-                      type="button"
-                      aria-expanded={isOpen}
-                      onClick={() => setOpenFaqId(isOpen ? null : faq.id)}
-                      className="w-full flex items-center justify-between gap-4 p-4 sm:p-4.5 text-left font-semibold text-xs sm:text-sm text-[#111827] hover:bg-[#F9FAFB] transition-colors focus:outline-none focus:ring-2 focus:ring-[#DC2B53]/20 cursor-pointer"
-                    >
-                      <span className="flex-1 leading-snug">{faq.question}</span>
-                      <span className="p-1 rounded-md bg-[#F3F4F6] text-[#6B7280] shrink-0">
-                        {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                      </span>
-                    </button>
-                    {isOpen && (
-                      <div className="px-4 pb-4 sm:px-4.5 sm:pb-4.5 pt-1 text-xs sm:text-sm text-[#374151] border-t border-[#F3F4F6]">
-                        <RichTextRenderer content={faq.answer} />
+              {product.faqs && product.faqs.length > 0 ? (
+                <div className="divide-y divide-[#E5E7EB] border border-[#E5E7EB] rounded-lg overflow-hidden">
+                  {product.faqs.map((faq) => {
+                    const isOpen = openFaqId === faq.id;
+                    return (
+                      <div key={faq.id} className="bg-white transition-colors">
+                        <button
+                          type="button"
+                          aria-expanded={isOpen}
+                          onClick={() => setOpenFaqId(isOpen ? null : faq.id)}
+                          className="w-full flex items-center justify-between gap-4 p-4 sm:p-4.5 text-left font-semibold text-xs sm:text-sm text-[#111827] hover:bg-[#F9FAFB] transition-colors focus:outline-none focus:ring-2 focus:ring-[#DC2B53]/20 cursor-pointer"
+                        >
+                          <span className="flex-1 leading-snug">{faq.question}</span>
+                          <span className="p-1 rounded-md bg-[#F3F4F6] text-[#6B7280] shrink-0">
+                            {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          </span>
+                        </button>
+                        {isOpen && (
+                          <div className="px-4 pb-4 sm:px-4.5 sm:pb-4.5 pt-1 text-xs sm:text-sm text-[#374151] border-t border-[#F3F4F6]">
+                            <RichTextRenderer content={faq.answer} />
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="p-6 text-center text-xs sm:text-sm text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
+                  No questions or answers have been added for this product yet.
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )}
+
+        </div>
 
         {/* Related Products Grid */}
         {(relatedProducts.length > 0 || isRelatedLoading) && (
