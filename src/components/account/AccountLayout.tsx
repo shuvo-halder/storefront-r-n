@@ -79,11 +79,11 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
       <div className="bg-[#F9FAFB] min-h-screen pt-20 pb-16">
         <div className="container-vyzobd px-4 sm:px-6 lg:px-8">
           
-          {/* Mobile Navigation Header / Tab Pills */}
-          <div className="lg:hidden mb-6">
-            <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-xs mb-3 flex items-center justify-between">
+          {/* Mobile Customer Account Card */}
+          <div className="lg:hidden mb-4">
+            <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-xs flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-[#111827] text-white flex items-center justify-center font-bold text-sm overflow-hidden flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-[#111827] text-white flex items-center justify-center font-bold text-sm overflow-hidden flex-shrink-0 relative">
                   {avatarUrl ? (
                     <SmartImage 
                       src={avatarUrl} 
@@ -109,38 +109,40 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
                 <LogOut size={18} />
               </button>
             </div>
-
-            {/* Mobile Horizontal Tabs */}
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                const showBadge = item.id === 'notifications' && unreadNotificationsCount > 0;
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border ${
-                      isActive
-                        ? 'bg-[#111827] text-white border-[#111827]'
-                        : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Icon size={14} className={isActive ? 'text-[#DC2B53]' : 'text-gray-400'} />
-                    <span>{item.label}</span>
-                    {showBadge && (
-                      <span className="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-[#DC2B53] text-white">
-                        {unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="grid grid-cols-12 gap-3 sm:gap-6 lg:gap-8">
             
+            {/* Mobile Vertical Navigation Sidebar */}
+            <div className="lg:hidden col-span-4 sm:col-span-3">
+              <div className="bg-white rounded-xl shadow-xs border border-gray-200 p-1.5 sm:p-2 space-y-1 sticky top-24">
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  const showBadge = item.id === 'notifications' && unreadNotificationsCount > 0;
+                  return (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition-colors ${
+                        isActive
+                          ? 'bg-[#111827] text-white'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <Icon size={14} className={`shrink-0 ${isActive ? 'text-[#DC2B53]' : 'text-gray-400'}`} />
+                      <span className="truncate">{item.label}</span>
+                      {showBadge && (
+                        <span className="ml-auto px-1 py-0.2 rounded-full text-[9px] font-extrabold bg-[#DC2B53] text-white shrink-0">
+                          {unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Desktop Sidebar */}
             <div className="hidden lg:block lg:col-span-3">
               <div className="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden sticky top-28">
@@ -240,7 +242,7 @@ export const AccountLayout: React.FC<AccountLayoutProps> = ({ children, activeTa
             </div>
 
             {/* Main Content Area */}
-            <div className="lg:col-span-9">
+            <div className="col-span-8 sm:col-span-9 lg:col-span-9 min-w-0">
               {children}
             </div>
 
